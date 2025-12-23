@@ -1,0 +1,152 @@
+.post-card {
+    display: flex;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.post-card:hover {
+    background: var(--hover);
+}
+
+.post-avatar {
+    flex-shrink: 0;
+}
+
+.avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--surface);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.post-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.post-author {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 15px;
+}
+
+.author-name {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.author-name:hover {
+    text-decoration: underline;
+}
+
+.author-username,
+.post-time {
+    color: var(--text-secondary);
+}
+
+.post-text {
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.post-media {
+    margin-bottom: 12px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.media-item img,
+.media-item video {
+    width: 100%;
+    display: block;
+}
+
+.post-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 425px;
+    margin-top: 12px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 9999px;
+    transition: all 0.2s;
+    font-size: 13px;
+}
+
+.action-btn svg {
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background: rgba(29, 161, 242, 0.1);
+    color: var(--twitter-blue);
+}
+
+.comment-btn:hover {
+    background: rgba(29, 161, 242, 0.1);
+    color: var(--twitter-blue);
+}
+
+.like-btn:hover {
+    background: rgba(249, 24, 128, 0.1);
+    color: #F91880;
+}
+
+.like-btn.liked {
+    color: #F91880;
+}
+
+.like-btn.liked svg {
+    fill: #F91880;
+}
+
+.share-btn:hover {
+    background: rgba(0, 186, 124, 0.1);
+    color: var(--success);
+}
+
+.views-btn {
+    cursor: default;
+}
+
+.views-btn:hover {
+    background: rgba(29, 161, 242, 0.1);
+    color: var(--twitter-blue);
+}

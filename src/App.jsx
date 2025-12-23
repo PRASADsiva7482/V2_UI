@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthProvider';
 import PrivateRoute from './auth/PrivateRoute';
 import MainLayout from './components/layout/MainLayout';
-import Dashboard from './pages/Dashboard';
+import Home from './pages/Home';
 import './index.css';
 
 function App() {
@@ -16,12 +16,8 @@ function App() {
                             <PrivateRoute>
                                 <MainLayout>
                                     <Routes>
-                                        <Route path="/" element={<Dashboard />} />
-                                        <Route path="/users" element={<Dashboard />} />
-                                        <Route path="/products" element={<Dashboard />} />
-                                        <Route path="/analytics" element={<Dashboard />} />
-                                        <Route path="/reports" element={<Dashboard />} />
-                                        <Route path="/settings" element={<Dashboard />} />
+                                        <Route path="/" element={<Home />} />
+                                        <Route path="/home" element={<Home />} />
                                     </Routes>
                                 </MainLayout>
                             </PrivateRoute>
