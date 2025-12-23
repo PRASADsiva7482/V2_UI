@@ -1,18 +1,27 @@
-.app-container {
+.main-layout {
     display: flex;
     min-height: 100vh;
-    background: var(--background);
+    background: var(--bg-primary);
+}
+
+.content-wrapper {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    transition: margin-left var(--transition-base);
 }
 
 .main-content {
     flex: 1;
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
+    padding: var(--spacing-xl);
+    overflow-y: auto;
 }
 
+/* Responsive */
 @media (max-width: 768px) {
-    .main-content {
+    .content-wrapper {
         margin-left: 0;
     }
 }
