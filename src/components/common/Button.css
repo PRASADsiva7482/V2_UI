@@ -1,0 +1,99 @@
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+    font-weight: 700;
+    border: none;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Variants */
+.btn-primary {
+    background: var(--twitter-blue);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #1A8CD8;
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--twitter-blue);
+    border: 1px solid var(--border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: rgba(29, 161, 242, 0.1);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: #D01828;
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-primary);
+}
+
+.btn-ghost:hover:not(:disabled) {
+    background: var(--hover);
+}
+
+/* Sizes */
+.btn-small {
+    padding: 6px 16px;
+    font-size: 13px;
+}
+
+.btn-medium {
+    padding: 8px 24px;
+    font-size: 15px;
+}
+
+.btn-large {
+    padding: 12px 32px;
+    font-size: 17px;
+}
+
+/* Full width */
+.btn-full-width {
+    width: 100%;
+}
+
+/* Loading state */
+.btn-loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn-spinner {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

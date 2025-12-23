@@ -1,19 +1,15 @@
-import './MainLayout.css';
-import Sidebar from './Sidebar';
 import Navbar from './Navbar';
+import './MainLayout.css';
 
-const MainLayout = ({ children }) => {
+function MainLayout({ children }) {
     return (
-        <div className="main-layout">
-            <Sidebar />
-            <div className="content-wrapper">
-                <Navbar />
-                <main className="main-content">
-                    {children}
-                </main>
-            </div>
+        <div className="app-container">
+            <Navbar />
+            <main className="main-content">
+                {children}
+            </main>
         </div>
     );
-};
+}
 
 export default MainLayout;
