@@ -54,11 +54,22 @@ export const updateCoverPhoto = async (coverPhotoUrl) => {
     return response.data;
 };
 
+/**
+ * Search users by keyword
+ */
+export const searchUsers = async (keyword, { page = 0, size = 20 } = {}) => {
+    const response = await api.get(`${BASE_URL}/search`, {
+        params: { keyword, page, size }
+    });
+    return response.data;
+};
+
 export default {
     getMyProfile,
     getUserProfile,
     getUserProfileByUsername,
     updateMyProfile,
     updateProfilePicture,
-    updateCoverPhoto
+    updateCoverPhoto,
+    searchUsers
 };

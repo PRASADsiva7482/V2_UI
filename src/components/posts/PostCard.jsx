@@ -1,13 +1,19 @@
 import { useState } from 'react';
-import { likePost, unlikePost } from '../../services/api/posts';
+import { useNavigate } from 'react-router-dom';
+import { likePost, unlikePost, incrementViewCount } from '../../services/api/posts';
 import { formatRelativeTime, formatNumber } from '../../services/utils/formatters';
 import Avatar from '../common/Avatar';
+import CommentModal from '../comments/CommentModal';
 import './PostCard.css';
 
 function PostCard({ post, onPostUpdate }) {
+    const navigate = useNavigate();
     const [isLiked, setIsLiked] = useState(post.isLiked || false);
     const [likesCount, setLikesCount] = useState(post.likesCount || 0);
+    const [commentsCount, setCommentsCount] = useState(post.commentsCount || 0);
+    const [viewsCount, setViewsCount] = useState(post.viewsCount || 0);
     const [isLiking, setIsLiking] = useState(false);
+    const [showComments, setShowComments] = useState(false);
 
     const handleLike = async (e) => {
         e.stopPropagation();
@@ -37,9 +43,36 @@ function PostCard({ post, onPostUpdate }) {
         }
     };
 
-    const handlePostClick = () => {
-        // Navigate to post detail page (future feature)
-        console.log('Navigate to post:', post.id);
+    const handlePostClick = async () => {
+        // Increment view count
+        try {
+            await incrementViewCount(post.id);
+            setViewsCount(prev => prev + 1);
+        } catch (error) {
+            console.error('Error incrementing view count:', error);
+        }
+
+        // Open comments modal
+        setShowComments(true);
+    };
+
+    const handleCommentClick = (e) => {
+        e.stopPropagation();
+        setShowComments(true);
+    };
+
+    const handleCommentAdded = () => {
+        setCommentsCount(prev => prev + 1);
+        if (onPostUpdate) {
+            onPostUpdate(post.id, { commentsCount: commentsCount + 1 });
+        }
+    };
+
+    const handleProfileClick = (e) => {
+        e.stopPropagation();
+        if (post.userId) {
+            navigate(`/profile/${post.userId}`);
+        }
     };
 
     return (
@@ -55,10 +88,12 @@ function PostCard({ post, onPostUpdate }) {
             <div className="post-content">
                 <div className="post-header">
                     <div className="post-author">
-                        <span className="author-name">
-                            {post.author?.displayName || 'Unknown User'}
+                        <span className="author-name" onClick={handleProfileClick}>
+                            {post.author?.displayName && !post.author.displayName.startsWith('User ')
+                                ? post.author.displayName
+                                : post.author?.username || 'Unknown'}
                         </span>
-                        <span className="author-username">
+                        <span className="author-username" onClick={handleProfileClick}>
                             @{post.author?.username || 'unknown'}
                         </span>
                         <span className="post-time">
@@ -86,11 +121,11 @@ function PostCard({ post, onPostUpdate }) {
                 )}
 
                 <div className="post-actions">
-                    <button className="action-btn comment-btn" onClick={(e) => e.stopPropagation()}>
+                    <button className="action-btn comment-btn" onClick={handleCommentClick}>
                         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
                             <path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.196 7.11l-8.054 4.46v-3.69c-.407.04-.816.06-1.229.06-4.42 0-8.02-3.58-8.02-8z" />
                         </svg>
-                        <span>{formatNumber(post.commentsCount || 0)}</span>
+                        <span>{formatNumber(commentsCount)}</span>
                     </button>
 
                     <button
@@ -114,10 +149,18 @@ function PostCard({ post, onPostUpdate }) {
                         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
                             <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
                         </svg>
-                        <span>{formatNumber(post.viewsCount || 0)}</span>
+                        <span>{formatNumber(viewsCount)}</span>
                     </button>
                 </div>
             </div>
+
+            {showComments && (
+                <CommentModal
+                    post={{ ...post, commentsCount, likesCount }}
+                    onClose={() => setShowComments(false)}
+                    onCommentAdded={handleCommentAdded}
+                />
+            )}
         </div>
     );
 }

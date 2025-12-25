@@ -1,4 +1,5 @@
 import Navbar from './Navbar';
+import RightSidebar from './RightSidebar';
 import './MainLayout.css';
 
 function MainLayout({ children }) {
@@ -8,6 +9,7 @@ function MainLayout({ children }) {
             <main className="main-content">
                 {children}
             </main>
+            <RightSidebar />
         </div>
     );
 }

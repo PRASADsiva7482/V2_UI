@@ -1,0 +1,113 @@
+{
+  "app": {
+    "name": "Dashboard App",
+    "tagline": "Connect with the world"
+  },
+  "navbar": {
+    "home": "Home",
+    "profile": "Profile",
+    "logout": "Logout",
+    "language": "Language"
+  },
+  "home": {
+    "title": "Home",
+    "tabs": {
+      "forYou": "For You",
+      "following": "Following"
+    },
+    "emptyFeed": "No posts yet. Follow some users to see their posts!",
+    "emptyForYou": "No trending posts available right now.",
+    "loadMore": "Load More",
+    "loading": "Loading..."
+  },
+  "search": {
+    "placeholder": "Search users, posts...",
+    "searching": "Searching...",
+    "noResults": "No results found for \"{{query}}\"",
+    "filters": {
+      "all": "All",
+      "users": "Users",
+      "posts": "Posts"
+    },
+    "results": {
+      "users": "Users ({{count}})",
+      "posts": "Posts ({{count}})"
+    }
+  },
+  "post": {
+    "create": "What's happening?",
+    "post": "Post",
+    "posting": "Posting...",
+    "views": "{{count}} Views",
+    "likes": "{{count}} Likes",
+    "comments": "{{count}} Comments",
+    "like": "Like",
+    "unlike": "Unlike",
+    "comment": "Comment",
+    "share": "Share",
+    "delete": "Delete",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "profile": {
+    "title": "Profile",
+    "myProfile": "My Profile",
+    "followers": "Followers",
+    "following": "Following",
+    "posts": "Posts",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "editProfile": "Edit Profile",
+    "saveProfile": "Save Profile",
+    "cancelEdit": "Cancel",
+    "displayName": "Display Name",
+    "username": "Username",
+    "bio": "Bio",
+    "about": "About",
+    "location": "Location",
+    "website": "Website",
+    "phoneNumber": "Phone Number",
+    "dateOfBirth": "Date of Birth",
+    "profilePicture": "Profile Picture",
+    "coverPhoto": "Cover Photo",
+    "privacy": "Privacy",
+    "makePrivate": "Make Profile Private",
+    "makePublic": "Make Profile Public",
+    "verified": "Verified",
+    "joined": "Joined {{date}}",
+    "updateSuccess": "Profile updated successfully!",
+    "updateError": "Failed to update profile"
+  },
+  "sidebar": {
+    "hotNews": "🔥 Hot News",
+    "whoToFollow": "👥 Who to Follow",
+    "platformStats": "📊 Platform Stats",
+    "totalUsers": "Total Users",
+    "totalPosts": "Total Posts",
+    "totalLikes": "Total Likes",
+    "totalViews": "Total Views",
+    "totalComments": "Total Comments",
+    "loadingStats": "Loading stats..."
+  },
+  "comments": {
+    "title": "Comments",
+    "writeComment": "Write a comment...",
+    "reply": "Reply",
+    "noComments": "No comments yet. Be the first to comment!",
+    "close": "Close"
+  },
+  "common": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "save": "Save",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  }
+}

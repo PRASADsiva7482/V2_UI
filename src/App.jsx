@@ -3,6 +3,7 @@ import { AuthProvider } from './auth/AuthProvider';
 import PrivateRoute from './auth/PrivateRoute';
 import MainLayout from './components/layout/MainLayout';
 import Home from './pages/Home';
+import Profile from './pages/Profile';
 import './index.css';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
                                     <Routes>
                                         <Route path="/" element={<Home />} />
                                         <Route path="/home" element={<Home />} />
+                                        <Route path="/profile/:userId" element={<Profile />} />
                                     </Routes>
                                 </MainLayout>
                             </PrivateRoute>

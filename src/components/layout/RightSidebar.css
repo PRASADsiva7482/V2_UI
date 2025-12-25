@@ -1,0 +1,262 @@
+.right-sidebar {
+    width: 350px;
+    padding: 20px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    border-left: 1px solid var(--border);
+    scrollbar-width: thin;
+    scrollbar-color: var(--twitter-blue) transparent;
+}
+
+.right-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.right-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.right-sidebar::-webkit-scrollbar-thumb {
+    background: var(--twitter-blue);
+    border-radius: 3px;
+}
+
+.sidebar-loading {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.sidebar-section {
+    background: var(--card-background, #16181c);
+    border-radius: 16px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.section-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.section-header h2 {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+/* Trending Posts */
+.trending-posts {
+    padding: 0;
+}
+
+.trending-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.trending-item:last-child {
+    border-bottom: none;
+}
+
+.trending-item:hover {
+    background: var(--hover);
+}
+
+.trending-rank {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--twitter-blue);
+    min-width: 30px;
+}
+
+.trending-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.trending-author {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.trending-author:hover {
+    text-decoration: underline;
+    color: var(--twitter-blue);
+}
+
+.trending-text {
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+.trending-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.trending-stats span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Popular Users */
+.popular-users {
+    padding: 0;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.user-item:last-child {
+    border-bottom: none;
+}
+
+.user-item:hover {
+    background: var(--hover);
+}
+
+.user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-handle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.follow-btn {
+    padding: 6px 16px;
+    background: var(--text-primary);
+    color: var(--background);
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.follow-btn:hover:not(:disabled) {
+    background: var(--text-secondary);
+}
+
+.follow-btn.following {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+}
+
+.follow-btn.following:hover:not(:disabled) {
+    background: rgba(244, 33, 46, 0.1);
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.follow-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+}
+
+.stat-item {
+    background: var(--card-background, #16181c);
+    padding: 16px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--twitter-blue);
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+/* Footer */
+.sidebar-footer {
+    padding: 16px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.sidebar-footer a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    margin: 0 8px;
+    transition: color 0.2s;
+}
+
+.sidebar-footer a:hover {
+    color: var(--twitter-blue);
+    text-decoration: underline;
+}
+
+.copyright {
+    margin-top: 8px;
+    color: var(--text-secondary);
+    font-size: 11px;
+}
+
+/* Empty State */
+.empty-state {
+    padding: 20px 16px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 1280px) {
+    .right-sidebar {
+        display: none;
+    }
+}

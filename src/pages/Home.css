@@ -1,26 +1,50 @@
 .home-page {
-    max-width: 600px;
-    margin: 0 auto;
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
     min-height: 100vh;
+    width: 100%;
 }
 
-.home-header {
+/* Twitter/X Style Tabs */
+.home-tabs {
     position: sticky;
     top: 0;
+    display: flex;
     background: rgba(21, 32, 43, 0.85);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
-    padding: 16px 20px;
     z-index: 10;
 }
 
-.home-header h1 {
-    font-size: 20px;
-    font-weight: 700;
-    margin: 0;
+.tab-btn {
+    flex: 1;
+    padding: 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    background: var(--hover);
+}
+
+.tab-btn.active {
     color: var(--text-primary);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: var(--twitter-blue);
+    border-radius: 2px 2px 0 0;
 }
 
 .posts-feed {
