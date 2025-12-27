@@ -5,6 +5,7 @@ import { useAuth } from '../../auth/AuthProvider';
 import { getMyProfile } from '../../services/api/profile';
 import Avatar from '../common/Avatar';
 import LanguageSwitcher from '../common/LanguageSwitcher';
+import ThemeToggle from '../common/ThemeToggle';
 import './Navbar.css';
 
 function Navbar() {
@@ -152,7 +153,10 @@ function Navbar() {
                             <circle cx="28" cy="30" r="0.8" fill="rgba(255,255,255,0.5)" />
                         </svg>
                     </div>
-                    <LanguageSwitcher />
+                    <div className="navbar-header-actions">
+                        <ThemeToggle />
+                        <LanguageSwitcher />
+                    </div>
                 </div>
 
                 <div className="navbar-menu">

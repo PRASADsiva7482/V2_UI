@@ -1,0 +1,64 @@
+.theme-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 9999px;
+    transition: background 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+    background: var(--hover);
+}
+
+.theme-toggle-track {
+    position: relative;
+    width: 48px;
+    height: 24px;
+    background: var(--border);
+    border-radius: 12px;
+    transition: background 0.3s ease;
+}
+
+.theme-toggle-btn:hover .theme-toggle-track {
+    background: var(--text-secondary);
+}
+
+.theme-toggle-slider {
+    position: absolute;
+    top: 2px;
+    width: 20px;
+    height: 20px;
+    background: var(--text-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.theme-toggle-slider svg {
+    color: var(--background);
+    transition: transform 0.3s ease;
+}
+
+.theme-toggle-slider.light {
+    left: 2px;
+}
+
+.theme-toggle-slider.dark {
+    left: 26px;
+}
+
+.theme-toggle-slider.light svg {
+    stroke: var(--background);
+}
+
+/* Add rotation animation on toggle */
+.theme-toggle-btn:active .theme-toggle-slider svg {
+    transform: rotate(180deg);
+}

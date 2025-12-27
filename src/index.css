@@ -1,7 +1,9 @@
-:root {
+:root,
+:root[data-theme="dark"] {
   /* Twitter-inspired color scheme */
   --twitter-blue: #1DA1F2;
   --background: #15202B;
+  --background-rgb: 21, 32, 43;
   --surface: #192734;
   --hover: #1C2938;
   --border: #38444D;
@@ -10,12 +12,30 @@
   --success: #00BA7C;
   --danger: #F4212E;
   --card-background: #16181c;
+  --shadow-3d: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme="light"] {
+  --twitter-blue: #1DA1F2;
+  --background: #FFFFFF;
+  --background-rgb: 255, 255, 255;
+  --surface: #F7F9F9;
+  --hover: #E8F5FD;
+  --border: #E1E8ED;
+  --text-primary: #0F1419;
+  --text-secondary: #536471;
+  --success: #00BA7C;
+  --danger: #F4212E;
+  --card-background: #FFFFFF;
+  --shadow-3d: 0 8px 16px rgba(15, 20, 25, 0.1);
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  /* Smooth transitions for theme changes */
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 body {
@@ -91,4 +111,18 @@ button {
 
 .text-danger {
   color: var(--danger);
+}
+
+/* 3D Hover Utility */
+.hover-3d {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+
+.hover-3d:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-3d);
+}
+
+.hover-3d:active {
+  transform: translateY(-1px) scale(1.0);
 }

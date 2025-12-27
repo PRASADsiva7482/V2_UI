@@ -25,6 +25,12 @@
     padding-right: 8px;
 }
 
+.navbar-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .navbar-logo {
     padding: 12px;
     cursor: pointer;
@@ -57,12 +63,14 @@
     font-size: 20px;
     font-weight: 400;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.2s ease, box-shadow 0.2s ease;
     text-align: left;
 }
 
 .nav-btn:hover {
     background: var(--hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-3d);
 }
 
 .nav-btn.active {
@@ -79,7 +87,7 @@
 }
 
 .profile-btn {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 12px;
     padding: 12px;
@@ -88,12 +96,14 @@
     border-radius: 9999px;
     color: var(--text-primary);
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.2s ease, box-shadow 0.2s ease;
     width: 100%;
 }
 
 .profile-btn:hover {
     background: var(--hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-3d);
 }
 
 .profile-info {
