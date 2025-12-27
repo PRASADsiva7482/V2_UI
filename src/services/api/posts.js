@@ -42,9 +42,21 @@ export const getPostById = async (postId) => {
 
 /**
  * Create a new post
+ * @param {string} content - Post content (optional if media is provided)
+ * @param {number[]} mediaIds - Array of media IDs to attach (optional)
  */
-export const createPost = async (content) => {
-    const response = await api.post(BASE_URL, { content });
+export const createPost = async (content, mediaIds = null) => {
+    const requestBody = {};
+
+    if (content && content.trim()) {
+        requestBody.content = content;
+    }
+
+    if (mediaIds && mediaIds.length > 0) {
+        requestBody.mediaIds = mediaIds;
+    }
+
+    const response = await api.post(BASE_URL, requestBody);
     return response.data;
 };
 

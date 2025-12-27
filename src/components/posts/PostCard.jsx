@@ -4,6 +4,7 @@ import { likePost, unlikePost, incrementViewCount } from '../../services/api/pos
 import { formatRelativeTime, formatNumber } from '../../services/utils/formatters';
 import Avatar from '../common/Avatar';
 import CommentModal from '../comments/CommentModal';
+import VideoPlayer from '../media/VideoPlayer';
 import './PostCard.css';
 
 function PostCard({ post, onPostUpdate }) {
@@ -75,6 +76,18 @@ function PostCard({ post, onPostUpdate }) {
         }
     };
 
+    // Helper to build full media URL
+    const getMediaUrl = (fileUrl) => {
+        if (!fileUrl) return '';
+        // If already a full URL, return as-is
+        if (fileUrl.startsWith('http')) return fileUrl;
+        // Remove leading slash to avoid double /v-app
+        const cleanPath = fileUrl.startsWith('/') ? fileUrl.substring(1) : fileUrl;
+        // Prepend backend base URL
+        const baseUrl = 'http://localhost:2000';
+        return `${baseUrl}/${cleanPath}`;
+    };
+
     return (
         <div className="post-card" onClick={handlePostClick}>
             <div className="post-avatar">
@@ -107,13 +120,25 @@ function PostCard({ post, onPostUpdate }) {
                 </div>
 
                 {post.media && post.media.length > 0 && (
-                    <div className="post-media">
+                    <div
+                        className={`post-media media-grid-${Math.min(post.media.length, 4)}`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         {post.media.map((media, index) => (
                             <div key={media.id || index} className="media-item">
-                                {media.mediaType === 'IMAGE' ? (
-                                    <img src={media.fileUrl} alt="Post media" loading="lazy" />
+                                {media.mediaType === 'IMAGE' || media.mediaType === 'GIF' ? (
+                                    <img
+                                        src={getMediaUrl(media.fileUrl)}
+                                        alt="Post media"
+                                        loading="lazy"
+                                        className="media-image"
+                                    />
                                 ) : media.mediaType === 'VIDEO' ? (
-                                    <video src={media.fileUrl} controls />
+                                    <VideoPlayer
+                                        src={getMediaUrl(media.fileUrl)}
+                                        thumbnail={media.thumbnailUrl ? getMediaUrl(media.thumbnailUrl) : null}
+                                        className="media-video"
+                                    />
                                 ) : null}
                             </div>
                         ))}
