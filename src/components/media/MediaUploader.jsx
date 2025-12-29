@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react';
+import ImageCropper from './ImageCropper';
+import { getCroppedImg, getImageDimensions } from '../../services/utils/cropImage';
 import './MediaUploader.css';
 
 function MediaUploader({ onMediaSelect, selectedFiles = [], maxFiles = 4 }) {
     const [previews, setPreviews] = useState([]);
+    const [showCropper, setShowCropper] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(null);
+    const [currentImageUrl, setCurrentImageUrl] = useState(null);
 
     // Generate previews when selectedFiles changes
     useEffect(() => {
@@ -11,30 +16,50 @@ function MediaUploader({ onMediaSelect, selectedFiles = [], maxFiles = 4 }) {
             return;
         }
 
-        const newPreviews = [];
-        let loadedCount = 0;
+        const loadPreviews = async () => {
+            const newPreviews = [];
 
-        selectedFiles.forEach((file, index) => {
-            const isImage = file.type.startsWith('image/');
-            const isVideo = file.type.startsWith('video/');
+            for (let index = 0; index < selectedFiles.length; index++) {
+                const fileData = selectedFiles[index];
+                const file = fileData.file || fileData;
+                const isImage = file.type.startsWith('image/');
+                const isVideo = file.type.startsWith('video/');
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
+                const url = fileData.url || URL.createObjectURL(file);
+
+                let aspectRatio = fileData.aspectRatio;
+                let width = fileData.width;
+                let height = fileData.height;
+
+                // Get dimensions for images if not already set
+                if (isImage && !aspectRatio) {
+                    try {
+                        const dimensions = await getImageDimensions(url);
+                        aspectRatio = dimensions.aspectRatio;
+                        width = dimensions.width;
+                        height = dimensions.height;
+                    } catch (error) {
+                        console.error('Error getting image dimensions:', error);
+                        aspectRatio = 16 / 9; // Default fallback
+                    }
+                }
+
                 newPreviews[index] = {
                     file,
-                    url: e.target.result,
+                    url,
                     type: isImage ? 'image' : 'video',
                     name: file.name,
-                    size: file.size
+                    size: file.size,
+                    aspectRatio,
+                    width,
+                    height
                 };
+            }
 
-                loadedCount++;
-                if (loadedCount === selectedFiles.length) {
-                    setPreviews(newPreviews);
-                }
-            };
-            reader.readAsDataURL(file);
-        });
+            setPreviews(newPreviews);
+        };
+
+        loadPreviews();
     }, [selectedFiles]);
 
     const handleRemove = (index) => {
@@ -43,6 +68,51 @@ function MediaUploader({ onMediaSelect, selectedFiles = [], maxFiles = 4 }) {
         if (onMediaSelect) {
             onMediaSelect(updatedFiles);
         }
+    };
+
+    const handleEdit = (index) => {
+        const preview = previews[index];
+        if (preview && preview.type === 'image') {
+            setCurrentImageIndex(index);
+            setCurrentImageUrl(preview.url);
+            setShowCropper(true);
+        }
+    };
+
+    const handleCropComplete = async (cropData) => {
+        try {
+            const croppedImage = await getCroppedImg(
+                currentImageUrl,
+                cropData.croppedAreaPixels,
+                cropData.rotation
+            );
+
+            // Update the file in selectedFiles with cropped version
+            const updatedFiles = [...selectedFiles];
+            updatedFiles[currentImageIndex] = {
+                file: croppedImage.file,
+                url: croppedImage.url,
+                aspectRatio: croppedImage.aspectRatio,
+                width: croppedImage.width,
+                height: croppedImage.height
+            };
+
+            if (onMediaSelect) {
+                onMediaSelect(updatedFiles);
+            }
+
+            setShowCropper(false);
+            setCurrentImageIndex(null);
+            setCurrentImageUrl(null);
+        } catch (error) {
+            console.error('Error cropping image:', error);
+        }
+    };
+
+    const handleCropCancel = () => {
+        setShowCropper(false);
+        setCurrentImageIndex(null);
+        setCurrentImageUrl(null);
     };
 
     const formatFileSize = (bytes) => {
@@ -57,7 +127,13 @@ function MediaUploader({ onMediaSelect, selectedFiles = [], maxFiles = 4 }) {
             {previews.length > 0 && (
                 <div className={`media-preview-grid media-count-${Math.min(previews.length, 4)}`}>
                     {previews.map((preview, index) => (
-                        <div key={index} className="media-preview-item">
+                        <div
+                            key={index}
+                            className="media-preview-item"
+                            style={{
+                                aspectRatio: preview.aspectRatio || 'auto'
+                            }}
+                        >
                             {preview.type === 'image' ? (
                                 <img src={preview.url} alt={preview.name} className="preview-image" />
                             ) : (
@@ -70,6 +146,22 @@ function MediaUploader({ onMediaSelect, selectedFiles = [], maxFiles = 4 }) {
                                     </div>
                                 </div>
                             )}
+
+                            {/* Edit button for images */}
+                            {preview.type === 'image' && (
+                                <button
+                                    type="button"
+                                    className="media-edit-btn"
+                                    onClick={() => handleEdit(index)}
+                                    aria-label="Edit image"
+                                    title="Edit image"
+                                >
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                                    </svg>
+                                </button>
+                            )}
+
                             <button
                                 type="button"
                                 className="media-remove-btn"
@@ -82,10 +174,24 @@ function MediaUploader({ onMediaSelect, selectedFiles = [], maxFiles = 4 }) {
                             </button>
                             <div className="media-info">
                                 <span className="media-file-size">{formatFileSize(preview.size)}</span>
+                                {preview.aspectRatio && (
+                                    <span className="media-aspect-ratio">
+                                        {preview.width}×{preview.height}
+                                    </span>
+                                )}
                             </div>
                         </div>
                     ))}
                 </div>
+            )}
+
+            {/* Image Cropper Modal */}
+            {showCropper && currentImageUrl && (
+                <ImageCropper
+                    image={currentImageUrl}
+                    onCropComplete={handleCropComplete}
+                    onCancel={handleCropCancel}
+                />
             )}
         </div>
     );
