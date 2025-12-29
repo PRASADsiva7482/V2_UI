@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getTrendingPosts, getPopularUsers, getPlatformStats } from '../../services/api/discovery';
-import { followUser } from '../../services/api/follows';
+import { followUser, unfollowUser } from '../../services/api/follows';
 import { searchPosts } from '../../services/api/posts';
 import SearchBox from '../search/SearchBox';
 import Avatar from '../common/Avatar';
@@ -77,12 +77,28 @@ function RightSidebar() {
 
         if (followLoading.has(userId)) return;
 
+        const isFollowing = followingUsers.has(userId);
+
         try {
             setFollowLoading(prev => new Set(prev).add(userId));
-            await followUser(userId);
-            setFollowingUsers(prev => new Set(prev).add(userId));
+
+            if (isFollowing) {
+                // Unfollow - DELETE request
+                await unfollowUser(userId);
+                setFollowingUsers(prev => {
+                    const next = new Set(prev);
+                    next.delete(userId);
+                    return next;
+                });
+                console.log(`Unfollowed user ${userId}`);
+            } else {
+                // Follow - POST request
+                await followUser(userId);
+                setFollowingUsers(prev => new Set(prev).add(userId));
+                console.log(`Followed user ${userId}`);
+            }
         } catch (error) {
-            console.error('Error following user:', error);
+            console.error(`Error ${isFollowing ? 'unfollowing' : 'following'} user:`, error);
         } finally {
             setFollowLoading(prev => {
                 const next = new Set(prev);
@@ -167,7 +183,9 @@ function RightSidebar() {
                                         e.stopPropagation();
                                         navigateToProfile(post.userId);
                                     }}>
-                                        {post.author?.userName || 'User'}
+                                        {post.author?.displayName && !post.author.displayName.startsWith('User ')
+                                            ? post.author.displayName
+                                            : post.author?.username || 'User'}
                                     </div>
                                     <div className="trending-text">
                                         {post.content.length > 80
