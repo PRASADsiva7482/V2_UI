@@ -147,24 +147,40 @@ function PostCard({ post, onPostUpdate }) {
                         className={`post-media media-grid-${Math.min(post.media.length, 4)}`}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {post.media.map((media, index) => (
-                            <div key={media.id || index} className="media-item">
-                                {media.mediaType === 'IMAGE' || media.mediaType === 'GIF' ? (
-                                    <img
-                                        src={getMediaUrl(media.fileUrl)}
-                                        alt="Post media"
-                                        loading="lazy"
-                                        className="media-image"
-                                    />
-                                ) : media.mediaType === 'VIDEO' ? (
-                                    <VideoPlayer
-                                        src={getMediaUrl(media.fileUrl)}
-                                        thumbnail={media.thumbnailUrl ? getMediaUrl(media.thumbnailUrl) : null}
-                                        className="media-video"
-                                    />
-                                ) : null}
-                            </div>
-                        ))}
+                        {post.media.map((media, index) => {
+                            // Calculate aspect ratio from media dimensions if available
+                            let aspectRatio = 'auto';
+                            if (media.width && media.height) {
+                                aspectRatio = `${media.width} / ${media.height}`;
+                            } else if (media.aspectRatio) {
+                                aspectRatio = media.aspectRatio;
+                            }
+
+                            return (
+                                <div
+                                    key={media.id || index}
+                                    className="media-item"
+                                    style={{
+                                        aspectRatio: aspectRatio
+                                    }}
+                                >
+                                    {media.mediaType === 'IMAGE' || media.mediaType === 'GIF' ? (
+                                        <img
+                                            src={getMediaUrl(media.fileUrl)}
+                                            alt="Post media"
+                                            loading="lazy"
+                                            className="media-image"
+                                        />
+                                    ) : media.mediaType === 'VIDEO' ? (
+                                        <VideoPlayer
+                                            src={getMediaUrl(media.fileUrl)}
+                                            thumbnail={media.thumbnailUrl ? getMediaUrl(media.thumbnailUrl) : null}
+                                            className="media-video"
+                                        />
+                                    ) : null}
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
 

@@ -20,15 +20,7 @@
 .navbar-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     margin-bottom: 8px;
-    padding-right: 8px;
-}
-
-.navbar-header-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
 
 .navbar-logo {
