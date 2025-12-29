@@ -96,6 +96,18 @@
     word-wrap: break-word;
 }
 
+/* Hashtag links in post content */
+.hashtag-link {
+    color: #1d9bf0;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.hashtag-link:hover {
+    text-decoration: underline;
+}
+
 /* Media Grid Layouts */
 .post-media {
     margin-bottom: 12px;

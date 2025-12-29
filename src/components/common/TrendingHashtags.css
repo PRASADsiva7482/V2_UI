@@ -1,0 +1,117 @@
+.trending-hashtags {
+    background: var(--bg-secondary, #f7f9f9);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.trending-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin: 0 0 16px 0;
+    color: var(--text-primary, #0f1419);
+}
+
+.trending-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.trending-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.trending-item:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.trending-rank {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-primary, #1d9bf0);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.trending-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.trending-name {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--text-primary, #0f1419);
+    margin-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.trending-count {
+    font-size: 0.8125rem;
+    color: var(--text-secondary, #536471);
+}
+
+.trending-loading {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.skeleton-item {
+    height: 48px;
+    background: linear-gradient(90deg,
+            rgba(0, 0, 0, 0.06) 25%,
+            rgba(0, 0, 0, 0.15) 50%,
+            rgba(0, 0, 0, 0.06) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 8px;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .trending-hashtags {
+        background: #16181c;
+    }
+
+    .trending-title {
+        color: #e7e9ea;
+    }
+
+    .trending-item:hover {
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .trending-name {
+        color: #e7e9ea;
+    }
+
+    .trending-count {
+        color: #71767b;
+    }
+}

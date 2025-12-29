@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { likePost, unlikePost, incrementViewCount } from '../../services/api/posts';
 import { formatRelativeTime, formatNumber } from '../../services/utils/formatters';
+import { parseHashtagsInText } from '../../services/utils/hashtagUtils';
 import Avatar from '../common/Avatar';
 import CommentModal from '../comments/CommentModal';
 import VideoPlayer from '../media/VideoPlayer';
@@ -76,6 +77,10 @@ function PostCard({ post, onPostUpdate }) {
         }
     };
 
+    const handleHashtagClick = (tagName) => {
+        navigate(`/hashtag/${tagName}`);
+    };
+
     // Helper to build full media URL
     const getMediaUrl = (fileUrl) => {
         if (!fileUrl) return '';
@@ -115,9 +120,27 @@ function PostCard({ post, onPostUpdate }) {
                     </div>
                 </div>
 
-                <div className="post-text">
-                    {post.content}
-                </div>
+                {post.content && (
+                    <div className="post-text">
+                        {parseHashtagsInText(post.content, handleHashtagClick).map((segment, index) => {
+                            if (segment.type === 'hashtag') {
+                                return (
+                                    <span
+                                        key={index}
+                                        className="hashtag-link"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            segment.onClick(segment.tagName);
+                                        }}
+                                    >
+                                        {segment.content}
+                                    </span>
+                                );
+                            }
+                            return <span key={index}>{segment.content}</span>;
+                        })}
+                    </div>
+                )}
 
                 {post.media && post.media.length > 0 && (
                     <div

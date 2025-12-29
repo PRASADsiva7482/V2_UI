@@ -1,0 +1,33 @@
+.hashtag {
+    color: var(--color-primary, #1d9bf0);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: inline;
+}
+
+.hashtag:hover {
+    text-decoration: underline;
+    color: var(--color-primary-dark, #1a8cd8);
+}
+
+.hashtag-small {
+    font-size: 0.875rem;
+}
+
+.hashtag-medium {
+    font-size: 1rem;
+}
+
+.hashtag-large {
+    font-size: 1.125rem;
+}
+
+/* Hashtag in post text */
+.post-text .hashtag {
+    color: #1d9bf0;
+}
+
+.post-text .hashtag:hover {
+    text-decoration: underline;
+}

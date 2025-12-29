@@ -5,6 +5,7 @@ import PrivateRoute from './auth/PrivateRoute';
 import MainLayout from './components/layout/MainLayout';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
+import HashtagPage from './pages/HashtagPage';
 import './index.css';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
                                             <Route path="/" element={<Home />} />
                                             <Route path="/home" element={<Home />} />
                                             <Route path="/profile/:userId" element={<Profile />} />
+                                            <Route path="/hashtag/:tagName" element={<HashtagPage />} />
                                         </Routes>
                                     </MainLayout>
                                 </PrivateRoute>
