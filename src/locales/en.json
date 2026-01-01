@@ -5,6 +5,7 @@
   },
   "navbar": {
     "home": "Home",
+    "explore": "Explore",
     "profile": "Profile",
     "logout": "Logout",
     "language": "Language"

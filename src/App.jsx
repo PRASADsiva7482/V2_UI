@@ -6,6 +6,7 @@ import MainLayout from './components/layout/MainLayout';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
 import HashtagPage from './pages/HashtagPage';
+import ExplorePage from './pages/ExplorePage';
 import './index.css';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
                                         <Routes>
                                             <Route path="/" element={<Home />} />
                                             <Route path="/home" element={<Home />} />
+                                            <Route path="/explore" element={<ExplorePage />} />
                                             <Route path="/profile/:userId" element={<Profile />} />
                                             <Route path="/hashtag/:tagName" element={<HashtagPage />} />
                                         </Routes>
