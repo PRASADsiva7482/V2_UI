@@ -1,8 +1,20 @@
 // Keycloak Configuration
 // Update these values based on your Keycloak server setup
+
+// Auto-detect current host (works with localhost, LAN IP, and VPN IP)
+const currentHost = window.location.hostname;
+const protocol = window.location.protocol;
+
+// Network configuration
+// When accessing from other devices, use these IPs:
+// - Local Network (Wi-Fi): 192.168.31.139
+// - Tailscale VPN: 100.122.105.63
+// - Localhost: localhost or 127.0.0.1
+
 window.config = {
     keycloak: {
-        url: 'http://localhost:8080',
+        // Use current host for Keycloak URL (works for localhost, LAN, and VPN)
+        url: `${protocol}//${currentHost}:8080`,
         realm: 'myrealm',
         clientId: 'myclient'
     },
@@ -25,6 +37,7 @@ window.config = {
         rememberMe: true // Keep session alive across browser restarts
     },
     api: {
-        baseUrl: 'http://localhost:2000/v-app'
+        // Use current host for API URL (works for localhost, LAN, and VPN)
+        baseUrl: `${protocol}//${currentHost}:2000/v-app`
     }
 };
