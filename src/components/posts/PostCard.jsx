@@ -89,7 +89,7 @@ function PostCard({ post, onPostUpdate }) {
         // Remove leading slash to avoid double /v-app
         const cleanPath = fileUrl.startsWith('/') ? fileUrl.substring(1) : fileUrl;
         // Prepend backend base URL
-        const baseUrl = 'http://localhost:2000';
+        const baseUrl = window.config?.api?.mediaBaseUrl || 'http://localhost:2000';
         return `${baseUrl}/${cleanPath}`;
     };
 
