@@ -38,6 +38,8 @@ window.config = {
     },
     api: {
         // Use current host for API URL (works for localhost, LAN, and VPN)
-        baseUrl: `${protocol}//${currentHost}:2000/v-app`
+        baseUrl: `${protocol}//${currentHost}:2000/v-app`,
+        mediaBaseUrl: `${protocol}//${currentHost}:2000`
+
     }
 };
