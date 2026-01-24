@@ -5,9 +5,40 @@
   },
   "navbar": {
     "home": "Home",
+    "connect": "Connect",
     "profile": "Profile",
     "logout": "Logout",
     "language": "Language"
+  },
+  "connections": {
+    "title": "Connect",
+    "subtitle": "Discover and connect with amazing people",
+    "tabs": {
+      "followers": "Followers",
+      "following": "Following",
+      "suggestions": "Suggestions"
+    },
+    "buttons": {
+      "follow": "Follow",
+      "following": "Following",
+      "unfollow": "Unfollow",
+      "loadMore": "Load More"
+    },
+    "empty": {
+      "followers": {
+        "title": "No followers yet",
+        "message": "When people follow you, they'll appear here"
+      },
+      "following": {
+        "title": "No following yet",
+        "message": "Follow people to see them here"
+      },
+      "suggestions": {
+        "title": "No suggestions yet",
+        "message": "No suggestions available at the moment"
+      }
+    },
+    "loading": "Loading..."
   },
   "home": {
     "title": "Home",
