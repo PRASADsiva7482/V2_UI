@@ -1,0 +1,366 @@
+.connections-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.connections-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--background);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(12px);
+    background: rgba(var(--background-rgb), 0.85);
+}
+
+.connections-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.connections-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.connections-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 84px;
+    z-index: 9;
+    background: var(--background);
+    backdrop-filter: blur(12px);
+    background: rgba(var(--background-rgb), 0.85);
+}
+
+.tab-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 12px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    background: var(--hover);
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    color: var(--text-primary);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    border-radius: 4px 4px 0 0;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        width: 0;
+        opacity: 0;
+    }
+
+    to {
+        width: 60px;
+        opacity: 1;
+    }
+}
+
+.tab-btn svg {
+    flex-shrink: 0;
+}
+
+.tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    background: var(--primary);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 10px;
+}
+
+.connections-content {
+    min-height: 400px;
+}
+
+.connections-loading,
+.connections-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.connections-loading p {
+    color: var(--text-secondary);
+    font-size: 15px;
+    margin: 0;
+}
+
+.connections-empty h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 16px 0 8px 0;
+}
+
+.connections-empty p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin: 0;
+    max-width: 360px;
+}
+
+.users-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-card {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s ease;
+    animation: fadeInUp 0.3s ease;
+}
+
+.user-card-main {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-card:hover {
+    background: var(--hover);
+}
+
+.user-card-content {
+    flex: 1;
+    display: flex;
+    gap: 12px;
+    cursor: pointer;
+    min-width: 0;
+}
+
+.user-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.user-card-names {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.user-card-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.2s ease;
+}
+
+.user-card:hover .user-card-name {
+    color: var(--primary);
+}
+
+.user-card-username {
+    font-size: 14px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-card-bio {
+    font-size: 14px;
+    color: var(--text-primary);
+    margin: 8px 0;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.user-card-action {
+    flex-shrink: 0;
+}
+
+.user-card-reason {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 4px 8px;
+    background: rgba(var(--primary-rgb), 0.05);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.user-card-reason svg {
+    color: var(--primary);
+}
+
+.follow-btn {
+    min-width: 105px;
+    height: 32px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    border-radius: 16px;
+}
+
+.follow-btn.following {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+}
+
+.follow-btn.following .unfollow-text {
+    display: none;
+}
+
+.follow-btn.following:hover {
+    background: rgba(244, 33, 46, 0.1) !important;
+    border-color: rgb(244, 33, 46) !important;
+    color: rgb(244, 33, 46) !important;
+}
+
+.follow-btn.following:hover .following-text {
+    display: none;
+}
+
+.follow-btn.following:hover .unfollow-text {
+    display: inline-block;
+}
+
+
+
+.connections-load-more {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+@media (max-width: 768px) {
+    .connections-container {
+        max-width: 100%;
+    }
+
+    .connections-header {
+        padding: 16px;
+    }
+
+    .connections-title {
+        font-size: 20px;
+    }
+
+    .tab-btn {
+        padding: 14px 8px;
+        font-size: 14px;
+    }
+
+    .tab-btn span {
+        display: none;
+    }
+
+    .tab-btn.active span {
+        display: inline;
+    }
+
+    .user-card {
+        padding: 12px 16px;
+    }
+
+    .user-card-name {
+        font-size: 15px;
+    }
+
+    .user-card-bio {
+        font-size: 13px;
+    }
+}

@@ -30,8 +30,20 @@ export const getPlatformStats = async () => {
     return response.data;
 };
 
+/**
+ * Get smart user suggestions based on social network
+ */
+export const getSmartSuggestions = async (limit = 10) => {
+    const response = await api.get(`${BASE_URL}/suggestions/users`, {
+        params: { limit }
+    });
+    return response.data;
+};
+
 export default {
     getTrendingPosts,
     getPopularUsers,
+    getSmartSuggestions,
     getPlatformStats
 };
+
