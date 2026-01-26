@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTimelineFeed } from '../services/api/posts';
 import { getTrendingPosts } from '../services/api/discovery';
+import { useDataCache } from '../context/DataCacheContext';
 import PostCard from '../components/posts/PostCard';
 import CreatePost from '../components/posts/CreatePost';
 import Loading from '../components/common/Loading';
@@ -9,12 +10,48 @@ import './Home.css';
 
 function Home() {
     const { t } = useTranslation();
-    const [activeTab, setActiveTab] = useState('forYou'); // 'forYou' or 'following'
-    const [forYouPosts, setForYouPosts] = useState([]);
-    const [followingPosts, setFollowingPosts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [page, setPage] = useState(0);
-    const [hasMore, setHasMore] = useState(true);
+    const { cache, updateHomeCache, updateHomeActiveTab, isCacheValid } = useDataCache();
+
+    // Initialize state from cache if available, otherwise default
+    const [activeTab, setActiveTab] = useState(cache.home?.activeTab || 'forYou');
+
+    const [forYouPosts, setForYouPosts] = useState(cache.home?.forYou?.data || []);
+    const [followingPosts, setFollowingPosts] = useState(cache.home?.following?.data || []);
+
+    const [loading, setLoading] = useState(!cache.home?.[activeTab]);
+
+    // Page state - we might need separate page counts for each feed if we cache them effectively
+    // But local state 'page' is currently shared/reset on tab change. 
+    // Let's use the page from cache if available for the specific tab.
+    const getInitialPage = (tab) => cache.home?.[tab]?.page || 0;
+    const [page, setPage] = useState(getInitialPage(activeTab));
+
+    const [hasMore, setHasMore] = useState(true); // Simplified for now, should ideally be cached too
+
+    // Check if we need to load data on mount or tab change
+    useEffect(() => {
+        const cachedData = cache.home?.[activeTab];
+
+        // If we have valid cached data, use it and don't fetch
+        if (cachedData && isCacheValid(cachedData.timestamp)) {
+            if (activeTab === 'forYou') {
+                setForYouPosts(cachedData.data);
+            } else {
+                setFollowingPosts(cachedData.data);
+            }
+            setPage(cachedData.page);
+            setHasMore(cachedData.hasMore);
+            setLoading(false);
+        } else {
+            // No valid cache, fetch fresh data
+            setPage(0); // Reset page for fresh fetch
+            if (activeTab === 'forYou') {
+                loadForYouFeed(0);
+            } else {
+                loadFollowingFeed(0);
+            }
+        }
+    }, [activeTab]);
 
     // Load For You feed (trending/discovery posts)
     const loadForYouFeed = async (pageNum = 0) => {
@@ -22,16 +59,27 @@ function Home() {
             setLoading(true);
             const response = await getTrendingPosts({ page: pageNum, size: 20 });
 
+            let newPosts;
             if (pageNum === 0) {
-                setForYouPosts(response.content || []);
+                newPosts = response.content || [];
             } else {
-                setForYouPosts(prev => [...prev, ...(response.content || [])]);
+                newPosts = [...forYouPosts, ...(response.content || [])];
             }
 
-            setHasMore(!response.last);
+            setForYouPosts(newPosts);
+            const isMore = !response.last;
+            setHasMore(isMore);
+
+            // Update cache
+            updateHomeCache('forYou', {
+                data: newPosts,
+                page: pageNum,
+                hasMore: isMore
+            });
+
         } catch (error) {
             console.error('Error loading For You feed:', error);
-            setForYouPosts([]);
+            if (pageNum === 0) setForYouPosts([]);
         } finally {
             setLoading(false);
         }
@@ -43,35 +91,47 @@ function Home() {
             setLoading(true);
             const response = await getTimelineFeed({ page: pageNum, size: 20 });
 
+            let newPosts;
             if (pageNum === 0) {
-                setFollowingPosts(response.content || []);
+                newPosts = response.content || [];
             } else {
-                setFollowingPosts(prev => [...prev, ...(response.content || [])]);
+                newPosts = [...followingPosts, ...(response.content || [])];
             }
 
-            setHasMore(!response.last);
+            setFollowingPosts(newPosts);
+            const isMore = !response.last;
+            setHasMore(isMore);
+
+            // Update cache
+            updateHomeCache('following', {
+                data: newPosts,
+                page: pageNum,
+                hasMore: isMore
+            });
+
         } catch (error) {
             console.error('Error loading Following feed:', error);
-            setFollowingPosts([]);
+            if (pageNum === 0) setFollowingPosts([]);
         } finally {
             setLoading(false);
         }
     };
 
-    // Load feed based on active tab
-    useEffect(() => {
-        setPage(0);
-        if (activeTab === 'forYou') {
-            loadForYouFeed(0);
-        } else {
-            loadFollowingFeed(0);
-        }
-    }, [activeTab]);
-
     const handlePostCreated = (newPost) => {
-        // Add to both feeds
-        setForYouPosts(prev => [newPost, ...prev]);
-        setFollowingPosts(prev => [newPost, ...prev]);
+        // Add to both feeds locals state
+        const updatedForYou = [newPost, ...forYouPosts];
+        const updatedFollowing = [newPost, ...followingPosts];
+
+        setForYouPosts(updatedForYou);
+        setFollowingPosts(updatedFollowing);
+
+        // Update cache as well so it doesn't disappear on nav change
+        if (cache.home?.forYou) {
+            updateHomeCache('forYou', { ...cache.home.forYou, data: updatedForYou });
+        }
+        if (cache.home?.following) {
+            updateHomeCache('following', { ...cache.home.following, data: updatedFollowing });
+        }
     };
 
     const handleLoadMore = () => {
@@ -87,6 +147,7 @@ function Home() {
     const handleTabChange = (tab) => {
         if (tab !== activeTab) {
             setActiveTab(tab);
+            updateHomeActiveTab(tab); // Persist active tab choice
         }
     };
 
@@ -116,7 +177,7 @@ function Home() {
             <CreatePost onPostCreated={handlePostCreated} />
 
             <div className="posts-feed">
-                {loading && page === 0 ? (
+                {loading && page === 0 && currentPosts.length === 0 ? (
                     <Loading />
                 ) : currentPosts.length === 0 ? (
                     <div className="empty-feed">

@@ -4,6 +4,7 @@ import { formatRelativeTime, formatNumber } from '../../services/utils/formatter
 import Avatar from '../common/Avatar';
 import Button from '../common/Button';
 import CommentItem from './CommentItem';
+import CommentSkeleton from './CommentSkeleton';
 import './CommentModal.css';
 
 function CommentModal({ post, onClose, onCommentAdded }) {
@@ -113,7 +114,11 @@ function CommentModal({ post, onClose, onCommentAdded }) {
                 {/* Comments List */}
                 <div className="comments-list">
                     {loading && page === 0 ? (
-                        <div className="loading-spinner">Loading comments...</div>
+                        <div className="comments-loading">
+                            {[1, 2, 3].map((n) => (
+                                <CommentSkeleton key={n} />
+                            ))}
+                        </div>
                     ) : comments.length === 0 ? (
                         <div className="no-comments">
                             <p>No comments yet. Be the first to comment!</p>
