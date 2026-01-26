@@ -2,8 +2,8 @@
 // Update these values based on your Keycloak server setup
 
 // Auto-detect current host (works with localhost, LAN IP, and VPN IP)
-// const currentHost = window.location.hostname;
-const currentHost = 'localhost';
+const currentHost = window.location.hostname;
+// const currentHost = 'localhost';
 // const currentHost = '100.122.105.63';//window.location.hostname;
 const protocol = window.location.protocol;
 
@@ -16,7 +16,7 @@ const protocol = window.location.protocol;
 window.config = {
     keycloak: {
         // Use current host for Keycloak URL (works for localhost, LAN, and VPN)
-        url: `http://localhost:8080`,
+        url: `http://100.122.105.63:8080`,
         realm: 'myrealm',
         clientId: 'myclient'
     },
