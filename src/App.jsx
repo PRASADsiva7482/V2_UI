@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthProvider';
 import { ThemeProvider } from './context/ThemeContext';
+import { DataCacheProvider } from './context/DataCacheContext';
 import PrivateRoute from './auth/PrivateRoute';
 import MainLayout from './components/layout/MainLayout';
 import Home from './pages/Home';
@@ -13,26 +14,28 @@ function App() {
     return (
         <ThemeProvider>
             <AuthProvider>
-                <Router>
-                    <Routes>
-                        <Route
-                            path="/*"
-                            element={
-                                <PrivateRoute>
-                                    <MainLayout>
-                                        <Routes>
-                                            <Route path="/" element={<Home />} />
-                                            <Route path="/home" element={<Home />} />
-                                            <Route path="/profile/:userId" element={<Profile />} />
-                                            <Route path="/hashtag/:tagName" element={<HashtagPage />} />
-                                            <Route path="/connections" element={<Connections />} />
-                                        </Routes>
-                                    </MainLayout>
-                                </PrivateRoute>
-                            }
-                        />
-                    </Routes>
-                </Router>
+                <DataCacheProvider>
+                    <Router>
+                        <Routes>
+                            <Route
+                                path="/*"
+                                element={
+                                    <PrivateRoute>
+                                        <MainLayout>
+                                            <Routes>
+                                                <Route path="/" element={<Home />} />
+                                                <Route path="/home" element={<Home />} />
+                                                <Route path="/profile/:userId" element={<Profile />} />
+                                                <Route path="/hashtag/:tagName" element={<HashtagPage />} />
+                                                <Route path="/connections" element={<Connections />} />
+                                            </Routes>
+                                        </MainLayout>
+                                    </PrivateRoute>
+                                }
+                            />
+                        </Routes>
+                    </Router>
+                </DataCacheProvider>
             </AuthProvider>
         </ThemeProvider>
     );

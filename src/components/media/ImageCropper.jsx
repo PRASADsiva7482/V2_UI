@@ -17,6 +17,7 @@ function ImageCropper({ image, onCropComplete, onCancel }) {
     const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
     const [aspectRatio, setAspectRatio] = useState(null);
     const [rotation, setRotation] = useState(0);
+    const [originalAspect, setOriginalAspect] = useState(null);
 
     const onCropChange = (crop) => {
         setCrop(crop);
@@ -32,6 +33,13 @@ function ImageCropper({ image, onCropComplete, onCancel }) {
 
     const handleAspectRatioChange = (ratio) => {
         setAspectRatio(ratio);
+    };
+
+    const onMediaLoaded = (mediaSize) => {
+        const { naturalWidth, naturalHeight } = mediaSize;
+        if (naturalWidth && naturalHeight) {
+            setOriginalAspect(naturalWidth / naturalHeight);
+        }
     };
 
     const handleApply = () => {
@@ -64,11 +72,12 @@ function ImageCropper({ image, onCropComplete, onCancel }) {
                             image={image}
                             crop={crop}
                             zoom={zoom}
-                            aspect={aspectRatio}
+                            aspect={aspectRatio || originalAspect}
                             rotation={rotation}
                             onCropChange={onCropChange}
                             onZoomChange={onZoomChange}
                             onCropComplete={onCropAreaChange}
+                            onMediaLoaded={onMediaLoaded}
                             objectFit="contain"
                         />
                     </div>
