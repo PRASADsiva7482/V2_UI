@@ -15,7 +15,7 @@ function App() {
         <ThemeProvider>
             <AuthProvider>
                 <DataCacheProvider>
-                    <Router>
+                    <Router basename={import.meta.env.BASE_URL}>
                         <Routes>
                             <Route
                                 path="/*"
