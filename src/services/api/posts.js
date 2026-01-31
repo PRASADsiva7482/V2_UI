@@ -1,43 +1,38 @@
-import api from '../../auth/api';
-
-const BASE_URL = '/api/v1/posts';
+import apiCaller from './apiCaller';
+import { URLS } from './Urls';
 
 /**
  * Get timeline feed (posts from users you follow)
  */
 export const getTimelineFeed = async ({ page = 0, size = 20 } = {}) => {
-    const response = await api.get(`/api/v1/feed/timeline`, {
+    return apiCaller.get(URLS.POSTS.TIMELINE, {
         params: { page, size }
     });
-    return response.data;
 };
 
 /**
  * Get explore feed (all public posts)
  */
 export const getExploreFeed = async ({ page = 0, size = 20 } = {}) => {
-    const response = await api.get(`/api/v1/feed/explore`, {
+    return apiCaller.get(URLS.POSTS.EXPLORE, {
         params: { page, size }
     });
-    return response.data;
 };
 
 /**
  * Get user's posts
  */
 export const getUserPosts = async (userId, { page = 0, size = 20 } = {}) => {
-    const response = await api.get(`${BASE_URL}/user/${userId}`, {
+    return apiCaller.get(URLS.POSTS.USER_POSTS(userId), {
         params: { page, size }
     });
-    return response.data;
 };
 
 /**
  * Get single post by ID
  */
 export const getPostById = async (postId) => {
-    const response = await api.get(`${BASE_URL}/${postId}`);
-    return response.data;
+    return apiCaller.get(URLS.POSTS.BY_ID(postId));
 };
 
 /**
@@ -56,82 +51,76 @@ export const createPost = async (content, mediaIds = null) => {
         requestBody.mediaIds = mediaIds;
     }
 
-    const response = await api.post(BASE_URL, requestBody);
-    return response.data;
+    return apiCaller.post(URLS.POSTS.BASE, requestBody);
 };
 
 /**
  * Update a post
  */
 export const updatePost = async (postId, content) => {
-    const response = await api.put(`${BASE_URL}/${postId}`, { content });
-    return response.data;
+    return apiCaller.put(URLS.POSTS.BY_ID(postId), { content });
 };
 
 /**
  * Delete a post
  */
 export const deletePost = async (postId) => {
-    await api.delete(`${BASE_URL}/${postId}`);
+    return apiCaller.delete(URLS.POSTS.BY_ID(postId));
 };
 
 /**
  * Search posts
  */
 export const searchPosts = async (keyword, { page = 0, size = 20 } = {}) => {
-    const response = await api.get(`${BASE_URL}/search`, {
+    return apiCaller.get(URLS.POSTS.SEARCH, {
         params: { keyword, page, size }
     });
-    return response.data;
 };
 
 /**
  * Increment view count for a post
  */
 export const incrementViewCount = async (postId) => {
-    await api.post(`${BASE_URL}/${postId}/view`);
+    return apiCaller.post(URLS.POSTS.VIEW(postId));
 };
 
 /**
  * Like a post
  */
 export const likePost = async (postId) => {
-    await api.post(`${BASE_URL}/${postId}/like`);
+    return apiCaller.post(URLS.POSTS.LIKE(postId));
 };
 
 /**
  * Unlike a post
  */
 export const unlikePost = async (postId) => {
-    await api.delete(`${BASE_URL}/${postId}/like`);
+    return apiCaller.delete(URLS.POSTS.LIKE(postId));
 };
 
 /**
  * Get users who liked a post
  */
 export const getPostLikes = async (postId, { page = 0, size = 20 } = {}) => {
-    const response = await api.get(`${BASE_URL}/${postId}/likes`, {
+    return apiCaller.get(URLS.POSTS.LIKES(postId), {
         params: { page, size }
     });
-    return response.data;
 };
 
 /**
  * Get comments for a post
  */
 export const getPostComments = async (postId, { page = 0, size = 20 } = {}) => {
-    const response = await api.get(`${BASE_URL}/${postId}/comments`, {
+    return apiCaller.get(URLS.POSTS.COMMENTS(postId), {
         params: { page, size }
     });
-    return response.data;
 };
 
 /**
  * Add comment to a post
  */
 export const addComment = async (postId, content) => {
-    const response = await api.post(`${BASE_URL}/${postId}/comments`, { content });
-    return response.data;
+    return apiCaller.post(URLS.POSTS.COMMENTS(postId), { content });
 };
 
 export default {
@@ -150,3 +139,4 @@ export default {
     getPostComments,
     addComment
 };
+

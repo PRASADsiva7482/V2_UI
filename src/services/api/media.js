@@ -1,3 +1,5 @@
+import apiCaller from './apiCaller';
+import { URLS } from './Urls';
 import api from '../../auth/api';
 
 /**
@@ -8,13 +10,7 @@ import api from '../../auth/api';
 export const uploadMedia = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
-
-    const response = await api.post('/api/v1/media/upload', formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-        },
-    });
-    return response.data;
+    return apiCaller.upload(URLS.MEDIA.UPLOAD, formData);
 };
 
 /**
@@ -27,13 +23,7 @@ export const uploadMultipleMedia = async (files) => {
     files.forEach(file => {
         formData.append('files', file);
     });
-
-    const response = await api.post('/api/v1/media/upload/multiple', formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-        },
-    });
-    return response.data;
+    return apiCaller.upload(URLS.MEDIA.UPLOAD_MULTIPLE, formData);
 };
 
 /**
@@ -42,8 +32,7 @@ export const uploadMultipleMedia = async (files) => {
  * @returns {Promise} Media object
  */
 export const getMediaById = async (mediaId) => {
-    const response = await api.get(`/api/v1/media/${mediaId}`);
-    return response.data;
+    return apiCaller.get(URLS.MEDIA.BY_ID(mediaId));
 };
 
 /**
@@ -52,8 +41,7 @@ export const getMediaById = async (mediaId) => {
  * @returns {Promise} Array of media objects
  */
 export const getMediaByPost = async (postId) => {
-    const response = await api.get(`/api/v1/media/post/${postId}`);
-    return response.data;
+    return apiCaller.get(URLS.MEDIA.POST_MEDIA(postId));
 };
 
 /**
@@ -62,8 +50,7 @@ export const getMediaByPost = async (postId) => {
  * @returns {Promise}
  */
 export const deleteMedia = async (mediaId) => {
-    const response = await api.delete(`/api/v1/media/${mediaId}`);
-    return response.data;
+    return apiCaller.delete(URLS.MEDIA.BY_ID(mediaId));
 };
 
 /**
@@ -74,4 +61,13 @@ export const deleteMedia = async (mediaId) => {
  */
 export const getMediaUrl = (mediaType, filename) => {
     return `${api.defaults.baseURL}/api/v1/media/${mediaType}/${filename}`;
+};
+
+export default {
+    uploadMedia,
+    uploadMultipleMedia,
+    getMediaById,
+    getMediaByPost,
+    deleteMedia,
+    getMediaUrl
 };

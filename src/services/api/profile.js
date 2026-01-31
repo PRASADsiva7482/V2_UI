@@ -1,67 +1,59 @@
-import api from '../../auth/api';
-
-const BASE_URL = '/api/v1/profile';
+import apiCaller from './apiCaller';
+import { URLS } from './Urls';
 
 /**
  * Get current user's profile
  */
 export const getMyProfile = async () => {
-    const response = await api.get(`${BASE_URL}/me`);
-    return response.data;
+    return apiCaller.get(URLS.PROFILE.ME);
 };
 
 /**
  * Get user profile by ID
  */
 export const getUserProfile = async (userId) => {
-    const response = await api.get(`${BASE_URL}/${userId}`);
-    return response.data;
+    return apiCaller.get(URLS.PROFILE.BY_ID(userId));
 };
 
 /**
  * Get user profile by username
  */
 export const getUserProfileByUsername = async (username) => {
-    const response = await api.get(`${BASE_URL}/username/${username}`);
-    return response.data;
+    return apiCaller.get(URLS.PROFILE.BY_USERNAME(username));
 };
 
 /**
  * Update current user's profile
  */
 export const updateMyProfile = async (profileData) => {
-    const response = await api.put(`${BASE_URL}/me`, profileData);
-    return response.data;
+    return apiCaller.put(URLS.PROFILE.ME, profileData);
 };
 
 /**
  * Update profile picture
  */
 export const updateProfilePicture = async (pictureUrl) => {
-    const response = await api.put(`${BASE_URL}/me/picture`, null, {
+    return apiCaller.put(URLS.PROFILE.PICTURE, null, {
         params: { pictureUrl }
     });
-    return response.data;
 };
 
 /**
  * Update cover photo
  */
 export const updateCoverPhoto = async (coverPhotoUrl) => {
-    const response = await api.put(`${BASE_URL}/me/cover`, null, {
+    return apiCaller.put(URLS.PROFILE.COVER, null, {
         params: { coverPhotoUrl }
     });
-    return response.data;
 };
 
 /**
  * Search users by keyword
  */
 export const searchUsers = async (keyword, { page = 0, size = 20 } = {}) => {
-    const response = await api.get(`${BASE_URL}/search`, {
+    return apiCaller.get(URLS.PROFILE.SEARCH, {
         params: { keyword, page, size }
     });
-    return response.data;
 };
 
 export default {
@@ -73,3 +65,4 @@ export default {
     updateCoverPhoto,
     searchUsers
 };
+

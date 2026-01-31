@@ -1,53 +1,47 @@
-import api from '../../auth/api';
-
-const BASE_URL = '/api/v1/hashtags';
+import apiCaller from './apiCaller';
+import { URLS } from './Urls';
 
 /**
  * Search hashtags by query
  */
 export const searchHashtags = async (query, { page = 0, size = 20 } = {}) => {
-    const response = await api.get(`${BASE_URL}/search`, {
+    return apiCaller.get(URLS.HASHTAGS.SEARCH, {
         params: { query, page, size }
     });
-    return response.data;
 };
 
 /**
  * Get trending hashtags (last 7 days)
  */
 export const getTrendingHashtags = async ({ page = 0, size = 10 } = {}) => {
-    const response = await api.get(`${BASE_URL}/trending`, {
+    return apiCaller.get(URLS.HASHTAGS.TRENDING, {
         params: { page, size }
     });
-    return response.data;
 };
 
 /**
  * Get top hashtags by usage count
  */
 export const getTopHashtags = async ({ page = 0, size = 10 } = {}) => {
-    const response = await api.get(`${BASE_URL}/top`, {
+    return apiCaller.get(URLS.HASHTAGS.TOP, {
         params: { page, size }
     });
-    return response.data;
 };
 
 /**
  * Get hashtag details by name
  */
 export const getHashtagByName = async (tagName) => {
-    const response = await api.get(`${BASE_URL}/${tagName}`);
-    return response.data;
+    return apiCaller.get(URLS.HASHTAGS.BY_NAME(tagName));
 };
 
 /**
  * Get posts by hashtag
  */
 export const getPostsByHashtag = async (tagName, { page = 0, size = 20 } = {}) => {
-    const response = await api.get(`${BASE_URL}/${tagName}/posts`, {
+    return apiCaller.get(URLS.HASHTAGS.POSTS(tagName), {
         params: { page, size }
     });
-    return response.data;
 };
 
 export default {

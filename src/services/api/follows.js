@@ -1,47 +1,43 @@
-import api from '../../auth/api';
-
-const BASE_URL = '/api/v1/users';
+import apiCaller from './apiCaller';
+import { URLS } from './Urls';
 
 /**
  * Follow a user
  */
 export const followUser = async (userId) => {
-    await api.post(`${BASE_URL}/${userId}/follow`);
+    return apiCaller.post(URLS.USERS.FOLLOW(userId));
 };
 
 /**
  * Unfollow a user
  */
 export const unfollowUser = async (userId) => {
-    await api.delete(`${BASE_URL}/${userId}/follow`);
+    return apiCaller.delete(URLS.USERS.FOLLOW(userId));
 };
 
 /**
  * Get user's followers
  */
 export const getFollowers = async (userId, { page = 0, size = 20 } = {}) => {
-    const response = await api.get(`${BASE_URL}/${userId}/followers`, {
+    return apiCaller.get(URLS.USERS.FOLLOWERS(userId), {
         params: { page, size }
     });
-    return response.data;
 };
 
 /**
  * Get users that a user is following
  */
 export const getFollowing = async (userId, { page = 0, size = 20 } = {}) => {
-    const response = await api.get(`${BASE_URL}/${userId}/following`, {
+    return apiCaller.get(URLS.USERS.FOLLOWING(userId), {
         params: { page, size }
     });
-    return response.data;
 };
 
 /**
  * Get follow status between current user and another user
  */
 export const getFollowStatus = async (userId) => {
-    const response = await api.get(`${BASE_URL}/${userId}/follow-status`);
-    return response.data;
+    return apiCaller.get(URLS.USERS.FOLLOW_STATUS(userId));
 };
 
 export default {
@@ -51,3 +47,4 @@ export default {
     getFollowing,
     getFollowStatus
 };
+
