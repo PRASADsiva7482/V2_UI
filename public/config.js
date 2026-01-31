@@ -16,7 +16,7 @@ const protocol = window.location.protocol;
 window.config = {
     keycloak: {
         // Use current host for Keycloak URL (works for localhost, LAN, and VPN)
-        url: `http://100.122.105.63:8080`,
+        url: `${protocol}//${currentHost}:8080`,
         realm: 'myrealm',
         clientId: 'myclient'
     },
@@ -41,7 +41,7 @@ window.config = {
     api: {
         // Use current host for API URL (works for localhost, LAN, and VPN)
         baseUrl: `${protocol}//${currentHost}:2000/v-app`,
-        mediaBaseUrl: `${protocol}//${currentHost}:2000`
-
+        mediaBaseUrl: `${protocol}//${currentHost}:2000`,
+        payloadEncryptionEnabled: true // Toggle payload encryption
     }
 };
