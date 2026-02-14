@@ -58,6 +58,12 @@ export const URLS = {
         TOP: `${API_BASE}/hashtags/top`,
         BY_NAME: (tagName) => `${API_BASE}/hashtags/${tagName}`,
         POSTS: (tagName) => `${API_BASE}/hashtags/${tagName}/posts`,
+    },
+    CHAT: {
+        CONVERSATIONS: `${API_BASE}/chat/conversations`,
+        CONVERSATION: (conversationId) => `${API_BASE}/chat/conversations/${conversationId}`,
+        MESSAGES: (conversationId) => `${API_BASE}/chat/messages/${conversationId}`,
+        MESSAGE: (messageId) => `${API_BASE}/chat/messages/${messageId}`,
     }
 };
 
