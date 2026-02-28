@@ -1,7 +1,13 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import chatWebSocketService from '../services/websocket/chatWebSocket';
-import { getConversations, getMessages, startConversation as startConversationApi } from '../services/api/chat';
+import {
+    getConversations,
+    getMessages,
+    startConversation as startConversationApi,
+    uploadChatMedia,
+    sendMessageWithMedia,
+} from '../services/api/chat';
 
 const ChatContext = createContext(null);
 
@@ -200,6 +206,9 @@ export const ChatProvider = ({ children }) => {
         });
     }, [currentUserId]);
 
+    /**
+     * Send a text-only message via WebSocket (fast path).
+     */
     const sendMessage = useCallback((conversationId, content, type = 'TEXT', replyToId = null) => {
         const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -232,6 +241,93 @@ export const ChatProvider = ({ children }) => {
             replyToId,
             tempId,
         });
+    }, [currentUserId, user]);
+
+    /**
+     * Send a message WITH media attachments.
+     * 1. Upload each file via REST → get fileUrl metadata
+     * 2. Send message via REST with attachment info
+     * 3. WebSocket will broadcast the saved message to recipients
+     */
+    const sendMediaMessage = useCallback(async (conversationId, content, files, replyToId = null) => {
+        const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+        // Determine message type from files
+        const firstFile = files[0];
+        let msgType = 'FILE';
+        if (firstFile.type.startsWith('image/')) msgType = 'IMAGE';
+        else if (firstFile.type.startsWith('video/')) msgType = 'VIDEO';
+        else if (firstFile.type.startsWith('audio/')) msgType = 'AUDIO';
+
+        // Optimistic UI update with file previews
+        const previewAttachments = files.map((file, idx) => ({
+            id: `preview_${idx}`,
+            fileUrl: URL.createObjectURL(file),
+            fileName: file.name,
+            fileType: file.type,
+            fileSize: file.size,
+            isUploading: true,
+        }));
+
+        const optimisticMessage = {
+            tempId,
+            conversationId,
+            senderId: currentUserId,
+            senderName: user?.username || currentUserId,
+            content: content || '',
+            type: msgType,
+            replyToId,
+            status: 'SENDING',
+            createdAt: new Date().toISOString(),
+            isEdited: false,
+            isDeleted: false,
+            attachments: previewAttachments,
+        };
+
+        setMessages(prev => ({
+            ...prev,
+            [conversationId]: [...(prev[conversationId] || []), optimisticMessage],
+        }));
+
+        try {
+            // Upload all files
+            const uploadedAttachments = [];
+            for (const file of files) {
+                const result = await uploadChatMedia(file);
+                uploadedAttachments.push({
+                    fileUrl: result.fileUrl,
+                    fileName: result.fileName,
+                    fileType: result.fileType,
+                    fileSize: result.fileSize,
+                    thumbnailUrl: result.thumbnailUrl,
+                });
+            }
+
+            // Send the message with attachments via REST
+            const request = {
+                conversationId,
+                content: content || '',
+                type: msgType,
+                replyToId,
+                tempId,
+                attachments: uploadedAttachments,
+            };
+
+            await sendMessageWithMedia(request);
+            // The WebSocket broadcast will update the message with the real server data
+        } catch (error) {
+            console.error('Error sending media message:', error);
+            // Mark the optimistic message as failed
+            setMessages(prev => {
+                const convMsgs = prev[conversationId] || [];
+                return {
+                    ...prev,
+                    [conversationId]: convMsgs.map(m =>
+                        m.tempId === tempId ? { ...m, status: 'FAILED' } : m
+                    ),
+                };
+            });
+        }
     }, [currentUserId, user]);
 
     const markConversationAsRead = useCallback((conversationId) => {
@@ -282,6 +378,7 @@ export const ChatProvider = ({ children }) => {
         loadConversations,
         loadMessages,
         sendMessage,
+        sendMediaMessage,
         markConversationAsRead,
         sendTypingIndicator,
         startConversation,

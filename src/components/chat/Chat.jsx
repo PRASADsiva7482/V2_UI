@@ -1,20 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useChat } from '../../context/ChatContext';
-import { useAuth } from '../../auth/AuthProvider';
-import { searchUsers } from '../../services/api/profile';
 import chatWebSocketService from '../../services/websocket/chatWebSocket';
+import { searchUsers } from '../../services/api/profile';
 import Avatar from '../common/Avatar';
+import EmojiPicker from './EmojiPicker';
 import './Chat.css';
 
-/* ────────────────────────────────────────────────────────────
+/* ════════════════════════════════════════════════════════════════
    MAIN CHAT COMPONENT
    WhatsApp-like layout: ChatList (left) + ChatRoom (right)
-   ──────────────────────────────────────────────────────────── */
+   ════════════════════════════════════════════════════════════════ */
 function Chat() {
     const {
         conversations, activeConversation, setActiveConversation,
         messages, loading, wsConnected, onlineUsers, unreadCounts,
-        loadMessages, sendMessage, markConversationAsRead,
+        loadMessages, sendMessage, sendMediaMessage, markConversationAsRead,
         sendTypingIndicator, startConversation, currentUserId,
     } = useChat();
 
@@ -72,6 +72,7 @@ function Chat() {
                         messages={messages[activeConversation.id] || []}
                         currentUserId={currentUserId}
                         onSendMessage={(content) => sendMessage(activeConversation.id, content)}
+                        onSendMediaMessage={(content, files) => sendMediaMessage(activeConversation.id, content, files)}
                         onMarkRead={() => markConversationAsRead(activeConversation.id)}
                         onSendTyping={(typing) => sendTypingIndicator(activeConversation.id, typing)}
                         onBack={handleBack}
@@ -281,16 +282,22 @@ function ChatListItem({ conversation, isActive, onSelect, unreadCount, currentUs
     );
 }
 
-/* ──────────────────────────
-   CHAT ROOM
-   ────────────────────────── */
-function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onMarkRead, onSendTyping, onBack, onLoadMore }) {
+/* ════════════════════════════════════════════════════════════════
+   CHAT ROOM — WhatsApp-style with Emoji + Media
+   ════════════════════════════════════════════════════════════════ */
+function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSendMediaMessage, onMarkRead, onSendTyping, onBack, onLoadMore }) {
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const [remoteTyping, setRemoteTyping] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [selectedFiles, setSelectedFiles] = useState([]);
+    const [filePreviews, setFilePreviews] = useState([]);
+    const [lightboxImage, setLightboxImage] = useState(null);
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
     const typingTimeoutRef = useRef(null);
+    const fileInputRef = useRef(null);
+    const inputRef = useRef(null);
 
     const displayName = conversation.type === 'DIRECT'
         ? (conversation.otherUserDisplayName || conversation.otherUserName || 'Unknown')
@@ -331,13 +338,35 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onMark
         };
     }, [conversation.id, currentUserId]);
 
+    // Clean up file previews on unmount or file change
+    useEffect(() => {
+        return () => {
+            filePreviews.forEach(p => {
+                if (p.url) URL.revokeObjectURL(p.url);
+            });
+        };
+    }, [filePreviews]);
+
+    // ─── Handlers ───
+
     const handleSend = () => {
         const content = inputValue.trim();
-        if (!content) return;
 
+        if (selectedFiles.length > 0) {
+            // Send media message
+            onSendMediaMessage(content, selectedFiles);
+            setInputValue('');
+            clearFiles();
+            handleStopTyping();
+            setShowEmojiPicker(false);
+            return;
+        }
+
+        if (!content) return;
         onSendMessage(content);
         setInputValue('');
         handleStopTyping();
+        setShowEmojiPicker(false);
     };
 
     const handleKeyDown = (e) => {
@@ -367,6 +396,68 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onMark
         }
     };
 
+    const handleEmojiSelect = (emoji) => {
+        const textarea = inputRef.current;
+        if (textarea) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const before = inputValue.substring(0, start);
+            const after = inputValue.substring(end);
+            const newValue = before + emoji + after;
+            setInputValue(newValue);
+            // Set cursor position after emoji
+            setTimeout(() => {
+                textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+                textarea.focus();
+            }, 0);
+        } else {
+            setInputValue(prev => prev + emoji);
+        }
+    };
+
+    const handleFileSelect = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        // Max 4 files
+        const allFiles = [...selectedFiles, ...files].slice(0, 4);
+        setSelectedFiles(allFiles);
+
+        // Generate previews
+        const previews = allFiles.map(file => {
+            const isImage = file.type.startsWith('image/');
+            const isVideo = file.type.startsWith('video/');
+            return {
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                isImage,
+                isVideo,
+                url: isImage || isVideo ? URL.createObjectURL(file) : null,
+            };
+        });
+        setFilePreviews(previews);
+
+        // Reset file input
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const removeFile = (index) => {
+        const newFiles = selectedFiles.filter((_, i) => i !== index);
+        setSelectedFiles(newFiles);
+
+        // Revoke old preview URL
+        if (filePreviews[index]?.url) URL.revokeObjectURL(filePreviews[index].url);
+        const newPreviews = filePreviews.filter((_, i) => i !== index);
+        setFilePreviews(newPreviews);
+    };
+
+    const clearFiles = () => {
+        filePreviews.forEach(p => { if (p.url) URL.revokeObjectURL(p.url); });
+        setSelectedFiles([]);
+        setFilePreviews([]);
+    };
+
     // Scroll to load more
     const handleScroll = (e) => {
         if (e.target.scrollTop === 0 && messages.length > 0) {
@@ -381,6 +472,8 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onMark
         switch (status) {
             case 'SENDING':
                 return <span className="msg-status sending">⏳</span>;
+            case 'FAILED':
+                return <span className="msg-status failed">⚠️</span>;
             case 'SENT':
                 return <span className="msg-status sent">✓</span>;
             case 'DELIVERED':
@@ -390,6 +483,13 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onMark
             default:
                 return null;
         }
+    };
+
+    const formatFileSize = (bytes) => {
+        if (!bytes) return '';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     };
 
     return (
@@ -423,12 +523,12 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onMark
                 ref={messagesContainerRef}
                 onScroll={handleScroll}
             >
-                {groupedMessages.map(({ date, msgs }, groupIdx) => (
+                {groupedMessages.map(({ date, msgs }) => (
                     <div key={date}>
                         <div className="date-separator">
                             <span>{date}</span>
                         </div>
-                        {msgs.map((msg, idx) => {
+                        {msgs.map((msg) => {
                             const isMine = msg.senderId === currentUserId;
                             return (
                                 <div
@@ -440,22 +540,22 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onMark
                                             <span className="deleted-text">🚫 This message was deleted</span>
                                         ) : (
                                             <>
+                                                {/* Attachments */}
                                                 {msg.attachments && msg.attachments.length > 0 && (
-                                                    <div className="message-attachments">
-                                                        {msg.attachments.map(att => (
-                                                            <div key={att.id} className="attachment-preview">
-                                                                {att.fileType?.startsWith('image') ? (
-                                                                    <img src={att.fileUrl} alt={att.fileName} />
-                                                                ) : (
-                                                                    <a href={att.fileUrl} target="_blank" rel="noreferrer">
-                                                                        📄 {att.fileName}
-                                                                    </a>
-                                                                )}
-                                                            </div>
+                                                    <div className={`message-attachments ${msg.attachments.length > 1 ? 'multi' : ''}`}>
+                                                        {msg.attachments.map((att, attIdx) => (
+                                                            <MessageAttachment
+                                                                key={att.id || attIdx}
+                                                                attachment={att}
+                                                                onImageClick={(url) => setLightboxImage(url)}
+                                                            />
                                                         ))}
                                                     </div>
                                                 )}
-                                                <span className="message-text">{msg.content}</span>
+                                                {/* Text content */}
+                                                {msg.content && (
+                                                    <span className="message-text">{msg.content}</span>
+                                                )}
                                             </>
                                         )}
                                         <div className="message-meta">
@@ -474,10 +574,78 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onMark
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
+            {/* File Previews */}
+            {filePreviews.length > 0 && (
+                <div className="chat-file-preview-bar">
+                    <div className="file-preview-list">
+                        {filePreviews.map((preview, idx) => (
+                            <div key={idx} className="file-preview-item">
+                                {preview.isImage ? (
+                                    <img src={preview.url} alt={preview.name} className="file-preview-thumb" />
+                                ) : preview.isVideo ? (
+                                    <div className="file-preview-video">
+                                        <video src={preview.url} className="file-preview-thumb" />
+                                        <div className="file-preview-play-icon">▶</div>
+                                    </div>
+                                ) : (
+                                    <div className="file-preview-doc">
+                                        <span className="file-doc-icon">📄</span>
+                                        <span className="file-doc-name">{preview.name}</span>
+                                    </div>
+                                )}
+                                <button
+                                    className="file-preview-remove"
+                                    onClick={() => removeFile(idx)}
+                                    title="Remove"
+                                >×</button>
+                                <span className="file-preview-size">{formatFileSize(preview.size)}</span>
+                            </div>
+                        ))}
+                    </div>
+                    <button className="file-preview-clear" onClick={clearFiles}>
+                        Clear all
+                    </button>
+                </div>
+            )}
+
+            {/* Input Area */}
             <div className="chat-input-area">
                 <div className="chat-input-wrapper">
+                    {/* Emoji Button */}
+                    <button
+                        className={`chat-action-btn emoji-btn ${showEmojiPicker ? 'active' : ''}`}
+                        onClick={() => setShowEmojiPicker(prev => !prev)}
+                        title="Emoji"
+                        type="button"
+                    >
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-4-8c.78 0 1.41-.63 1.41-1.41S8.78 9.18 8 9.18s-1.41.63-1.41 1.41S7.22 12 8 12zm8 0c.78 0 1.41-.63 1.41-1.41S16.78 9.18 16 9.18s-1.41.63-1.41 1.41S15.22 12 16 12zm-4 5.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" />
+                        </svg>
+                    </button>
+
+                    {/* Media Attach Button */}
+                    <button
+                        className="chat-action-btn media-btn"
+                        onClick={() => fileInputRef.current?.click()}
+                        title="Attach media"
+                        type="button"
+                    >
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                            <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" />
+                        </svg>
+                    </button>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileSelect}
+                        accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
+                        multiple
+                        style={{ display: 'none' }}
+                    />
+
+                    {/* Text Input */}
                     <textarea
+                        ref={inputRef}
                         className="chat-input"
                         value={inputValue}
                         onChange={handleInputChange}
@@ -485,17 +653,132 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onMark
                         placeholder="Type a message..."
                         rows={1}
                     />
+
+                    {/* Send Button */}
                     <button
                         className="send-btn"
                         onClick={handleSend}
-                        disabled={!inputValue.trim()}
+                        disabled={!inputValue.trim() && selectedFiles.length === 0}
                     >
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
                             <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                         </svg>
                     </button>
                 </div>
+
+                {/* Emoji Picker Popover */}
+                {showEmojiPicker && (
+                    <div className="emoji-picker-container">
+                        <EmojiPicker
+                            onSelect={handleEmojiSelect}
+                            onClose={() => setShowEmojiPicker(false)}
+                        />
+                    </div>
+                )}
             </div>
+
+            {/* Image Lightbox */}
+            {lightboxImage && (
+                <div className="chat-lightbox" onClick={() => setLightboxImage(null)}>
+                    <button className="lightbox-close" onClick={() => setLightboxImage(null)}>×</button>
+                    <img src={lightboxImage} alt="Full size" onClick={(e) => e.stopPropagation()} />
+                </div>
+            )}
+        </div>
+    );
+}
+
+/* ──────────────────────────
+   MESSAGE ATTACHMENT
+   ────────────────────────── */
+function MessageAttachment({ attachment, onImageClick }) {
+    const { fileUrl, fileName, fileType, fileSize, isUploading } = attachment;
+
+    const isImage = fileType?.startsWith('image');
+    const isVideo = fileType?.startsWith('video');
+    const isAudio = fileType?.startsWith('audio');
+
+    if (isImage) {
+        return (
+            <div className={`attachment-preview image-attachment ${isUploading ? 'uploading' : ''}`}>
+                <img
+                    src={fileUrl}
+                    alt={fileName || 'Image'}
+                    onClick={() => onImageClick(fileUrl)}
+                    loading="lazy"
+                />
+                {isUploading && (
+                    <div className="attachment-upload-overlay">
+                        <div className="upload-spinner" />
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    if (isVideo) {
+        return (
+            <div className={`attachment-preview video-attachment ${isUploading ? 'uploading' : ''}`}>
+                <video src={fileUrl} controls preload="metadata" />
+                {isUploading && (
+                    <div className="attachment-upload-overlay">
+                        <div className="upload-spinner" />
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    if (isAudio) {
+        return (
+            <div className={`attachment-preview audio-attachment ${isUploading ? 'uploading' : ''}`}>
+                <div className="audio-player">
+                    <span className="audio-icon">🎵</span>
+                    <audio src={fileUrl} controls preload="metadata" />
+                </div>
+                {isUploading && (
+                    <div className="attachment-upload-overlay">
+                        <div className="upload-spinner" />
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // File/document
+    const formatSize = (bytes) => {
+        if (!bytes) return '';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    };
+
+    const getFileIcon = (name) => {
+        const ext = name?.split('.').pop()?.toLowerCase() || '';
+        const icons = {
+            pdf: '📕', doc: '📘', docx: '📘', xls: '📊', xlsx: '📊',
+            ppt: '📙', pptx: '📙', txt: '📝', zip: '📦', rar: '📦',
+        };
+        return icons[ext] || '📄';
+    };
+
+    return (
+        <div className={`attachment-preview file-attachment ${isUploading ? 'uploading' : ''}`}>
+            <a href={fileUrl} target="_blank" rel="noreferrer" className="file-download-link">
+                <span className="file-icon">{getFileIcon(fileName)}</span>
+                <div className="file-info">
+                    <span className="file-name">{fileName || 'File'}</span>
+                    {fileSize > 0 && <span className="file-size">{formatSize(fileSize)}</span>}
+                </div>
+                <svg className="file-download-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                </svg>
+            </a>
+            {isUploading && (
+                <div className="attachment-upload-overlay">
+                    <div className="upload-spinner" />
+                </div>
+            )}
         </div>
     );
 }

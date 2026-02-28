@@ -64,6 +64,8 @@ export const URLS = {
         CONVERSATION: (conversationId) => `${API_BASE}/chat/conversations/${conversationId}`,
         MESSAGES: (conversationId) => `${API_BASE}/chat/messages/${conversationId}`,
         MESSAGE: (messageId) => `${API_BASE}/chat/messages/${messageId}`,
+        MEDIA_UPLOAD: `${API_BASE}/chat/media/upload`,
+        SEND_MESSAGE: `${API_BASE}/chat/messages/send`,
     }
 };
 

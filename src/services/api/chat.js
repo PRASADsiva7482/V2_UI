@@ -52,3 +52,21 @@ export const editMessage = (messageId, newContent) => {
 export const deleteMessage = (messageId) => {
     return apiCaller.delete(URLS.CHAT.MESSAGE(messageId));
 };
+
+/**
+ * Upload a media file for chat.
+ * Returns { fileUrl, fileName, fileType, fileSize, thumbnailUrl, mediaId }
+ */
+export const uploadChatMedia = (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return apiCaller.upload(URLS.CHAT.MEDIA_UPLOAD, formData);
+};
+
+/**
+ * Send a message with attachments via REST (for media messages).
+ * Used when the message includes file attachments.
+ */
+export const sendMessageWithMedia = (request) => {
+    return apiCaller.post(URLS.CHAT.SEND_MESSAGE, request);
+};
