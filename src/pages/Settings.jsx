@@ -528,8 +528,15 @@ function Settings() {
     const handleDeleteAccount = async () => {
         try {
             setSaving(true);
-            await deleteUserAccount();
-            logout();
+            const response = await deleteUserAccount();
+            if (response && response.success === true) {
+                showToast('Account deleted successfully. Goodbye!', 'success');
+                // Small delay so user can see the toast before redirect
+                setTimeout(() => logout(), 1000);
+            } else {
+                const errorMsg = response?.error || 'Failed to delete account from identity provider.';
+                showToast(errorMsg, 'error');
+            }
         } catch (error) {
             console.error('Failed to delete account', error);
             // U-9: Use toast instead of alert()
