@@ -12,6 +12,11 @@
     width: 100%;
 }
 
+/* When settings page is active, use full width (no right sidebar) */
+.app-container.full-width-content {
+    grid-template-columns: 275px 1fr;
+}
+
 /* Responsive Breakpoints */
 @media (max-width: 1280px) {
     .app-container {

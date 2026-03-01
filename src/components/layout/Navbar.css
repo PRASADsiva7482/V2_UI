@@ -22,7 +22,13 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 8px;
-    padding-right: 8px;
+    padding: 4px 0;
+}
+
+.navbar-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .navbar-logo {
@@ -36,6 +42,25 @@
 
 .navbar-logo:hover {
     background: var(--hover);
+}
+
+.navbar-settings-gear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.navbar-settings-gear:hover {
+    background: var(--hover);
+    color: var(--text-primary);
 }
 
 .navbar-menu {

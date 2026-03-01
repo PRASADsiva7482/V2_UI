@@ -11,6 +11,7 @@ import HashtagPage from './pages/HashtagPage';
 import Explore from './pages/Explore';
 import Notifications from './pages/Notifications';
 import Connections from './pages/Connections';
+import Settings from './pages/Settings';
 import Chat from './components/chat/Chat';
 import './index.css';
 
@@ -35,6 +36,7 @@ function App() {
                                                     <Route path="/profile/:userId" element={<Profile />} />
                                                     <Route path="/hashtag/:tagName" element={<HashtagPage />} />
                                                     <Route path="/connections" element={<Connections />} />
+                                                    <Route path="/settings/*" element={<Settings />} />
                                                     <Route path="/chat" element={<Chat />} />
                                                 </Routes>
                                             </MainLayout>
