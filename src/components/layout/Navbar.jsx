@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../auth/AuthProvider';
 import { getMyProfile } from '../../services/api/profile';
+import { getUnseenCount } from '../../services/api/notifications';
 import Avatar from '../common/Avatar';
 import './Navbar.css';
 
@@ -13,10 +14,15 @@ function Navbar() {
     const { t } = useTranslation();
     const [currentProfile, setCurrentProfile] = useState(null);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [notifBadge, setNotifBadge] = useState(0);
     const profileMenuRef = useRef(null);
 
     useEffect(() => {
         loadCurrentProfile();
+        loadNotifBadge();
+        // Poll unseen count every 30 seconds
+        const interval = setInterval(loadNotifBadge, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     useEffect(() => {
@@ -36,6 +42,15 @@ function Navbar() {
             setCurrentProfile(profile);
         } catch (error) {
             console.error('Error loading current profile:', error);
+        }
+    };
+
+    const loadNotifBadge = async () => {
+        try {
+            const data = await getUnseenCount();
+            setNotifBadge(data?.unseenCount || 0);
+        } catch (error) {
+            // Silently fail - badge is non-critical
         }
     };
 
@@ -163,6 +178,34 @@ function Navbar() {
                             <path d="M12 5c-4.27 0-8.1 2.48-10 6 1.9 3.52 5.73 6 10 6s8.1-2.48 10-6c-1.9-3.52-5.73-6-10-6zm0 10c-2.21 0-4-4 1.79-4 4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
                         </svg>
                         <span>{t('navbar.home')}</span>
+                    </button>
+
+                    <button
+                        className={`nav-btn ${isActive('/explore') ? 'active' : ''}`}
+                        onClick={() => navigate('/explore')}
+                    >
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                            <path d="M10.25 3.75c-3.59 0-6.5 2.91-6.5 6.5s2.91 6.5 6.5 6.5c1.795 0 3.419-.726 4.596-1.904 1.178-1.177 1.904-2.801 1.904-4.596 0-3.59-2.91-6.5-6.5-6.5zm-8.5 6.5c0-4.694 3.806-8.5 8.5-8.5s8.5 3.806 8.5 8.5c0 1.986-.682 3.815-1.824 5.262l4.781 4.781-1.414 1.414-4.781-4.781c-1.447 1.142-3.276 1.824-5.262 1.824-4.694 0-8.5-3.806-8.5-8.5z" />
+                        </svg>
+                        <span>{t('navbar.explore', 'Explore')}</span>
+                    </button>
+
+                    <button
+                        className={`nav-btn ${isActive('/notifications') ? 'active' : ''}`}
+                        onClick={() => {
+                            navigate('/notifications');
+                            setNotifBadge(0);
+                        }}
+                    >
+                        <div style={{ position: 'relative', display: 'inline-flex' }}>
+                            <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                                <path d="M11.996 2c-4.062 0-7.49 3.021-7.999 7.051L2.866 18H7.1c.463 2.282 2.481 4 4.9 4s4.437-1.718 4.9-4h4.236l-1.143-8.958C19.48 5.017 16.054 2 11.996 2zM9.171 18h5.658c-.412 1.165-1.523 2-2.829 2s-2.417-.835-2.829-2zM4.372 16l.928-7.276C5.678 5.707 8.523 4 12 4s6.321 1.707 6.7 4.724L19.628 16H4.372z" />
+                            </svg>
+                            {notifBadge > 0 && (
+                                <span className="notif-badge">{notifBadge > 99 ? '99+' : notifBadge}</span>
+                            )}
+                        </div>
+                        <span>{t('navbar.notifications', 'Notifications')}</span>
                     </button>
 
                     <button

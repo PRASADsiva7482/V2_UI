@@ -5,10 +5,13 @@
   },
   "navbar": {
     "home": "Home",
+    "explore": "Explore",
+    "notifications": "Notifications",
     "connect": "Connect",
     "profile": "Profile",
     "logout": "Logout",
-    "language": "Language"
+    "language": "Language",
+    "messages": "Messages"
   },
   "connections": {
     "title": "Connect",

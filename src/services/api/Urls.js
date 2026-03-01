@@ -66,6 +66,25 @@ export const URLS = {
         MESSAGE: (messageId) => `${API_BASE}/chat/messages/${messageId}`,
         MEDIA_UPLOAD: `${API_BASE}/chat/media/upload`,
         SEND_MESSAGE: `${API_BASE}/chat/messages/send`,
+    },
+    EXPLORE: {
+        FOR_YOU: `${API_BASE}/explore/for-you`,
+        CATEGORIES: `${API_BASE}/explore/categories`,
+        TRENDING: `${API_BASE}/explore/trending`,
+        NEWS: `${API_BASE}/explore/news`,
+        BREAKING_NEWS: `${API_BASE}/explore/news/breaking`,
+        SEARCH: `${API_BASE}/explore/search`,
+        TRENDING_POSTS: `${API_BASE}/explore/trending/posts`,
+    },
+    NOTIFICATIONS: {
+        BASE: `${API_BASE}/notifications`,
+        BY_TYPE: (type) => `${API_BASE}/notifications/type/${type}`,
+        MENTIONS: `${API_BASE}/notifications/mentions`,
+        UNREAD_COUNT: `${API_BASE}/notifications/unread-count`,
+        UNSEEN_COUNT: `${API_BASE}/notifications/unseen-count`,
+        MARK_ALL_READ: `${API_BASE}/notifications/mark-all-read`,
+        MARK_ALL_SEEN: `${API_BASE}/notifications/mark-all-seen`,
+        MARK_READ: (id) => `${API_BASE}/notifications/${id}/read`,
     }
 };
 

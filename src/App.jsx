@@ -8,6 +8,8 @@ import MainLayout from './components/layout/MainLayout';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
 import HashtagPage from './pages/HashtagPage';
+import Explore from './pages/Explore';
+import Notifications from './pages/Notifications';
 import Connections from './pages/Connections';
 import Chat from './components/chat/Chat';
 import './index.css';
@@ -28,6 +30,8 @@ function App() {
                                                 <Routes>
                                                     <Route path="/" element={<Home />} />
                                                     <Route path="/home" element={<Home />} />
+                                                    <Route path="/explore" element={<Explore />} />
+                                                    <Route path="/notifications" element={<Notifications />} />
                                                     <Route path="/profile/:userId" element={<Profile />} />
                                                     <Route path="/hashtag/:tagName" element={<HashtagPage />} />
                                                     <Route path="/connections" element={<Connections />} />
