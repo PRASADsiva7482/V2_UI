@@ -5,7 +5,10 @@
     },
     "navbar": {
         "home": "హోమ్",
+        "explore": "అన్వేషించండి",
+        "notifications": "నోటిఫికేషన్లు",
         "connect": "కనెక్ట్",
+        "messages": "సందేశాలు",
         "profile": "ప్రొఫైల్",
         "logout": "లాగ్అవుట్",
         "language": "భాష"

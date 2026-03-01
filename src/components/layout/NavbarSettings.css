@@ -1,0 +1,308 @@
+/* ========== Settings Button ========== */
+.navbar-settings {
+    position: relative;
+    display: inline-flex;
+}
+
+.navbar-settings-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.navbar-settings-btn:hover {
+    background: var(--hover);
+    color: var(--text-primary);
+}
+
+.navbar-settings-btn.active {
+    background: rgba(29, 161, 242, 0.1);
+    color: var(--twitter-blue);
+}
+
+/* ========== Dropdown Panel ========== */
+.navbar-settings-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    width: 200px;
+    /* Made compact/small as requested */
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    overflow: hidden;
+    animation: settingsDropdownIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes settingsDropdownIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Sections */
+.settings-section {
+    padding: 2px 0;
+}
+
+.settings-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 2px 8px;
+}
+
+/* ========== Theme Toggle Row ========== */
+.settings-theme-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-radius: 0;
+}
+
+.settings-theme-row:hover {
+    background: var(--hover);
+}
+
+.settings-theme-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.settings-theme-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.settings-theme-icon.dark {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    color: #FFD700;
+}
+
+.settings-theme-icon.light {
+    background: linear-gradient(135deg, #ffecd2, #fcb69f);
+    color: #FF6B35;
+}
+
+.settings-theme-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-theme-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Toggle switch */
+.settings-toggle-track {
+    width: 36px;
+    height: 20px;
+    border-radius: 10px;
+    background: var(--border);
+    position: relative;
+    transition: background 0.3s ease;
+    flex-shrink: 0;
+}
+
+.settings-toggle-track.active {
+    background: var(--twitter-blue);
+}
+
+.settings-toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.settings-toggle-track.active .settings-toggle-thumb {
+    transform: translateX(16px);
+}
+
+/* ========== Language Section ========== */
+.settings-lang-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.settings-lang-header:hover {
+    background: var(--hover);
+}
+
+.settings-lang-current {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.settings-lang-flag {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.settings-lang-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.settings-lang-chevron {
+    color: var(--text-secondary);
+}
+
+/* Language Search */
+.settings-lang-search-container {
+    padding: 0;
+    background: var(--active-bg);
+}
+
+.settings-lang-search-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+}
+
+.settings-lang-search-box svg {
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.settings-lang-search-box input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 13px;
+    outline: none;
+}
+
+.settings-lang-search-box input::placeholder {
+    color: var(--text-secondary);
+}
+
+.settings-lang-close {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+}
+
+.settings-lang-close:hover {
+    color: var(--text-primary);
+}
+
+/* Language List (Scrollable) */
+.settings-lang-list {
+    display: flex;
+    flex-direction: column;
+    max-height: 140px;
+    /* Small congested height */
+    overflow-y: auto;
+    background: var(--surface);
+}
+
+/* Scrollbar styling for lang list */
+.settings-lang-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.settings-lang-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.settings-lang-list::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+
+.settings-lang-list::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
+
+.settings-lang-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+}
+
+.settings-lang-option:hover {
+    background: var(--hover);
+}
+
+.settings-lang-option.active {
+    background: rgba(29, 161, 242, 0.08);
+}
+
+.settings-lang-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.settings-lang-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.settings-lang-check {
+    color: var(--twitter-blue);
+    flex-shrink: 0;
+}
+
+.settings-lang-none {
+    padding: 12px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
