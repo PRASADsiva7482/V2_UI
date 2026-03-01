@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { likePost, unlikePost, incrementViewCount } from '../../services/api/posts';
 import { formatRelativeTime, formatNumber } from '../../services/utils/formatters';
@@ -8,8 +8,11 @@ import CommentModal from '../comments/CommentModal';
 import VideoPlayer from '../media/VideoPlayer';
 import './PostCard.css';
 
-function PostCard({ post, onPostUpdate }) {
+// U-17: Wrapped in React.memo to prevent unnecessary re-renders in feed lists
+const PostCard = memo(function PostCard({ post, onPostUpdate }) {
     const navigate = useNavigate();
+
+    // U-14: Sync local state from props when props change
     const [isLiked, setIsLiked] = useState(post.isLiked || false);
     const [likesCount, setLikesCount] = useState(post.likesCount || 0);
     const [commentsCount, setCommentsCount] = useState(post.commentsCount || 0);
@@ -17,7 +20,15 @@ function PostCard({ post, onPostUpdate }) {
     const [isLiking, setIsLiking] = useState(false);
     const [showComments, setShowComments] = useState(false);
 
-    const handleLike = async (e) => {
+    // U-14: Sync local state when post prop changes (e.g., from parent state update)
+    useEffect(() => {
+        setIsLiked(post.isLiked || false);
+        setLikesCount(post.likesCount || 0);
+        setCommentsCount(post.commentsCount || 0);
+        setViewsCount(post.viewsCount || 0);
+    }, [post.isLiked, post.likesCount, post.commentsCount, post.viewsCount]);
+
+    const handleLike = useCallback(async (e) => {
         e.stopPropagation();
 
         if (isLiking) return;
@@ -43,9 +54,9 @@ function PostCard({ post, onPostUpdate }) {
         } finally {
             setIsLiking(false);
         }
-    };
+    }, [isLiked, isLiking, likesCount, post.id, onPostUpdate]);
 
-    const handlePostClick = async () => {
+    const handlePostClick = useCallback(async () => {
         // Increment view count
         try {
             await incrementViewCount(post.id);
@@ -56,39 +67,36 @@ function PostCard({ post, onPostUpdate }) {
 
         // Open comments modal
         setShowComments(true);
-    };
+    }, [post.id]);
 
-    const handleCommentClick = (e) => {
+    const handleCommentClick = useCallback((e) => {
         e.stopPropagation();
         setShowComments(true);
-    };
+    }, []);
 
-    const handleCommentAdded = () => {
+    const handleCommentAdded = useCallback(() => {
         setCommentsCount(prev => prev + 1);
         if (onPostUpdate) {
             onPostUpdate(post.id, { commentsCount: commentsCount + 1 });
         }
-    };
+    }, [commentsCount, post.id, onPostUpdate]);
 
-    const handleProfileClick = (e) => {
+    const handleProfileClick = useCallback((e) => {
         e.stopPropagation();
         if (post.userId) {
             navigate(`/profile/${post.userId}`);
         }
-    };
+    }, [post.userId, navigate]);
 
-    const handleHashtagClick = (tagName) => {
+    const handleHashtagClick = useCallback((tagName) => {
         navigate(`/hashtag/${tagName}`);
-    };
+    }, [navigate]);
 
     // Helper to build full media URL
     const getMediaUrl = (fileUrl) => {
         if (!fileUrl) return '';
-        // If already a full URL, return as-is
         if (fileUrl.startsWith('http')) return fileUrl;
-        // Remove leading slash to avoid double /v-app
         const cleanPath = fileUrl.startsWith('/') ? fileUrl.substring(1) : fileUrl;
-        // Prepend backend base URL
         const baseUrl = window.config?.api?.mediaBaseUrl || 'http://localhost:2000';
         return `${baseUrl}/${cleanPath}`;
     };
@@ -107,9 +115,7 @@ function PostCard({ post, onPostUpdate }) {
                 <div className="post-header">
                     <div className="post-author">
                         <span className="author-name" onClick={handleProfileClick}>
-                            {post.author?.displayName && !post.author.displayName.startsWith('User ')
-                                ? post.author.displayName
-                                : post.author?.username || 'Unknown'}
+                            {post.author?.displayName || post.author?.username || 'Unknown'}
                         </span>
                         <span className="author-username" onClick={handleProfileClick}>
                             @{post.author?.username || 'unknown'}
@@ -122,11 +128,13 @@ function PostCard({ post, onPostUpdate }) {
 
                 {post.content && (
                     <div className="post-text">
+                        {/* U-16: Use stable keys based on content + position instead of index-only */}
                         {parseHashtagsInText(post.content, handleHashtagClick).map((segment, index) => {
+                            const stableKey = `${post.id}-seg-${index}-${segment.type}`;
                             if (segment.type === 'hashtag') {
                                 return (
                                     <span
-                                        key={index}
+                                        key={stableKey}
                                         className="hashtag-link"
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -137,7 +145,7 @@ function PostCard({ post, onPostUpdate }) {
                                     </span>
                                 );
                             }
-                            return <span key={index}>{segment.content}</span>;
+                            return <span key={stableKey}>{segment.content}</span>;
                         })}
                     </div>
                 )}
@@ -147,8 +155,7 @@ function PostCard({ post, onPostUpdate }) {
                         className={`post-media media-grid-${Math.min(post.media.length, 4)}`}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {post.media.map((media, index) => {
-                            // Calculate aspect ratio from media dimensions if available
+                        {post.media.map((media) => {
                             let aspectRatio = 'auto';
                             if (media.width && media.height) {
                                 aspectRatio = `${media.width} / ${media.height}`;
@@ -158,11 +165,9 @@ function PostCard({ post, onPostUpdate }) {
 
                             return (
                                 <div
-                                    key={media.id || index}
+                                    key={media.id || `media-${post.id}-${media.fileUrl}`}
                                     className="media-item"
-                                    style={{
-                                        aspectRatio: aspectRatio
-                                    }}
+                                    style={{ aspectRatio }}
                                 >
                                     {media.mediaType === 'IMAGE' || media.mediaType === 'GIF' ? (
                                         <img
@@ -227,6 +232,6 @@ function PostCard({ post, onPostUpdate }) {
             )}
         </div>
     );
-}
+});
 
 export default PostCard;

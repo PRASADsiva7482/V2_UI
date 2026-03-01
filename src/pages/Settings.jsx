@@ -3,149 +3,30 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../auth/AuthProvider';
+import { useToast } from '../components/common/Toast';
 import { getUserSettings, updateUserSettings, deleteUserAccount } from '../services/api/settings';
+import ToggleSwitch from '../components/common/ToggleSwitch';
 import './Settings.css';
 
-function Settings() {
-    const { t, i18n } = useTranslation();
-    const navigate = useNavigate();
-    const location = useLocation();
-    const { theme, toggleTheme } = useTheme();
-    const { user, logout, keycloak } = useAuth();
+// U-2: SavedIndicator extracted to module level (was inside render body)
+function SavedIndicator({ field, saveSuccess }) {
+    return saveSuccess === field ? <span className="settings-saved-indicator">✓ Saved</span> : null;
+}
 
-    const [settings, setSettings] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [saveSuccess, setSaveSuccess] = useState('');
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [deleteConfirmText, setDeleteConfirmText] = useState('');
-    const [showPasswordModal, setShowPasswordModal] = useState(false);
+// ============================
+// U-1: EXTRACTED SUB-PAGE COMPONENTS  
+// Each was previously defined inside the Settings() function body,
+// causing them to be recreated on every render. Now they are stable,
+// module-level components that receive shared state via props.
+// ============================
 
-    useEffect(() => {
-        loadSettings();
-    }, []);
-
-    useEffect(() => {
-        if (saveSuccess) {
-            const timer = setTimeout(() => setSaveSuccess(''), 2000);
-            return () => clearTimeout(timer);
-        }
-    }, [saveSuccess]);
-
-    const loadSettings = async () => {
-        try {
-            const data = await getUserSettings();
-            setSettings(data);
-        } catch (error) {
-            console.error('Failed to load settings', error);
-            // Set defaults if API fails
-            setSettings({
-                twoFactorAuth: 'NONE',
-                passwordProtection: false,
-                appSessionsTracking: true,
-                protectPosts: false,
-                photoTagging: 'ANYONE',
-                locationInfo: false,
-                sensitiveMedia: true,
-                directMessagePrivacy: 'EVERYONE',
-                readReceipts: true,
-                discoverableByEmail: true,
-                discoverableByPhone: true,
-                allowPersonalizedAds: true,
-                allowDataSharing: false,
-                qualityFilter: true,
-                muteAccountsNotFollowing: false,
-                muteAccountsNew: false,
-                pushNotifications: true,
-                emailNotifications: true,
-                smsNotifications: false,
-                displayLanguage: i18n.language || 'en',
-                appearanceTheme: theme === 'dark' ? 'DARK' : 'LIGHT',
-                fontSize: 'DEFAULT',
-                reduceMotion: false,
-                dataSaver: false,
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleSettingChange = async (key, value) => {
-        setSettings(prev => ({ ...prev, [key]: value }));
-        try {
-            setSaving(true);
-            await updateUserSettings({ [key]: value });
-            setSaveSuccess(key);
-        } catch (error) {
-            console.error('Failed to save setting', error);
-            loadSettings();
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const handleThemeChange = (newTheme) => {
-        const currentTheme = theme === 'dark' ? 'DARK' : 'LIGHT';
-        if (currentTheme !== newTheme) {
-            toggleTheme();
-        }
-        handleSettingChange('appearanceTheme', newTheme);
-    };
-
-    const handleLanguageChange = (code) => {
-        i18n.changeLanguage(code);
-        handleSettingChange('displayLanguage', code);
-    };
-
-    const handleChangePassword = () => {
-        // Redirect to Keycloak's account management for password change
-        if (keycloak) {
-            const accountUrl = keycloak.createAccountUrl();
-            if (accountUrl) {
-                window.open(accountUrl, '_blank');
-                return;
-            }
-        }
-        setShowPasswordModal(true);
-    };
-
-    const handleDeleteAccount = async () => {
-        try {
-            setSaving(true);
-            await deleteUserAccount();
-            logout();
-        } catch (error) {
-            console.error('Failed to delete account', error);
-            alert('Error deleting account. Please contact support.');
-        } finally {
-            setSaving(false);
-            setShowDeleteModal(false);
-            setDeleteConfirmText('');
-        }
-    };
-
-    // Reusable Toggle Component
-    const ToggleSwitch = ({ checked, onChange, label }) => (
-        <label className="settings-toggle" aria-label={label}>
-            <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-            <span className="settings-toggle-slider"></span>
-        </label>
-    );
-
-    // Saved indicator
-    const SavedIndicator = ({ field }) => (
-        saveSuccess === field ? <span className="settings-saved-indicator">✓ Saved</span> : null
-    );
-
-    // --- SUB-PAGES --- //
-
-    const AccountSettings = () => (
+function AccountSettings({ user, handleChangePassword, handleDeleteAccount, showDeleteModal, setShowDeleteModal, deleteConfirmText, setDeleteConfirmText, showPasswordModal, setShowPasswordModal, saving }) {
+    return (
         <div className="settings-pane">
             <h2 className="settings-pane-title">Your account</h2>
             <p className="settings-pane-desc">See information about your account, download an archive of your data, or learn about your account deactivation options.</p>
 
             <div className="settings-list">
-                {/* Account Info */}
                 <div className="settings-list-item">
                     <div className="settings-item-icon">
                         <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
@@ -157,7 +38,6 @@ function Settings() {
                     </div>
                 </div>
 
-                {/* Change Password */}
                 <div className="settings-list-item" onClick={handleChangePassword}>
                     <div className="settings-item-icon">
                         <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM15.1 8H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" /></svg>
@@ -169,7 +49,6 @@ function Settings() {
                     <div className="settings-item-arrow">›</div>
                 </div>
 
-                {/* Delete Account */}
                 <div className="settings-list-item" onClick={() => setShowDeleteModal(true)}>
                     <div className="settings-item-icon danger-icon">
                         <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" /></svg>
@@ -182,7 +61,6 @@ function Settings() {
                 </div>
             </div>
 
-            {/* Delete Account Confirmation Modal */}
             {showDeleteModal && (
                 <div className="settings-modal-overlay" onClick={() => setShowDeleteModal(false)}>
                     <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
@@ -194,21 +72,11 @@ function Settings() {
                         <p><strong>This action cannot be undone.</strong></p>
                         <div className="settings-modal-confirm">
                             <label>Type <strong>DELETE</strong> to confirm:</label>
-                            <input
-                                type="text"
-                                value={deleteConfirmText}
-                                onChange={(e) => setDeleteConfirmText(e.target.value)}
-                                placeholder="DELETE"
-                                className="settings-confirm-input"
-                            />
+                            <input type="text" value={deleteConfirmText} onChange={(e) => setDeleteConfirmText(e.target.value)} placeholder="DELETE" className="settings-confirm-input" />
                         </div>
                         <div className="settings-modal-actions">
                             <button className="settings-btn-cancel" onClick={() => { setShowDeleteModal(false); setDeleteConfirmText(''); }}>Cancel</button>
-                            <button
-                                className="settings-btn-danger"
-                                onClick={handleDeleteAccount}
-                                disabled={saving || deleteConfirmText !== 'DELETE'}
-                            >
+                            <button className="settings-btn-danger" onClick={handleDeleteAccount} disabled={saving || deleteConfirmText !== 'DELETE'}>
                                 {saving ? 'Deleting...' : 'Delete my account'}
                             </button>
                         </div>
@@ -216,7 +84,6 @@ function Settings() {
                 </div>
             )}
 
-            {/* Password Modal (fallback) */}
             {showPasswordModal && (
                 <div className="settings-modal-overlay" onClick={() => setShowPasswordModal(false)}>
                     <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
@@ -230,8 +97,10 @@ function Settings() {
             )}
         </div>
     );
+}
 
-    const SecuritySettings = () => (
+function SecuritySettings({ settings, handleSettingChange, saveSuccess }) {
+    return (
         <div className="settings-pane">
             <h2 className="settings-pane-title">Security and account access</h2>
             <p className="settings-pane-desc">Manage your account's security and keep track of your account's usage including apps, sessions, and account activity.</p>
@@ -250,7 +119,7 @@ function Settings() {
                             <option value="APP">Authentication app</option>
                             <option value="SECURITY_KEY">Security key</option>
                         </select>
-                        <SavedIndicator field="twoFactorAuth" />
+                        <SavedIndicator field="twoFactorAuth" saveSuccess={saveSuccess} />
                     </div>
                 </div>
 
@@ -261,7 +130,7 @@ function Settings() {
                     </div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.passwordProtection || false} onChange={(v) => handleSettingChange('passwordProtection', v)} label="Password protection" />
-                        <SavedIndicator field="passwordProtection" />
+                        <SavedIndicator field="passwordProtection" saveSuccess={saveSuccess} />
                     </div>
                 </div>
             </div>
@@ -274,13 +143,15 @@ function Settings() {
                 </div>
                 <div className="settings-control-actions">
                     <ToggleSwitch checked={settings?.appSessionsTracking ?? true} onChange={(v) => handleSettingChange('appSessionsTracking', v)} label="Session tracking" />
-                    <SavedIndicator field="appSessionsTracking" />
+                    <SavedIndicator field="appSessionsTracking" saveSuccess={saveSuccess} />
                 </div>
             </div>
         </div>
     );
+}
 
-    const PrivacySettings = () => (
+function PrivacySettings({ settings, handleSettingChange, saveSuccess }) {
+    return (
         <div className="settings-pane">
             <h2 className="settings-pane-title">Privacy and safety</h2>
             <p className="settings-pane-desc">Manage what information you see and share on the platform.</p>
@@ -288,28 +159,21 @@ function Settings() {
             <div className="settings-section-title">Audience, media and tagging</div>
             <div className="settings-control-group">
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Protect your posts</h3>
-                        <p>When selected, your posts and other account information are only visible to people who follow you.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Protect your posts</h3><p>When selected, your posts and other account information are only visible to people who follow you.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.protectPosts || false} onChange={(v) => handleSettingChange('protectPosts', v)} label="Protect posts" />
-                        <SavedIndicator field="protectPosts" />
+                        <SavedIndicator field="protectPosts" saveSuccess={saveSuccess} />
                     </div>
                 </div>
-
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Photo tagging</h3>
-                        <p>Allow people to tag you in their photos.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Photo tagging</h3><p>Allow people to tag you in their photos.</p></div>
                     <div className="settings-control-actions">
                         <select value={settings?.photoTagging || 'ANYONE'} onChange={(e) => handleSettingChange('photoTagging', e.target.value)}>
                             <option value="ANYONE">Anyone can tag you</option>
                             <option value="FOLLOWING">Only people you follow</option>
                             <option value="OFF">Off</option>
                         </select>
-                        <SavedIndicator field="photoTagging" />
+                        <SavedIndicator field="photoTagging" saveSuccess={saveSuccess} />
                     </div>
                 </div>
             </div>
@@ -317,24 +181,17 @@ function Settings() {
             <div className="settings-section-title">Your posts</div>
             <div className="settings-control-group">
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Mark media you post as having sensitive content</h3>
-                        <p>When enabled, pictures and videos you post will be marked as sensitive for people who don't want to see sensitive content.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Mark media you post as having sensitive content</h3><p>When enabled, pictures and videos you post will be marked as sensitive for people who don't want to see sensitive content.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.sensitiveMedia ?? true} onChange={(v) => handleSettingChange('sensitiveMedia', v)} label="Sensitive media" />
-                        <SavedIndicator field="sensitiveMedia" />
+                        <SavedIndicator field="sensitiveMedia" saveSuccess={saveSuccess} />
                     </div>
                 </div>
-
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Add location information to your posts</h3>
-                        <p>When enabled, your posts may include location information.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Add location information to your posts</h3><p>When enabled, your posts may include location information.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.locationInfo || false} onChange={(v) => handleSettingChange('locationInfo', v)} label="Location info" />
-                        <SavedIndicator field="locationInfo" />
+                        <SavedIndicator field="locationInfo" saveSuccess={saveSuccess} />
                     </div>
                 </div>
             </div>
@@ -342,28 +199,21 @@ function Settings() {
             <div className="settings-section-title">Direct messages</div>
             <div className="settings-control-group">
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Allow message requests from</h3>
-                        <p>People who you don't follow will still be able to send you message requests depending on this setting.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Allow message requests from</h3><p>People who you don't follow will still be able to send you message requests depending on this setting.</p></div>
                     <div className="settings-control-actions">
                         <select value={settings?.directMessagePrivacy || 'EVERYONE'} onChange={(e) => handleSettingChange('directMessagePrivacy', e.target.value)}>
                             <option value="EVERYONE">Everyone</option>
                             <option value="FOLLOWING">Only people you follow</option>
                             <option value="NONE">No one</option>
                         </select>
-                        <SavedIndicator field="directMessagePrivacy" />
+                        <SavedIndicator field="directMessagePrivacy" saveSuccess={saveSuccess} />
                     </div>
                 </div>
-
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Show read receipts</h3>
-                        <p>Let people you're messaging know when you've seen their messages. Read receipts are not shown on message requests.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Show read receipts</h3><p>Let people you're messaging know when you've seen their messages. Read receipts are not shown on message requests.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.readReceipts ?? true} onChange={(v) => handleSettingChange('readReceipts', v)} label="Read receipts" />
-                        <SavedIndicator field="readReceipts" />
+                        <SavedIndicator field="readReceipts" saveSuccess={saveSuccess} />
                     </div>
                 </div>
             </div>
@@ -371,24 +221,17 @@ function Settings() {
             <div className="settings-section-title">Discoverability and contacts</div>
             <div className="settings-control-group">
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Let others find you by email</h3>
-                        <p>Let people who have your email address find and connect with you here.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Let others find you by email</h3><p>Let people who have your email address find and connect with you here.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.discoverableByEmail ?? true} onChange={(v) => handleSettingChange('discoverableByEmail', v)} label="Discoverable by email" />
-                        <SavedIndicator field="discoverableByEmail" />
+                        <SavedIndicator field="discoverableByEmail" saveSuccess={saveSuccess} />
                     </div>
                 </div>
-
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Let others find you by phone</h3>
-                        <p>Let people who have your phone number find and connect with you here.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Let others find you by phone</h3><p>Let people who have your phone number find and connect with you here.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.discoverableByPhone ?? true} onChange={(v) => handleSettingChange('discoverableByPhone', v)} label="Discoverable by phone" />
-                        <SavedIndicator field="discoverableByPhone" />
+                        <SavedIndicator field="discoverableByPhone" saveSuccess={saveSuccess} />
                     </div>
                 </div>
             </div>
@@ -396,31 +239,26 @@ function Settings() {
             <div className="settings-section-title">Data sharing and personalization</div>
             <div className="settings-control-group">
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Personalized ads</h3>
-                        <p>You will always see ads, but they can be personalized using your activity, profile, and other information.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Personalized ads</h3><p>You will always see ads, but they can be personalized using your activity, profile, and other information.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.allowPersonalizedAds ?? true} onChange={(v) => handleSettingChange('allowPersonalizedAds', v)} label="Personalized ads" />
-                        <SavedIndicator field="allowPersonalizedAds" />
+                        <SavedIndicator field="allowPersonalizedAds" saveSuccess={saveSuccess} />
                     </div>
                 </div>
-
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Data sharing with business partners</h3>
-                        <p>Allow sharing of additional information with our partnered services.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Data sharing with business partners</h3><p>Allow sharing of additional information with our partnered services.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.allowDataSharing || false} onChange={(v) => handleSettingChange('allowDataSharing', v)} label="Data sharing" />
-                        <SavedIndicator field="allowDataSharing" />
+                        <SavedIndicator field="allowDataSharing" saveSuccess={saveSuccess} />
                     </div>
                 </div>
             </div>
         </div>
     );
+}
 
-    const NotificationSettings = () => (
+function NotificationSettings({ settings, handleSettingChange, saveSuccess }) {
+    return (
         <div className="settings-pane">
             <h2 className="settings-pane-title">Notifications</h2>
             <p className="settings-pane-desc">Select the kinds of notifications you get about your activities, interests, and recommendations.</p>
@@ -428,35 +266,24 @@ function Settings() {
             <div className="settings-section-title">Filters</div>
             <div className="settings-control-group">
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Quality filter</h3>
-                        <p>Filter lower-quality content from your notifications. This won't filter out notifications from people you follow or accounts you've recently interacted with.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Quality filter</h3><p>Filter lower-quality content from your notifications. This won't filter out notifications from people you follow or accounts you've recently interacted with.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.qualityFilter ?? true} onChange={(v) => handleSettingChange('qualityFilter', v)} label="Quality filter" />
-                        <SavedIndicator field="qualityFilter" />
+                        <SavedIndicator field="qualityFilter" saveSuccess={saveSuccess} />
                     </div>
                 </div>
-
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Mute notifications from people you don't follow</h3>
-                        <p>When enabled, you won't receive notifications from users you're not following.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Mute notifications from people you don't follow</h3><p>When enabled, you won't receive notifications from users you're not following.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.muteAccountsNotFollowing || false} onChange={(v) => handleSettingChange('muteAccountsNotFollowing', v)} label="Mute non-followers" />
-                        <SavedIndicator field="muteAccountsNotFollowing" />
+                        <SavedIndicator field="muteAccountsNotFollowing" saveSuccess={saveSuccess} />
                     </div>
                 </div>
-
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Mute notifications from new accounts</h3>
-                        <p>When enabled, you won't receive notifications from accounts created recently.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Mute notifications from new accounts</h3><p>When enabled, you won't receive notifications from accounts created recently.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.muteAccountsNew || false} onChange={(v) => handleSettingChange('muteAccountsNew', v)} label="Mute new accounts" />
-                        <SavedIndicator field="muteAccountsNew" />
+                        <SavedIndicator field="muteAccountsNew" saveSuccess={saveSuccess} />
                     </div>
                 </div>
             </div>
@@ -464,42 +291,33 @@ function Settings() {
             <div className="settings-section-title">Preferences</div>
             <div className="settings-control-group">
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Push notifications</h3>
-                        <p>Get push notifications to find out what's going on when you're not on the app. You can turn them off anytime.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Push notifications</h3><p>Get push notifications to find out what's going on when you're not on the app. You can turn them off anytime.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.pushNotifications ?? true} onChange={(v) => handleSettingChange('pushNotifications', v)} label="Push notifications" />
-                        <SavedIndicator field="pushNotifications" />
+                        <SavedIndicator field="pushNotifications" saveSuccess={saveSuccess} />
                     </div>
                 </div>
-
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Email notifications</h3>
-                        <p>Get emails to find out what's going on when you're not on the app. You can turn them off anytime.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Email notifications</h3><p>Get emails to find out what's going on when you're not on the app. You can turn them off anytime.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.emailNotifications ?? true} onChange={(v) => handleSettingChange('emailNotifications', v)} label="Email notifications" />
-                        <SavedIndicator field="emailNotifications" />
+                        <SavedIndicator field="emailNotifications" saveSuccess={saveSuccess} />
                     </div>
                 </div>
-
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>SMS notifications</h3>
-                        <p>Get text messages for important account alerts and notifications.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>SMS notifications</h3><p>Get text messages for important account alerts and notifications.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.smsNotifications || false} onChange={(v) => handleSettingChange('smsNotifications', v)} label="SMS notifications" />
-                        <SavedIndicator field="smsNotifications" />
+                        <SavedIndicator field="smsNotifications" saveSuccess={saveSuccess} />
                     </div>
                 </div>
             </div>
         </div>
     );
+}
 
-    const AccessibilitySettings = () => (
+function AccessibilitySettings({ settings, handleSettingChange, handleThemeChange, handleLanguageChange, saveSuccess, i18n }) {
+    return (
         <div className="settings-pane">
             <h2 className="settings-pane-title">Accessibility, display, and languages</h2>
             <p className="settings-pane-desc">Manage how content is displayed to you.</p>
@@ -507,33 +325,20 @@ function Settings() {
             <div className="settings-section-title">Display</div>
             <div className="settings-control-group">
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Background</h3>
-                        <p>Choose your preferred background theme.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Background</h3><p>Choose your preferred background theme.</p></div>
                     <div className="settings-theme-selector">
-                        <button
-                            className={`settings-theme-btn ${(settings?.appearanceTheme || 'LIGHT') === 'LIGHT' ? 'active' : ''}`}
-                            onClick={() => handleThemeChange('LIGHT')}
-                        >
+                        <button className={`settings-theme-btn ${(settings?.appearanceTheme || 'LIGHT') === 'LIGHT' ? 'active' : ''}`} onClick={() => handleThemeChange('LIGHT')}>
                             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="12" cy="12" r="5" /><path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" /></svg>
                             <span>Light</span>
                         </button>
-                        <button
-                            className={`settings-theme-btn ${(settings?.appearanceTheme || 'LIGHT') === 'DARK' ? 'active' : ''}`}
-                            onClick={() => handleThemeChange('DARK')}
-                        >
+                        <button className={`settings-theme-btn ${(settings?.appearanceTheme || 'LIGHT') === 'DARK' ? 'active' : ''}`} onClick={() => handleThemeChange('DARK')}>
                             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
                             <span>Dark</span>
                         </button>
                     </div>
                 </div>
-
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Font size</h3>
-                        <p>Choose the size of text in the application.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Font size</h3><p>Choose the size of text in the application.</p></div>
                     <div className="settings-control-actions">
                         <select value={settings?.fontSize || 'DEFAULT'} onChange={(e) => handleSettingChange('fontSize', e.target.value)}>
                             <option value="SMALL">Small</option>
@@ -541,7 +346,7 @@ function Settings() {
                             <option value="LARGE">Large</option>
                             <option value="EXTRA_LARGE">Extra Large</option>
                         </select>
-                        <SavedIndicator field="fontSize" />
+                        <SavedIndicator field="fontSize" saveSuccess={saveSuccess} />
                     </div>
                 </div>
             </div>
@@ -549,34 +354,24 @@ function Settings() {
             <div className="settings-section-title">Accessibility</div>
             <div className="settings-control-group">
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Reduce motion</h3>
-                        <p>Reduces the motion of in-app animations including live engagement counts.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Reduce motion</h3><p>Reduces the motion of in-app animations including live engagement counts.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.reduceMotion || false} onChange={(v) => handleSettingChange('reduceMotion', v)} label="Reduce motion" />
-                        <SavedIndicator field="reduceMotion" />
+                        <SavedIndicator field="reduceMotion" saveSuccess={saveSuccess} />
                     </div>
                 </div>
-
                 <div className="settings-control">
-                    <div className="settings-control-text">
-                        <h3>Data saver</h3>
-                        <p>If enabled, images and videos will load in lower quality to save data bandwidth.</p>
-                    </div>
+                    <div className="settings-control-text"><h3>Data saver</h3><p>If enabled, images and videos will load in lower quality to save data bandwidth.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.dataSaver || false} onChange={(v) => handleSettingChange('dataSaver', v)} label="Data saver" />
-                        <SavedIndicator field="dataSaver" />
+                        <SavedIndicator field="dataSaver" saveSuccess={saveSuccess} />
                     </div>
                 </div>
             </div>
 
             <div className="settings-section-title">Languages</div>
             <div className="settings-control">
-                <div className="settings-control-text">
-                    <h3>Display language</h3>
-                    <p>Select your preferred language for headlines, buttons, and other text in the app.</p>
-                </div>
+                <div className="settings-control-text"><h3>Display language</h3><p>Select your preferred language for headlines, buttons, and other text in the app.</p></div>
                 <div className="settings-control-actions">
                     <select value={settings?.displayLanguage || i18n.language} onChange={(e) => handleLanguageChange(e.target.value)}>
                         <option value="en">English</option>
@@ -591,13 +386,15 @@ function Settings() {
                         <option value="ar">العربية (Arabic)</option>
                         <option value="pt">Português (Portuguese)</option>
                     </select>
-                    <SavedIndicator field="displayLanguage" />
+                    <SavedIndicator field="displayLanguage" saveSuccess={saveSuccess} />
                 </div>
             </div>
         </div>
     );
+}
 
-    const AboutSettings = () => (
+function AboutSettings() {
+    return (
         <div className="settings-pane">
             <h2 className="settings-pane-title">Additional resources</h2>
             <p className="settings-pane-desc">Check out other places for helpful information to learn more about our platform and practices.</p>
@@ -636,6 +433,113 @@ function Settings() {
             </div>
         </div>
     );
+}
+
+// ============================
+// MAIN SETTINGS SHELL 
+// ============================
+function Settings() {
+    const { t, i18n } = useTranslation();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { theme, toggleTheme } = useTheme();
+    const { user, logout, keycloak } = useAuth();
+    const { showToast } = useToast();
+
+    const [settings, setSettings] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState('');
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteConfirmText, setDeleteConfirmText] = useState('');
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+    useEffect(() => {
+        loadSettings();
+    }, []);
+
+    useEffect(() => {
+        if (saveSuccess) {
+            const timer = setTimeout(() => setSaveSuccess(''), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [saveSuccess]);
+
+    const loadSettings = async () => {
+        try {
+            const data = await getUserSettings();
+            setSettings(data);
+        } catch (error) {
+            console.error('Failed to load settings', error);
+            setSettings({
+                twoFactorAuth: 'NONE', passwordProtection: false, appSessionsTracking: true,
+                protectPosts: false, photoTagging: 'ANYONE', locationInfo: false, sensitiveMedia: true,
+                directMessagePrivacy: 'EVERYONE', readReceipts: true, discoverableByEmail: true,
+                discoverableByPhone: true, allowPersonalizedAds: true, allowDataSharing: false,
+                qualityFilter: true, muteAccountsNotFollowing: false, muteAccountsNew: false,
+                pushNotifications: true, emailNotifications: true, smsNotifications: false,
+                displayLanguage: i18n.language || 'en',
+                appearanceTheme: theme === 'dark' ? 'DARK' : 'LIGHT',
+                fontSize: 'DEFAULT', reduceMotion: false, dataSaver: false,
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSettingChange = async (key, value) => {
+        setSettings(prev => ({ ...prev, [key]: value }));
+        try {
+            setSaving(true);
+            await updateUserSettings({ [key]: value });
+            setSaveSuccess(key);
+        } catch (error) {
+            console.error('Failed to save setting', error);
+            loadSettings();
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleThemeChange = (newTheme) => {
+        const currentTheme = theme === 'dark' ? 'DARK' : 'LIGHT';
+        if (currentTheme !== newTheme) {
+            toggleTheme();
+        }
+        handleSettingChange('appearanceTheme', newTheme);
+    };
+
+    const handleLanguageChange = (code) => {
+        i18n.changeLanguage(code);
+        handleSettingChange('displayLanguage', code);
+    };
+
+    const handleChangePassword = () => {
+        if (keycloak) {
+            const accountUrl = keycloak.createAccountUrl();
+            if (accountUrl) {
+                window.open(accountUrl, '_blank');
+                return;
+            }
+        }
+        setShowPasswordModal(true);
+    };
+
+    const handleDeleteAccount = async () => {
+        try {
+            setSaving(true);
+            await deleteUserAccount();
+            logout();
+        } catch (error) {
+            console.error('Failed to delete account', error);
+            // U-9: Use toast instead of alert()
+            showToast('Error deleting account. Please contact support.', 'error');
+        } finally {
+            setSaving(false);
+            setShowDeleteModal(false);
+            setDeleteConfirmText('');
+        }
+    };
 
     if (loading) return (
         <div className="settings-loading">
@@ -644,7 +548,6 @@ function Settings() {
         </div>
     );
 
-    // Get the current sub-path
     const pathParts = location.pathname.replace('/settings', '').split('/').filter(Boolean);
     const currentPath = pathParts[0] || '';
 
@@ -657,9 +560,11 @@ function Settings() {
         { key: 'about', label: 'Additional resources', icon: 'M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z' },
     ];
 
+    // Shared props for sub-pages
+    const sharedProps = { settings, handleSettingChange, saveSuccess };
+
     return (
         <div className="settings-page" id="settings-page">
-            {/* Left Sidebar */}
             <div className={`settings-sidebar ${currentPath ? 'hidden-mobile' : ''}`}>
                 <div className="settings-sidebar-header">
                     <h2>Settings</h2>
@@ -681,7 +586,6 @@ function Settings() {
                 </div>
             </div>
 
-            {/* Right Content */}
             <div className={`settings-content ${!currentPath ? 'hidden-mobile' : ''}`}>
                 {currentPath && (
                     <div className="settings-back-header">
@@ -704,16 +608,30 @@ function Settings() {
                             <p>Choose from the menu on the left to view and update your settings.</p>
                         </div>
                     } />
-                    <Route path="/account" element={<AccountSettings />} />
-                    <Route path="/security" element={<SecuritySettings />} />
-                    <Route path="/privacy" element={<PrivacySettings />} />
-                    <Route path="/notifications" element={<NotificationSettings />} />
-                    <Route path="/accessibility" element={<AccessibilitySettings />} />
+                    <Route path="/account" element={
+                        <AccountSettings
+                            user={user}
+                            handleChangePassword={handleChangePassword}
+                            handleDeleteAccount={handleDeleteAccount}
+                            showDeleteModal={showDeleteModal}
+                            setShowDeleteModal={setShowDeleteModal}
+                            deleteConfirmText={deleteConfirmText}
+                            setDeleteConfirmText={setDeleteConfirmText}
+                            showPasswordModal={showPasswordModal}
+                            setShowPasswordModal={setShowPasswordModal}
+                            saving={saving}
+                        />
+                    } />
+                    <Route path="/security" element={<SecuritySettings {...sharedProps} />} />
+                    <Route path="/privacy" element={<PrivacySettings {...sharedProps} />} />
+                    <Route path="/notifications" element={<NotificationSettings {...sharedProps} />} />
+                    <Route path="/accessibility" element={
+                        <AccessibilitySettings {...sharedProps} handleThemeChange={handleThemeChange} handleLanguageChange={handleLanguageChange} i18n={i18n} />
+                    } />
                     <Route path="/about" element={<AboutSettings />} />
                 </Routes>
             </div>
 
-            {/* Saving indicator */}
             {saving && (
                 <div className="settings-saving-toast">
                     <div className="settings-saving-spinner"></div>

@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getUserProfile, updateMyProfile } from '../services/api/profile';
 import { getUserPosts } from '../services/api/posts';
 import { followUser, unfollowUser, getFollowStatus } from '../services/api/follows';
 import { formatNumber } from '../services/utils/formatters';
+import { useToast } from '../components/common/Toast';
 import Avatar from '../components/common/Avatar';
 import Button from '../components/common/Button';
 import PostCard from '../components/posts/PostCard';
@@ -14,6 +15,7 @@ function Profile() {
     const { userId } = useParams();
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const { showToast } = useToast();
     const [searchParams, setSearchParams] = useSearchParams();
     const isEditMode = searchParams.get('edit') === 'true';
 
@@ -35,11 +37,21 @@ function Profile() {
         bio: ''
     });
 
+    // U-4: Reset page state when userId changes
     useEffect(() => {
+        setPage(0);
+        setPosts([]);
+        setHasMore(true);
         loadProfile();
         loadFollowStatus();
-        loadPosts();
     }, [userId]);
+
+    // U-3: Separate effect to load posts whenever page OR userId changes
+    // This fixes the stale closure where loadPosts() was called after setPage()
+    // but used the OLD page value.
+    useEffect(() => {
+        loadPosts(page);
+    }, [userId, page]);
 
     useEffect(() => {
         if (isEditMode && profile?.isOwnProfile) {
@@ -75,11 +87,12 @@ function Profile() {
         }
     };
 
-    const loadPosts = async () => {
+    // U-3: Now accepts page as parameter to avoid stale closure
+    const loadPosts = async (currentPage) => {
         try {
             setLoadingPosts(true);
-            const response = await getUserPosts(userId, { page, size: 20 });
-            setPosts(prev => page === 0 ? response.content : [...prev, ...response.content]);
+            const response = await getUserPosts(userId, { page: currentPage, size: 20 });
+            setPosts(prev => currentPage === 0 ? response.content : [...prev, ...response.content]);
             setHasMore(!response.last);
         } catch (error) {
             console.error('Error loading posts:', error);
@@ -104,19 +117,20 @@ function Profile() {
             }
         } catch (error) {
             console.error('Error toggling follow:', error);
-            alert('Failed to update follow status');
+            // U-9: Use toast instead of alert()
+            showToast('Failed to update follow status', 'error');
         } finally {
             setFollowing(false);
         }
     };
 
-    const handlePostUpdate = (postId, updates) => {
+    const handlePostUpdate = useCallback((postId, updates) => {
         setPosts(prev =>
             prev.map(post =>
                 post.id === postId ? { ...post, ...updates } : post
             )
         );
-    };
+    }, []);
 
     const handleSaveProfile = async () => {
         if (saving) return;
@@ -128,10 +142,11 @@ function Profile() {
             setEditing(false);
             searchParams.delete('edit');
             setSearchParams(searchParams);
-            alert(t('profile.updateSuccess'));
+            // U-9: Use toast instead of alert()
+            showToast(t('profile.updateSuccess'), 'success');
         } catch (error) {
             console.error('Error updating profile:', error);
-            alert(t('profile.updateError'));
+            showToast(t('profile.updateError'), 'error');
         } finally {
             setSaving(false);
         }
@@ -325,8 +340,8 @@ function Profile() {
                                 <button
                                     className="load-more-btn"
                                     onClick={() => {
+                                        // U-3: Just increment page — the useEffect[page] handles loading
                                         setPage(prev => prev + 1);
-                                        loadPosts();
                                     }}
                                     disabled={loadingPosts}
                                 >

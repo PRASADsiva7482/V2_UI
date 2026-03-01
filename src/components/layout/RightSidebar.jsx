@@ -183,9 +183,7 @@ function RightSidebar() {
                                         e.stopPropagation();
                                         navigateToProfile(post.userId);
                                     }}>
-                                        {post.author?.displayName && !post.author.displayName.startsWith('User ')
-                                            ? post.author.displayName
-                                            : post.author?.username || 'User'}
+                                        {post.author?.displayName || post.author?.username || 'User'}
                                     </div>
                                     <div className="trending-text">
                                         {post.content.length > 80

@@ -1,6 +1,7 @@
+import { memo } from 'react';
 import './Avatar.css';
 
-function Avatar({
+const Avatar = memo(function Avatar({
     src,
     alt = 'User avatar',
     size = 'medium',
@@ -27,6 +28,7 @@ function Avatar({
             )}
         </div>
     );
-}
+});
 
 export default Avatar;
+

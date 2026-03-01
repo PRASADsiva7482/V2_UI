@@ -2,7 +2,13 @@ import { createContext, useState, useContext, useCallback } from 'react';
 
 const DataCacheContext = createContext();
 
-export const useDataCache = () => useContext(DataCacheContext);
+export const useDataCache = () => {
+    const context = useContext(DataCacheContext);
+    if (!context) {
+        throw new Error('useDataCache must be used within a DataCacheProvider');
+    }
+    return context;
+};
 
 export const DataCacheProvider = ({ children }) => {
     // Cache structure:
