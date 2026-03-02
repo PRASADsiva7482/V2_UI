@@ -1,11 +1,11 @@
 .connections-container {
-    max-width: 600px;
+    width: 100%;
     margin: 0 auto;
     padding: 0;
 }
 
 .connections-header {
-    padding: 20px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border);
     background: var(--background);
     position: sticky;
@@ -16,7 +16,7 @@
 }
 
 .connections-title {
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 800;
     color: var(--text-primary);
     margin: 0 0 4px 0;
@@ -36,7 +36,7 @@
     display: flex;
     border-bottom: 1px solid var(--border);
     position: sticky;
-    top: 84px;
+    top: 60px;
     z-index: 9;
     background: var(--background);
     backdrop-filter: blur(12px);
@@ -49,7 +49,7 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 16px 12px;
+    padding: 12px 12px;
     background: transparent;
     border: none;
     color: var(--text-secondary);
@@ -327,10 +327,6 @@
 }
 
 @media (max-width: 768px) {
-    .connections-container {
-        max-width: 100%;
-    }
-
     .connections-header {
         padding: 16px;
     }
@@ -362,5 +358,48 @@
 
     .user-card-bio {
         font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .connections-header {
+        padding: 12px;
+    }
+
+    .connections-title {
+        font-size: 18px;
+    }
+
+    .connections-subtitle {
+        font-size: 12px;
+    }
+
+    .tab-btn {
+        padding: 10px 6px;
+        font-size: 13px;
+    }
+
+    .user-card {
+        padding: 10px 12px;
+    }
+
+    .user-card-name {
+        font-size: 14px;
+    }
+
+    .user-card-username {
+        font-size: 12px;
+    }
+
+    .user-card-bio {
+        font-size: 12px;
+        margin: 4px 0;
+    }
+
+    .follow-btn {
+        min-width: 80px;
+        height: 28px;
+        font-size: 12px;
+        padding: 0 12px;
     }
 }

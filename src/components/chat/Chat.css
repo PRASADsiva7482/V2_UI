@@ -5,9 +5,8 @@
 /* ──── Container ──── */
 .chat-container {
     display: flex;
-    height: calc(100vh - 60px);
+    height: 100vh;
     background: var(--bg-primary, #0a0a0f);
-    border-radius: 16px;
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.06);
     position: relative;
@@ -56,12 +55,14 @@
 
 /* ──── Sidebar ──── */
 .chat-sidebar {
-    width: 360px;
-    min-width: 360px;
+    width: 340px;
+    min-width: 280px;
+    max-width: 340px;
     border-right: 1px solid rgba(255, 255, 255, 0.06);
     display: flex;
     flex-direction: column;
     background: rgba(255, 255, 255, 0.02);
+    flex-shrink: 0;
 }
 
 .chat-list-header {
@@ -374,7 +375,9 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    min-height: 0;
     position: relative;
+    overflow: hidden;
 }
 
 .chat-room-header {
@@ -432,6 +435,7 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    min-height: 0;
     background:
         radial-gradient(ellipse at 20% 80%, rgba(99, 102, 241, 0.03) 0%, transparent 50%),
         radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.03) 0%, transparent 50%);
@@ -928,6 +932,7 @@
     border-top: 1px solid rgba(255, 255, 255, 0.06);
     background: rgba(255, 255, 255, 0.02);
     position: relative;
+    flex-shrink: 0;
 }
 
 .chat-input-wrapper {
@@ -1135,15 +1140,72 @@
    RESPONSIVE
    ════════════════════════════════════════════════════════ */
 
+/* Compact Desktop */
+@media (max-width: 1100px) {
+    .chat-sidebar {
+        width: 300px;
+        min-width: 260px;
+        max-width: 300px;
+    }
+
+    .chat-list-header {
+        padding: 12px 16px;
+    }
+
+    .chat-list-title {
+        font-size: 1.15rem;
+    }
+
+    .message-bubble {
+        max-width: 72%;
+    }
+
+    .chat-messages {
+        padding: 12px 16px;
+    }
+
+    .chat-input-area {
+        padding: 8px 16px 10px;
+    }
+
+    .chat-room-header {
+        padding: 10px 16px;
+    }
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+    .chat-sidebar {
+        width: 260px;
+        min-width: 240px;
+        max-width: 260px;
+    }
+
+    .chat-item-name {
+        font-size: 0.85rem;
+    }
+
+    .chat-item-message {
+        font-size: 0.78rem;
+    }
+
+    .message-text {
+        font-size: 0.85rem;
+    }
+}
+
+/* Mobile */
 @media (max-width: 768px) {
     .chat-container {
-        border-radius: 0;
-        height: 100vh;
+        height: calc(100vh - 56px);
+        height: calc(100dvh - 56px);
+        border: none;
     }
 
     .chat-sidebar {
         width: 100%;
         min-width: 100%;
+        max-width: 100%;
     }
 
     .chat-sidebar-hidden {
@@ -1156,6 +1218,7 @@
 
     .chat-main-active {
         display: flex;
+        width: 100%;
     }
 
     .mobile-only {
@@ -1163,7 +1226,23 @@
     }
 
     .message-bubble {
-        max-width: 80%;
+        max-width: 82%;
+    }
+
+    .chat-messages {
+        padding: 10px 12px;
+    }
+
+    .chat-input-area {
+        padding: 8px 10px 10px;
+    }
+
+    .chat-room-header {
+        padding: 10px 12px;
+    }
+
+    .chat-list-header {
+        padding: 12px 14px;
     }
 
     .emoji-picker-container {
@@ -1174,6 +1253,64 @@
 
     .chat-file-preview-bar {
         padding: 8px 12px;
+    }
+
+    .image-attachment img {
+        max-width: 100%;
+    }
+
+    .video-attachment video {
+        max-width: 100%;
+    }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+    .chat-list-title {
+        font-size: 1.1rem;
+    }
+
+    .chat-item-name {
+        font-size: 0.82rem;
+    }
+
+    .chat-item-message {
+        font-size: 0.75rem;
+    }
+
+    .chat-item-time {
+        font-size: 0.65rem;
+    }
+
+    .message-bubble {
+        max-width: 88%;
+        padding: 6px 10px 4px;
+    }
+
+    .message-text {
+        font-size: 0.82rem;
+    }
+
+    .message-time {
+        font-size: 0.6rem;
+    }
+
+    .chat-room-name {
+        font-size: 0.9rem;
+    }
+
+    .chat-input {
+        font-size: 0.85rem;
+        padding: 5px 3px;
+    }
+
+    .send-btn {
+        width: 32px;
+        height: 32px;
+    }
+
+    .chat-action-btn {
+        padding: 5px;
     }
 }
 

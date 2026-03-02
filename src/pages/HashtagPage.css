@@ -1,5 +1,5 @@
 .hashtag-page {
-    max-width: 600px;
+    width: 100%;
     margin: 0 auto;
     min-height: 100vh;
 }
@@ -178,5 +178,46 @@
 
     .hashtag-page-error p {
         color: #71767b;
+    }
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 768px) {
+    .hashtag-page-header {
+        padding: 12px 14px;
+        gap: 12px;
+    }
+
+    .hashtag-title {
+        font-size: 1.1rem;
+    }
+
+    .hashtag-posts {
+        border-left: none;
+        border-right: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .hashtag-page-header {
+        padding: 10px 10px;
+        gap: 8px;
+    }
+
+    .hashtag-title {
+        font-size: 1rem;
+    }
+
+    .hashtag-stats {
+        font-size: 0.75rem;
+    }
+
+    .back-button {
+        width: 32px;
+        height: 32px;
+    }
+
+    .no-posts {
+        padding: 40px 16px;
     }
 }

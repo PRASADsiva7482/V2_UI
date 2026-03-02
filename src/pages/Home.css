@@ -82,3 +82,39 @@
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+/* ========== Responsive ========== */
+@media (max-width: 768px) {
+    .home-page {
+        min-height: auto;
+    }
+
+    .tab-btn {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .posts-feed {
+        padding-bottom: 10px;
+    }
+
+    .load-more-btn {
+        padding: 12px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tab-btn {
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    .empty-feed {
+        padding: 30px 16px;
+    }
+
+    .empty-feed p {
+        font-size: 14px;
+    }
+}

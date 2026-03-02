@@ -1,8 +1,6 @@
 .notifications-page {
     width: 100%;
-    max-width: 600px;
     min-height: 100vh;
-    border-right: 1px solid var(--border);
 }
 
 /* ========== Sticky Header ========== */
@@ -20,11 +18,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
+    padding: 10px 16px;
 }
 
 .notifications-title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 800;
     color: var(--text-primary);
 }
@@ -63,7 +61,7 @@
 
 .notifications-tab {
     flex: 1;
-    padding: 16px 16px;
+    padding: 12px 16px;
     background: transparent;
     border: none;
     cursor: pointer;
@@ -358,10 +356,6 @@
 
 /* ========== Responsive ========== */
 @media (max-width: 768px) {
-    .notifications-page {
-        max-width: 100%;
-        border-right: none;
-    }
 
     .notifications-tab {
         padding: 12px 12px;
@@ -370,5 +364,51 @@
 
     .notifications-empty h3 {
         font-size: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .notification-item {
+        padding: 12px 10px;
+        gap: 8px;
+    }
+
+    .notification-message {
+        font-size: 14px;
+    }
+
+    .notification-icon {
+        width: 32px;
+    }
+
+    .notification-time {
+        font-size: 11px;
+        top: 12px;
+        right: 10px;
+    }
+
+    .notifications-header-top {
+        padding: 10px 12px;
+    }
+
+    .notifications-title {
+        font-size: 18px;
+    }
+
+    .notifications-tab {
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+
+    .notifications-empty {
+        padding: 50px 24px;
+    }
+
+    .notifications-empty h3 {
+        font-size: 20px;
+    }
+
+    .notifications-empty p {
+        font-size: 14px;
     }
 }

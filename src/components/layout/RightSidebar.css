@@ -1,6 +1,6 @@
 .right-sidebar {
-    width: 350px;
-    padding: 20px 16px;
+    width: 320px;
+    padding: 20px 14px;
     position: sticky;
     top: 0;
     height: 100vh;
@@ -254,8 +254,40 @@
     font-size: 14px;
 }
 
-/* Responsive */
-@media (max-width: 1280px) {
+/* ========== Large Desktop (>1400px) ========== */
+@media (min-width: 1400px) {
+    .right-sidebar {
+        width: 350px;
+        padding: 20px 16px;
+    }
+}
+
+/* ========== Compact Desktop (≤1100px) — Narrower sidebar ========== */
+@media (max-width: 1100px) {
+    .right-sidebar {
+        width: 280px;
+        padding: 16px 10px;
+    }
+
+    .section-header h2 {
+        font-size: 16px;
+    }
+
+    .trending-text {
+        font-size: 13px;
+    }
+
+    .user-name {
+        font-size: 13px;
+    }
+
+    .stat-value {
+        font-size: 20px;
+    }
+}
+
+/* ========== Tablet (≤900px) — Hide sidebar ========== */
+@media (max-width: 900px) {
     .right-sidebar {
         display: none;
     }

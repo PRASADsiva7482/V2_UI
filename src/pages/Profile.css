@@ -1,5 +1,5 @@
 .profile-page {
-    max-width: 600px;
+    width: 100%;
     margin: 0 auto;
 }
 
@@ -235,6 +235,16 @@
 }
 
 
+@media (max-width: 768px) {
+    .profile-cover {
+        height: 170px;
+    }
+
+    .profile-info-section {
+        padding: 0 16px 16px;
+    }
+}
+
 @media (max-width: 640px) {
     .profile-cover {
         height: 150px;
@@ -254,5 +264,45 @@
 
     .stat-value {
         font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-cover {
+        height: 120px;
+    }
+
+    .profile-avatar-wrapper {
+        margin-top: -36px;
+    }
+
+    .profile-info-section {
+        padding: 0 12px 12px;
+    }
+
+    .profile-name {
+        font-size: 18px;
+    }
+
+    .profile-bio {
+        font-size: 14px;
+    }
+
+    .profile-stats {
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .stat-value {
+        font-size: 15px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+    }
+
+    .profile-tabs .tab {
+        padding: 12px;
+        font-size: 14px;
     }
 }

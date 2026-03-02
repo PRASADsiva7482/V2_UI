@@ -282,3 +282,84 @@
 .views-btn:hover svg {
     background: rgba(29, 161, 242, 0.1);
 }
+
+/* ========== Responsive ========== */
+@media (max-width: 768px) {
+    .post-card {
+        padding: 10px 12px;
+        gap: 10px;
+    }
+
+    .post-text {
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .post-media {
+        border-radius: 12px;
+        margin-bottom: 8px;
+    }
+
+    .media-grid-1 .media-item {
+        max-height: 400px;
+    }
+
+    .media-grid-2 {
+        max-height: 220px;
+    }
+
+    .media-grid-3,
+    .media-grid-4 {
+        max-height: 340px;
+    }
+
+    .post-actions {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .post-card {
+        padding: 8px 10px;
+        gap: 8px;
+    }
+
+    .avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+    .post-author {
+        font-size: 14px;
+    }
+
+    .post-text {
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .post-media {
+        border-radius: 10px;
+    }
+
+    .media-grid-1 .media-item {
+        max-height: 320px;
+    }
+
+    .action-btn {
+        font-size: 12px;
+        min-width: 44px;
+        gap: 2px;
+    }
+
+    .action-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .action-btn:hover svg {
+        width: 30px;
+        height: 30px;
+        padding: 7px;
+    }
+}

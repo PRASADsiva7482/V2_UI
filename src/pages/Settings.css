@@ -601,11 +601,37 @@
 }
 
 /* ---- Responsive ---- */
+@media (max-width: 1100px) {
+    .settings-sidebar {
+        width: 300px;
+        min-width: 300px;
+    }
+
+    .settings-nav-item {
+        padding: 12px 16px;
+        font-size: 14px;
+        gap: 12px;
+    }
+}
+
 @media (max-width: 768px) {
+    .settings-page {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+    }
+
     .settings-sidebar {
         width: 100%;
         min-width: unset;
         border-right: none;
+        height: auto;
+        position: static;
+    }
+
+    .settings-content {
+        height: auto;
+        min-height: 100vh;
     }
 
     .settings-back-header {
@@ -614,5 +640,108 @@
 
     .hidden-mobile {
         display: none !important;
+    }
+
+    .settings-pane-title {
+        font-size: 18px;
+        padding: 16px 16px 6px;
+    }
+
+    .settings-pane-desc {
+        padding: 0 16px 16px;
+    }
+
+    .settings-section-title {
+        font-size: 18px;
+        padding: 16px 16px 10px;
+    }
+
+    .settings-control {
+        padding: 12px 16px;
+    }
+
+    .settings-list-item {
+        padding: 12px 16px;
+    }
+
+    .settings-saving-toast {
+        bottom: 70px;
+    }
+}
+
+@media (max-width: 480px) {
+    .settings-sidebar-header {
+        padding: 12px 14px;
+    }
+
+    .settings-sidebar-header h2 {
+        font-size: 18px;
+    }
+
+    .settings-nav-item {
+        padding: 10px 14px;
+        font-size: 14px;
+        gap: 10px;
+    }
+
+    .settings-pane-title {
+        font-size: 16px;
+        padding: 14px 12px 6px;
+    }
+
+    .settings-pane-desc {
+        font-size: 13px;
+        padding: 0 12px 14px;
+    }
+
+    .settings-section-title {
+        font-size: 16px;
+        padding: 14px 12px 8px;
+    }
+
+    .settings-control {
+        padding: 10px 12px;
+        gap: 10px;
+    }
+
+    .settings-control-text h3 {
+        font-size: 14px;
+    }
+
+    .settings-control-text p {
+        font-size: 12px;
+    }
+
+    .settings-list-item {
+        padding: 10px 12px;
+        gap: 10px;
+    }
+
+    .settings-item-content h3 {
+        font-size: 14px;
+    }
+
+    .settings-item-content p {
+        font-size: 12px;
+    }
+
+    .settings-modal {
+        padding: 20px;
+        width: 95%;
+    }
+
+    .settings-modal h3,
+    .settings-modal-header h3 {
+        font-size: 18px;
+    }
+
+    .settings-theme-selector {
+        flex-direction: column;
+    }
+
+    .settings-saving-toast {
+        bottom: 64px;
+        padding: 8px 14px;
+        font-size: 13px;
     }
 }

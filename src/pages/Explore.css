@@ -1,8 +1,6 @@
 .explore-page {
     width: 100%;
-    max-width: 600px;
     min-height: 100vh;
-    border-right: 1px solid var(--border);
 }
 
 /* ========== Sticky Header ========== */
@@ -630,10 +628,6 @@
 
 /* ========== Responsive ========== */
 @media (max-width: 768px) {
-    .explore-page {
-        max-width: 100%;
-        border-right: none;
-    }
 
     .explore-tab {
         padding: 12px 12px;
@@ -645,6 +639,64 @@
     }
 
     .explore-news-item.featured .news-item-headline {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .explore-search-container {
+        padding: 6px 10px;
+    }
+
+    .explore-search-input {
+        padding: 10px 8px;
+        font-size: 14px;
+    }
+
+    .explore-tab {
+        padding: 10px 10px;
+        font-size: 13px;
+    }
+
+    .explore-section-title {
+        font-size: 18px;
+        padding: 10px 12px;
+    }
+
+    .explore-trending-item {
+        padding: 10px 12px;
+    }
+
+    .trending-item-title {
+        font-size: 14px;
+    }
+
+    .explore-news-item {
+        padding: 10px 12px;
+    }
+
+    .news-item-headline {
+        font-size: 14px;
+    }
+
+    .explore-hashtags {
+        padding: 6px 12px 12px;
+        gap: 6px;
+    }
+
+    .explore-hashtag-chip {
+        padding: 6px 12px;
+    }
+
+    .hashtag-name {
+        font-size: 13px;
+    }
+
+    .explore-empty {
+        padding: 50px 24px;
+    }
+
+    .explore-empty h3 {
         font-size: 18px;
     }
 }
