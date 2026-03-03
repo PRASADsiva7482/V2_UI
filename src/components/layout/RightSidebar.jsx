@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getTrendingPosts, getPopularUsers, getPlatformStats } from '../../services/api/discovery';
 import { followUser, unfollowUser } from '../../services/api/follows';
-import { searchPosts } from '../../services/api/posts';
-import SearchBox from '../search/SearchBox';
 import Avatar from '../common/Avatar';
 import './RightSidebar.css';
 
@@ -108,46 +106,6 @@ function RightSidebar() {
         }
     };
 
-    const handleSearch = async (query, filter) => {
-        if (!query.trim()) return;
-
-        console.log('🔍 Search initiated:', { query, filter });
-
-        try {
-            if (filter === 'users') {
-                // Search for users
-                const { searchUsers } = await import('../../services/api/profile');
-                const results = await searchUsers(query, { page: 0, size: 20 });
-                console.log('👥 User search results:', results);
-                console.log(`Found ${results.content?.length || 0} users matching "${query}"`);
-                // Future: Navigate to search results page or update UI
-                // navigate(`/search?q=${encodeURIComponent(query)}&filter=users`);
-            } else if (filter === 'posts') {
-                // Search for posts
-                const results = await searchPosts(query, { page: 0, size: 20 });
-                console.log('📝 Post search results:', results);
-                console.log(`Found ${results.content?.length || 0} posts matching "${query}"`);
-                // Future: Navigate to search results page or update UI
-                // navigate(`/search?q=${encodeURIComponent(query)}&filter=posts`);
-            } else if (filter === 'all') {
-                // Search both users and posts
-                const { searchUsers } = await import('../../services/api/profile');
-                const [userResults, postResults] = await Promise.all([
-                    searchUsers(query, { page: 0, size: 10 }),
-                    searchPosts(query, { page: 0, size: 10 })
-                ]);
-                console.log('🔍 Combined search results:');
-                console.log(`  - Users: ${userResults.content?.length || 0}`);
-                console.log(`  - Posts: ${postResults.content?.length || 0}`);
-                console.log('User results:', userResults);
-                console.log('Post results:', postResults);
-                // Future: Navigate to search results page with combined results
-                // navigate(`/search?q=${encodeURIComponent(query)}&filter=all`);
-            }
-        } catch (error) {
-            console.error('❌ Search error:', error);
-        }
-    };
 
     if (loading) {
         return (
@@ -159,8 +117,6 @@ function RightSidebar() {
 
     return (
         <aside className="right-sidebar">
-            {/* Search Box */}
-            <SearchBox onSearch={handleSearch} />
 
             {/* Trending Posts Section */}
             <div className="sidebar-section">

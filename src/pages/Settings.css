@@ -15,13 +15,13 @@
     border-right: 1px solid var(--border);
     overflow-y: auto;
     background: var(--surface);
-    height: 100vh;
+    height: calc(100vh - 48px);
     position: sticky;
-    top: 0;
+    top: 48px;
 }
 
 .settings-sidebar-header {
-    padding: 16px 20px;
+    padding: 10px 20px;
     position: sticky;
     top: 0;
     background: rgba(var(--bg-rgb, 0, 0, 0), 0.85);
@@ -31,7 +31,7 @@
 }
 
 .settings-sidebar-header h2 {
-    font-size: 20px;
+    font-size: 17px;
     font-weight: 700;
 }
 
@@ -43,13 +43,13 @@
 .settings-nav-item {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 14px 20px;
+    gap: 14px;
+    padding: 10px 20px;
     background: transparent;
     border: none;
     text-align: left;
     color: var(--text-primary);
-    font-size: 15px;
+    font-size: 14px;
     cursor: pointer;
     transition: background 0.15s;
     width: 100%;
@@ -90,7 +90,7 @@
 .settings-content {
     flex: 1;
     overflow-y: auto;
-    height: 100vh;
+    height: calc(100vh - 48px);
     background: var(--background);
 }
 
@@ -126,7 +126,7 @@
 }
 
 .settings-content-title {
-    font-size: 20px;
+    font-size: 17px;
     font-weight: 700;
 }
 
@@ -136,10 +136,10 @@
 }
 
 .settings-pane-title {
-    font-size: 20px;
+    font-size: 17px;
     font-weight: 700;
     margin: 0;
-    padding: 20px 20px 8px;
+    padding: 14px 20px 6px;
 }
 
 .settings-pane-desc {
@@ -151,10 +151,10 @@
 }
 
 .settings-section-title {
-    font-size: 20px;
+    font-size: 17px;
     font-weight: 700;
     margin: 0;
-    padding: 20px 20px 12px;
+    padding: 14px 20px 10px;
     border-top: 1px solid var(--border);
 }
 

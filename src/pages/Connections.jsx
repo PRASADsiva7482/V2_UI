@@ -237,11 +237,6 @@ function Connections() {
 
     return (
         <div className="connections-container">
-            <div className="connections-header">
-                <h1 className="connections-title">{t('connections.title')}</h1>
-                <p className="connections-subtitle">{t('connections.subtitle')}</p>
-            </div>
-
             <div className="connections-tabs">
                 <button
                     className={`tab-btn ${activeTab === 'followers' ? 'active' : ''}`}

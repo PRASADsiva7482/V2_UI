@@ -1,0 +1,442 @@
+/* ========== Top Bar ========== */
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: rgba(var(--background-rgb), 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+.topbar-content {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    padding: 0 16px;
+    max-width: 1920px;
+    margin: 0 auto;
+    width: 100%;
+    gap: 8px;
+}
+
+/* ---- Left: Logo ---- */
+.topbar-left {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.topbar-logo {
+    padding: 5px;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    transition: background 0.2s;
+}
+
+.topbar-logo:hover {
+    background: var(--hover);
+}
+
+/* ---- Spacer ---- */
+.topbar-spacer {
+    flex: 1;
+}
+
+/* ---- Right: Actions ---- */
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+/* New Post Button */
+.topbar-new-post-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: var(--twitter-blue);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.topbar-new-post-btn:hover {
+    background: #1a8cd8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(29, 161, 242, 0.3);
+}
+
+.topbar-new-post-btn:active {
+    transform: translateY(0);
+}
+
+.topbar-new-post-label {
+    display: inline;
+}
+
+/* Search wrapper */
+.topbar-search-wrapper {
+    position: relative;
+    width: 240px;
+    flex-shrink: 0;
+}
+
+.topbar-search-wrapper .search-box {
+    position: relative;
+    padding: 0;
+    border-bottom: none;
+    background: none;
+    z-index: auto;
+    margin-bottom: 0;
+}
+
+.topbar-search-wrapper .search-form {
+    gap: 0;
+}
+
+.topbar-search-wrapper .search-input-wrapper {
+    background: var(--surface);
+    border-radius: 20px;
+    height: 34px;
+}
+
+.topbar-search-wrapper .search-input {
+    padding: 5px 34px 5px 38px;
+    font-size: 13px;
+}
+
+.topbar-search-wrapper .search-icon {
+    left: 12px;
+    width: 16px;
+    height: 16px;
+}
+
+.topbar-search-wrapper .search-filters {
+    display: none;
+}
+
+.topbar-search-wrapper .search-input-wrapper:focus-within~.search-filters {
+    display: flex;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0 0 10px 10px;
+    padding: 4px;
+    gap: 4px;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.topbar-search-wrapper .search-results {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 1001;
+}
+
+/* Mobile search toggle (hidden on desktop) */
+.topbar-mobile-search {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.topbar-mobile-search:hover {
+    background: var(--hover);
+    color: var(--text-primary);
+}
+
+/* Icon button */
+.topbar-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.topbar-icon-btn:hover {
+    background: var(--hover);
+    color: var(--text-primary);
+}
+
+/* ---- Profile ---- */
+.topbar-profile {
+    position: relative;
+}
+
+.topbar-profile-btn {
+    display: flex;
+    align-items: center;
+    padding: 3px;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.topbar-profile-btn:hover {
+    background: var(--hover);
+}
+
+/* Profile Dropdown */
+.topbar-profile-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 260px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    z-index: 1001;
+    overflow: hidden;
+    animation: topbarDropIn 0.2s ease-out;
+}
+
+@keyframes topbarDropIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.topbar-dropdown-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+}
+
+.topbar-dropdown-header:hover {
+    background: var(--hover);
+}
+
+.topbar-dropdown-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.topbar-dropdown-name {
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.topbar-dropdown-username {
+    font-size: 13px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.topbar-dropdown-edit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.topbar-dropdown-edit:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.topbar-dropdown-actions {
+    display: flex;
+    flex-direction: column;
+}
+
+.topbar-dropdown-action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-align: left;
+    width: 100%;
+}
+
+.topbar-dropdown-action:hover {
+    background: var(--hover);
+}
+
+.topbar-dropdown-action svg {
+    flex-shrink: 0;
+}
+
+/* Mobile Search Panel */
+.topbar-mobile-search-panel {
+    padding: 6px 16px 10px;
+    border-top: 1px solid var(--border);
+    animation: mobileSearchSlide 0.2s ease-out;
+}
+
+@keyframes mobileSearchSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.topbar-mobile-search-panel .search-box {
+    position: relative;
+    padding: 0;
+    border-bottom: none;
+    background: none;
+    margin-bottom: 0;
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 1100px) {
+    .topbar-new-post-label {
+        display: none;
+    }
+
+    .topbar-new-post-btn {
+        padding: 7px;
+        border-radius: 50%;
+        width: 34px;
+        height: 34px;
+        justify-content: center;
+    }
+
+    .topbar-search-wrapper {
+        width: 200px;
+    }
+}
+
+@media (max-width: 900px) {
+    .topbar-search-wrapper {
+        display: none;
+    }
+
+    .topbar-mobile-search {
+        display: flex;
+    }
+}
+
+@media (max-width: 768px) {
+    .topbar {
+        height: 44px;
+    }
+
+    .topbar-content {
+        height: 44px;
+        padding: 0 10px;
+        gap: 4px;
+    }
+
+    .topbar-logo svg {
+        width: 26px;
+        height: 26px;
+    }
+
+    .topbar-new-post-btn {
+        width: 32px;
+        height: 32px;
+        padding: 6px;
+        border-radius: 50%;
+        justify-content: center;
+    }
+
+    .topbar-new-post-label {
+        display: none;
+    }
+
+    .topbar-icon-btn {
+        width: 30px;
+        height: 30px;
+    }
+
+    .topbar-mobile-search {
+        width: 30px;
+        height: 30px;
+    }
+
+    .topbar-profile-dropdown {
+        right: -8px;
+        width: 240px;
+    }
+}
+
+@media (max-width: 480px) {
+    .topbar {
+        height: 42px;
+    }
+
+    .topbar-content {
+        height: 42px;
+        padding: 0 8px;
+    }
+
+    .topbar-logo svg {
+        width: 24px;
+        height: 24px;
+    }
+}

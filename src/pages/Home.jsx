@@ -4,7 +4,6 @@ import { getTimelineFeed } from '../services/api/posts';
 import { getTrendingPosts } from '../services/api/discovery';
 import { useDataCache } from '../context/DataCacheContext';
 import PostCard from '../components/posts/PostCard';
-import CreatePost from '../components/posts/CreatePost';
 import Loading from '../components/common/Loading';
 import './Home.css';
 
@@ -20,13 +19,24 @@ function Home() {
 
     const [loading, setLoading] = useState(!cache.home?.[activeTab]);
 
-    // Page state - we might need separate page counts for each feed if we cache them effectively
-    // But local state 'page' is currently shared/reset on tab change. 
-    // Let's use the page from cache if available for the specific tab.
+    // Page state
     const getInitialPage = (tab) => cache.home?.[tab]?.page || 0;
     const [page, setPage] = useState(getInitialPage(activeTab));
 
-    const [hasMore, setHasMore] = useState(true); // Simplified for now, should ideally be cached too
+    const [hasMore, setHasMore] = useState(true);
+
+    // Listen for new posts created from the navbar modal
+    useEffect(() => {
+        const handleNewPost = (event) => {
+            const newPost = event.detail;
+            if (newPost) {
+                handlePostCreated(newPost);
+            }
+        };
+
+        window.addEventListener('newPostCreated', handleNewPost);
+        return () => window.removeEventListener('newPostCreated', handleNewPost);
+    }, [forYouPosts, followingPosts, cache.home]);
 
     // Check if we need to load data on mount or tab change
     useEffect(() => {
@@ -118,7 +128,7 @@ function Home() {
     };
 
     const handlePostCreated = (newPost) => {
-        // Add to both feeds locals state
+        // Add to both feeds local state
         const updatedForYou = [newPost, ...forYouPosts];
         const updatedFollowing = [newPost, ...followingPosts];
 
@@ -194,8 +204,6 @@ function Home() {
                     {t('home.tabs.following')}
                 </button>
             </div>
-
-            <CreatePost onPostCreated={handlePostCreated} />
 
             <div className="posts-feed">
                 {loading && page === 0 && currentPosts.length === 0 ? (

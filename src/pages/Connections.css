@@ -4,41 +4,12 @@
     padding: 0;
 }
 
-.connections-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--background);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    backdrop-filter: blur(12px);
-    background: rgba(var(--background-rgb), 0.85);
-}
-
-.connections-title {
-    font-size: 18px;
-    font-weight: 800;
-    color: var(--text-primary);
-    margin: 0 0 4px 0;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.connections-subtitle {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin: 0;
-}
-
 .connections-tabs {
     display: flex;
     border-bottom: 1px solid var(--border);
     position: sticky;
-    top: 60px;
-    z-index: 9;
-    background: var(--background);
+    top: 48px;
+    z-index: 10;
     backdrop-filter: blur(12px);
     background: rgba(var(--background-rgb), 0.85);
 }
@@ -48,12 +19,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 12px 12px;
+    gap: 6px;
+    padding: 8px 10px;
     background: transparent;
     border: none;
     color: var(--text-secondary);
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     position: relative;
@@ -96,20 +67,22 @@
 
 .tab-btn svg {
     flex-shrink: 0;
+    width: 16px;
+    height: 16px;
 }
 
 .tab-count {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
     background: var(--primary);
     color: white;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
-    border-radius: 10px;
+    border-radius: 9px;
 }
 
 .connections-content {
@@ -122,7 +95,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px 20px;
+    padding: 40px 20px;
     text-align: center;
 }
 
@@ -168,7 +141,7 @@
 }
 
 .user-card {
-    padding: 16px 20px;
+    padding: 10px 16px;
     border-bottom: 1px solid var(--border);
     transition: background 0.2s ease;
     animation: fadeInUp 0.3s ease;

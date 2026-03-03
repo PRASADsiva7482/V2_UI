@@ -31,8 +31,9 @@
 /* ========== Dropdown Panel ========== */
 .navbar-settings-dropdown {
     position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
+    top: calc(100% + 8px);
+    right: 0;
+    left: auto;
     width: 200px;
     /* Made compact/small as requested */
     background: var(--surface);

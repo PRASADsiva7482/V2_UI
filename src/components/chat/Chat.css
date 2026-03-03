@@ -69,12 +69,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 10px 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .chat-list-title {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--text-primary, #e8eaed);
     margin: 0;
@@ -383,8 +383,8 @@
 .chat-room-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 20px;
+    gap: 10px;
+    padding: 8px 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     background: rgba(255, 255, 255, 0.02);
     backdrop-filter: blur(10px);

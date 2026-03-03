@@ -1,16 +1,25 @@
+/* ========== Outer wrapper ========== */
+.app-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ========== App Container: 3-column grid below TopBar ========== */
 .app-container {
     display: grid;
     grid-template-columns: 240px 1fr 320px;
-    min-height: 100vh;
+    min-height: calc(100vh - 48px);
     background: var(--background);
     max-width: 1920px;
-    margin: 0 auto;
+    margin: 48px auto 0;
+    /* offset for fixed topbar height */
+    width: 100%;
 }
 
 .main-content {
-    min-height: 100vh;
+    min-height: calc(100vh - 48px);
     width: 100%;
-    overflow-x: hidden;
 }
 
 /* When settings page is active, use full width (no right sidebar) */
@@ -18,7 +27,7 @@
     grid-template-columns: 240px 1fr;
 }
 
-/* ========== Large Desktop (> 1400px) — Full Spacious Layout ========== */
+/* ========== Large Desktop (> 1400px) ========== */
 @media (min-width: 1400px) {
     .app-container {
         grid-template-columns: 275px 1fr 350px;
@@ -29,7 +38,7 @@
     }
 }
 
-/* ========== Compact Desktop (1100px – 1399px) — Narrower nav, keep 3 columns ========== */
+/* ========== Compact Desktop (≤1100px) — Narrower nav ========== */
 @media (max-width: 1100px) {
     .app-container {
         grid-template-columns: 72px 1fr 280px;
@@ -40,7 +49,7 @@
     }
 }
 
-/* ========== Tablet (900px – 1099px) — Icon nav, hide sidebar ========== */
+/* ========== Tablet (≤900px) — Icon nav, hide sidebar ========== */
 @media (max-width: 900px) {
     .app-container {
         grid-template-columns: 64px 1fr;
@@ -55,6 +64,9 @@
 @media (max-width: 768px) {
     .app-container {
         grid-template-columns: 1fr;
+        margin-top: 44px;
+        /* smaller topbar on mobile */
+        min-height: calc(100vh - 44px);
     }
 
     .app-container.full-width-content {
@@ -66,15 +78,21 @@
         border-right: none;
         margin: 0;
         max-width: 100%;
-        min-height: calc(100vh - 56px);
+        min-height: calc(100vh - 44px - 56px);
         padding-bottom: 56px;
+        /* bottom nav bar */
     }
 }
 
 /* ========== Small Mobile (< 480px) ========== */
 @media (max-width: 480px) {
+    .app-container {
+        margin-top: 42px;
+        min-height: calc(100vh - 42px);
+    }
+
     .main-content {
-        min-height: calc(100vh - 52px);
+        min-height: calc(100vh - 42px - 52px);
         padding-bottom: 52px;
     }
 }

@@ -6,7 +6,7 @@
 /* ========== Sticky Header ========== */
 .explore-header {
     position: sticky;
-    top: 0;
+    top: 48px;
     z-index: 10;
     background: rgba(var(--background-rgb), 0.85);
     backdrop-filter: blur(12px);
@@ -16,7 +16,7 @@
 
 /* ========== Search Bar ========== */
 .explore-search-container {
-    padding: 8px 16px;
+    padding: 6px 16px;
     position: relative;
 }
 
@@ -51,8 +51,8 @@
     background: transparent;
     border: none;
     outline: none;
-    padding: 12px;
-    font-size: 15px;
+    padding: 8px 10px;
+    font-size: 14px;
     color: var(--text-primary);
     font-family: inherit;
 }
@@ -194,11 +194,11 @@
 .explore-tab {
     flex: 1;
     min-width: max-content;
-    padding: 16px 16px;
+    padding: 10px 14px;
     background: transparent;
     border: none;
     cursor: pointer;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--text-secondary);
     position: relative;
@@ -222,8 +222,8 @@
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    height: 4px;
-    width: 56px;
+    height: 3px;
+    width: 48px;
     background: var(--twitter-blue);
     border-radius: 2px;
     animation: tabIndicator 0.2s ease-out;
@@ -254,9 +254,9 @@
 }
 
 .explore-section-title {
-    font-size: 20px;
+    font-size: 17px;
     font-weight: 800;
-    padding: 12px 16px;
+    padding: 10px 16px;
     color: var(--text-primary);
 }
 
@@ -558,9 +558,9 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px 20px;
+    padding: 40px 20px;
     color: var(--text-secondary);
-    gap: 16px;
+    gap: 12px;
 }
 
 .explore-spinner,
@@ -597,7 +597,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 80px 40px;
+    padding: 40px 24px;
     text-align: center;
 }
 
