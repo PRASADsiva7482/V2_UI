@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getPostsByHashtag, getHashtagByName } from '../services/api/hashtags';
 import PostCard from '../components/posts/PostCard';
@@ -65,6 +65,10 @@ function HashtagPage() {
         navigate(-1);
     };
 
+    const handlePostDeleted = useCallback((postId) => {
+        setPosts(prev => prev.filter(p => p.id !== postId));
+    }, []);
+
     if (loading) {
         return (
             <div className="hashtag-page">
@@ -116,7 +120,7 @@ function HashtagPage() {
                 ) : (
                     <>
                         {posts.map(post => (
-                            <PostCard key={post.id} post={post} />
+                            <PostCard key={post.id} post={post} onPostDeleted={handlePostDeleted} />
                         ))}
 
                         {hasMore && (

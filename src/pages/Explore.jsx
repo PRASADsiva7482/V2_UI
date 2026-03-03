@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -144,6 +144,16 @@ function Explore() {
     const handleHashtagClick = (tagName) => {
         navigate(`/hashtag/${tagName}`);
     };
+
+    const handlePostDeleted = useCallback((postId) => {
+        if (forYouData?.trendingPosts) {
+            setForYouData(prev => ({
+                ...prev,
+                trendingPosts: prev.trendingPosts.filter(p => p.id !== postId)
+            }));
+        }
+        setCategoryPosts(prev => prev.filter(p => p.id !== postId));
+    }, [forYouData]);
 
     const formatPostCount = (count) => {
         if (!count) return '0 posts';
@@ -420,7 +430,7 @@ function Explore() {
                         <h2 className="explore-section-title">Trending Posts</h2>
                         <div className="explore-posts">
                             {trendingPosts.map(post => (
-                                <PostCard key={post.id} post={post} />
+                                <PostCard key={post.id} post={post} onPostDeleted={handlePostDeleted} />
                             ))}
                         </div>
                     </div>
@@ -495,7 +505,7 @@ function Explore() {
                         <h2 className="explore-section-title">Top Posts</h2>
                         <div className="explore-posts">
                             {categoryPosts.map(post => (
-                                <PostCard key={post.id} post={post} />
+                                <PostCard key={post.id} post={post} onPostDeleted={handlePostDeleted} />
                             ))}
                         </div>
                     </div>

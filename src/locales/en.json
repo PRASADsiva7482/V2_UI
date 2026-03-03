@@ -82,7 +82,17 @@
     "delete": "Delete",
     "edit": "Edit",
     "save": "Save",
-    "cancel": "Cancel"
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "deleteConfirm": "Are you sure you want to delete this post? This will permanently remove the post and all its comments, likes, and media.",
+    "deleteErrorFailed": "Failed to delete post. Please try again.",
+    "editErrorEmpty": "Post must have either content or media.",
+    "editErrorFailed": "Failed to update post. Please try again.",
+    "editWindowExpired": "Edit window has expired. Posts can only be modified within a few minutes of creation.",
+    "addMedia": "Add media",
+    "removeMedia": "Remove media",
+    "undoRemove": "Undo remove"
   },
   "profile": {
     "title": "Profile",

@@ -132,6 +132,10 @@ function Profile() {
         );
     }, []);
 
+    const handlePostDeleted = useCallback((postId) => {
+        setPosts(prev => prev.filter(post => post.id !== postId));
+    }, []);
+
     const handleSaveProfile = async () => {
         if (saving) return;
 
@@ -334,6 +338,7 @@ function Profile() {
                                     key={post.id}
                                     post={post}
                                     onPostUpdate={handlePostUpdate}
+                                    onPostDeleted={handlePostDeleted}
                                 />
                             ))}
                             {hasMore && (

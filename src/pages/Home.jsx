@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTimelineFeed } from '../services/api/posts';
 import { getTrendingPosts } from '../services/api/discovery';
@@ -134,6 +134,27 @@ function Home() {
         }
     };
 
+    const handlePostUpdate = useCallback((postId, updates) => {
+        setForYouPosts(prev => prev.map(p => p.id === postId ? { ...p, ...updates } : p));
+        setFollowingPosts(prev => prev.map(p => p.id === postId ? { ...p, ...updates } : p));
+    }, []);
+
+    const handlePostDeleted = useCallback((postId) => {
+        const updatedForYou = forYouPosts.filter(p => p.id !== postId);
+        const updatedFollowing = followingPosts.filter(p => p.id !== postId);
+
+        setForYouPosts(updatedForYou);
+        setFollowingPosts(updatedFollowing);
+
+        // Update cache
+        if (cache.home?.forYou) {
+            updateHomeCache('forYou', { ...cache.home.forYou, data: updatedForYou });
+        }
+        if (cache.home?.following) {
+            updateHomeCache('following', { ...cache.home.following, data: updatedFollowing });
+        }
+    }, [forYouPosts, followingPosts, cache.home, updateHomeCache]);
+
     const handleLoadMore = () => {
         const nextPage = page + 1;
         setPage(nextPage);
@@ -186,7 +207,12 @@ function Home() {
                 ) : (
                     <>
                         {currentPosts.map(post => (
-                            <PostCard key={post.id} post={post} />
+                            <PostCard
+                                key={post.id}
+                                post={post}
+                                onPostUpdate={handlePostUpdate}
+                                onPostDeleted={handlePostDeleted}
+                            />
                         ))}
 
                         {hasMore && (

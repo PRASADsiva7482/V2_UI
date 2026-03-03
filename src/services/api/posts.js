@@ -56,9 +56,24 @@ export const createPost = async (content, mediaIds = null) => {
 
 /**
  * Update a post
+ * @param {number} postId - The post ID
+ * @param {Object} data - Update data
+ * @param {string} data.content - Updated content
+ * @param {number[]} data.addMediaIds - Media IDs to attach
+ * @param {number[]} data.removeMediaIds - Media IDs to remove
  */
-export const updatePost = async (postId, content) => {
-    return apiCaller.put(URLS.POSTS.BY_ID(postId), { content });
+export const updatePost = async (postId, data) => {
+    const requestBody = {};
+    if (data.content !== undefined) {
+        requestBody.content = data.content;
+    }
+    if (data.addMediaIds && data.addMediaIds.length > 0) {
+        requestBody.addMediaIds = data.addMediaIds;
+    }
+    if (data.removeMediaIds && data.removeMediaIds.length > 0) {
+        requestBody.removeMediaIds = data.removeMediaIds;
+    }
+    return apiCaller.put(URLS.POSTS.BY_ID(postId), requestBody);
 };
 
 /**
