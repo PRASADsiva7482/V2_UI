@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getUserProfile, updateMyProfile } from '../services/api/profile';
+import { getUserProfile, getUserProfileByUsername, updateMyProfile } from '../services/api/profile';
 import { getUserPosts } from '../services/api/posts';
 import { followUser, unfollowUser, getFollowStatus } from '../services/api/follows';
 import { formatNumber } from '../services/utils/formatters';
@@ -12,7 +12,7 @@ import PostCard from '../components/posts/PostCard';
 import './Profile.css';
 
 function Profile() {
-    const { userId } = useParams();
+    const { userId, username: usernameParam } = useParams();
     const navigate = useNavigate();
     const { t } = useTranslation();
     const { showToast } = useToast();
@@ -37,8 +37,30 @@ function Profile() {
         bio: ''
     });
 
+    // If navigated via username route (/profile/u/:username), resolve to userId first
+    useEffect(() => {
+        if (usernameParam && !userId) {
+            (async () => {
+                try {
+                    setLoading(true);
+                    const profileData = await getUserProfileByUsername(usernameParam);
+                    if (profileData && profileData.userId) {
+                        // Redirect to the userId-based route
+                        navigate(`/profile/${profileData.userId}`, { replace: true });
+                    } else {
+                        setLoading(false);
+                    }
+                } catch (error) {
+                    console.error('Error resolving username:', error);
+                    setLoading(false);
+                }
+            })();
+        }
+    }, [usernameParam, userId, navigate]);
+
     // U-4: Reset page state when userId changes
     useEffect(() => {
+        if (!userId) return; // Don't load if we only have username (will redirect)
         setPage(0);
         setPosts([]);
         setHasMore(true);
@@ -50,6 +72,7 @@ function Profile() {
     // This fixes the stale closure where loadPosts() was called after setPage()
     // but used the OLD page value.
     useEffect(() => {
+        if (!userId) return; // Don't load if we only have username (will redirect)
         loadPosts(page);
     }, [userId, page]);
 

@@ -4,6 +4,7 @@ import { uploadMedia } from '../../services/api/media';
 import Button from '../common/Button';
 import Avatar from '../common/Avatar';
 import MediaUploader from '../media/MediaUploader';
+import MentionInput from '../common/MentionInput';
 import './CreatePost.css';
 
 function CreatePost({ onPostCreated }) {
@@ -13,6 +14,7 @@ function CreatePost({ onPostCreated }) {
     const [uploadingMedia, setUploadingMedia] = useState(false);
     const [error, setError] = useState(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [mentionedUserIds, setMentionedUserIds] = useState([]);
     const fileInputRef = useRef(null);
     const emojiPickerRef = useRef(null);
 
@@ -99,8 +101,8 @@ function CreatePost({ onPostCreated }) {
             }
 
             // Create post with content and media IDs
-            console.log('Creating post with content:', content, 'and media:', mediaIds);
-            const newPost = await createPost(content, mediaIds);
+            console.log('Creating post with content:', content, 'media:', mediaIds, 'mentions:', mentionedUserIds);
+            const newPost = await createPost(content, mediaIds, mentionedUserIds);
 
             console.log('Post created successfully:', newPost);
             setContent('');
@@ -143,14 +145,15 @@ function CreatePost({ onPostCreated }) {
                 {/* Main content area - side by side layout */}
                 <div className="create-post-main">
                     <div className="create-post-textarea-wrapper">
-                        <textarea
+                        <MentionInput
                             className="create-post-textarea"
                             placeholder="What's happening?"
                             value={content}
-                            onChange={(e) => setContent(e.target.value)}
+                            onChange={setContent}
                             maxLength={maxChars}
                             rows={2}
                             disabled={loading}
+                            onMentionedUsersChange={setMentionedUserIds}
                         />
                     </div>
 

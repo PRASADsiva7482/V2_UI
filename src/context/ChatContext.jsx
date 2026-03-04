@@ -209,7 +209,7 @@ export const ChatProvider = ({ children }) => {
     /**
      * Send a text-only message via WebSocket (fast path).
      */
-    const sendMessage = useCallback((conversationId, content, type = 'TEXT', replyToId = null) => {
+    const sendMessage = useCallback((conversationId, content, mentionedUserIds = [], type = 'TEXT', replyToId = null) => {
         const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         // Optimistic UI update
@@ -240,6 +240,7 @@ export const ChatProvider = ({ children }) => {
             type,
             replyToId,
             tempId,
+            mentionedUserIds,
         });
     }, [currentUserId, user]);
 
@@ -249,7 +250,7 @@ export const ChatProvider = ({ children }) => {
      * 2. Send message via REST with attachment info
      * 3. WebSocket will broadcast the saved message to recipients
      */
-    const sendMediaMessage = useCallback(async (conversationId, content, files, replyToId = null) => {
+    const sendMediaMessage = useCallback(async (conversationId, content, files, mentionedUserIds = [], replyToId = null) => {
         const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         // Determine message type from files
@@ -311,6 +312,7 @@ export const ChatProvider = ({ children }) => {
                 replyToId,
                 tempId,
                 attachments: uploadedAttachments,
+                mentionedUserIds,
             };
 
             await sendMessageWithMedia(request);

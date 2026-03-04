@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { likePost, unlikePost, incrementViewCount, updatePost, deletePost } from '../../services/api/posts';
 import { uploadMedia } from '../../services/api/media';
 import { formatRelativeTime, formatNumber } from '../../services/utils/formatters';
-import { parseHashtagsInText } from '../../services/utils/hashtagUtils';
+import { parseContentSegments } from '../../services/utils/mentionUtils';
 import Avatar from '../common/Avatar';
 import CommentModal from '../comments/CommentModal';
 import VideoPlayer from '../media/VideoPlayer';
@@ -123,6 +123,10 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
 
     const handleHashtagClick = useCallback((tagName) => {
         navigate(`/hashtag/${tagName}`);
+    }, [navigate]);
+
+    const handleMentionClick = useCallback((username) => {
+        navigate(`/profile/u/${username}`);
     }, [navigate]);
 
     // ==================== Edit Handlers ====================
@@ -491,7 +495,7 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                     <>
                         {post.content && (
                             <div className="post-text">
-                                {parseHashtagsInText(post.content, handleHashtagClick).map((segment, index) => {
+                                {parseContentSegments(post.content, handleMentionClick, handleHashtagClick).map((segment, index) => {
                                     const stableKey = `${post.id}-seg-${index}-${segment.type}`;
                                     if (segment.type === 'hashtag') {
                                         return (
@@ -501,6 +505,20 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     segment.onClick(segment.tagName);
+                                                }}
+                                            >
+                                                {segment.content}
+                                            </span>
+                                        );
+                                    }
+                                    if (segment.type === 'mention') {
+                                        return (
+                                            <span
+                                                key={stableKey}
+                                                className="mention-link"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    segment.onClick(segment.username);
                                                 }}
                                             >
                                                 {segment.content}

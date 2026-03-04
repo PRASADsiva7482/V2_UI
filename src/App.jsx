@@ -49,6 +49,7 @@ function App() {
                                                                     <Route path="/home" element={<Home />} />
                                                                     <Route path="/explore" element={<Explore />} />
                                                                     <Route path="/notifications" element={<Notifications />} />
+                                                                    <Route path="/profile/u/:username" element={<Profile />} />
                                                                     <Route path="/profile/:userId" element={<Profile />} />
                                                                     <Route path="/hashtag/:tagName" element={<HashtagPage />} />
                                                                     <Route path="/connections" element={<Connections />} />

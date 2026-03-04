@@ -108,6 +108,19 @@
     text-decoration: underline;
 }
 
+/* @mention links in post content */
+.mention-link {
+    color: #794BC4;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.mention-link:hover {
+    text-decoration: underline;
+    color: #9a6fe0;
+}
+
 /* ========== Post Options (3-dot menu) ========== */
 .post-options-wrapper {
     position: relative;

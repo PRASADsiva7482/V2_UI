@@ -4,6 +4,7 @@ import { uploadMedia } from '../../services/api/media';
 import Button from '../common/Button';
 import Avatar from '../common/Avatar';
 import MediaUploader from '../media/MediaUploader';
+import MentionInput from '../common/MentionInput';
 import './CreatePostModal.css';
 
 function CreatePostModal({ onClose, onPostCreated }) {
@@ -13,6 +14,7 @@ function CreatePostModal({ onClose, onPostCreated }) {
     const [uploadingMedia, setUploadingMedia] = useState(false);
     const [error, setError] = useState(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [mentionedUserIds, setMentionedUserIds] = useState([]);
     const fileInputRef = useRef(null);
     const emojiPickerRef = useRef(null);
     const overlayRef = useRef(null);
@@ -110,8 +112,8 @@ function CreatePostModal({ onClose, onPostCreated }) {
                 setUploadingMedia(false);
             }
 
-            console.log('Creating post with content:', content, 'and media:', mediaIds);
-            const newPost = await createPost(content, mediaIds);
+            console.log('Creating post with content:', content, 'media:', mediaIds, 'mentions:', mentionedUserIds);
+            const newPost = await createPost(content, mediaIds, mentionedUserIds);
 
             console.log('Post created successfully:', newPost);
             setContent('');
@@ -164,15 +166,16 @@ function CreatePostModal({ onClose, onPostCreated }) {
                             <Avatar size="medium" />
                         </div>
                         <div className="modal-compose-content">
-                            <textarea
+                            <MentionInput
                                 className="modal-compose-textarea"
                                 placeholder="What's happening?"
                                 value={content}
-                                onChange={(e) => setContent(e.target.value)}
+                                onChange={setContent}
                                 maxLength={maxChars}
                                 rows={4}
                                 disabled={loading}
                                 autoFocus
+                                onMentionedUsersChange={setMentionedUserIds}
                             />
                         </div>
                     </div>

@@ -4,6 +4,8 @@ import chatWebSocketService from '../../services/websocket/chatWebSocket';
 import { searchUsers } from '../../services/api/profile';
 import Avatar from '../common/Avatar';
 import EmojiPicker from './EmojiPicker';
+import MentionInput from '../common/MentionInput';
+import { parseContentSegments } from '../../services/utils/mentionUtils';
 import './Chat.css';
 
 /* ════════════════════════════════════════════════════════════════
@@ -71,8 +73,8 @@ function Chat() {
                         conversation={activeConversation}
                         messages={messages[activeConversation.id] || []}
                         currentUserId={currentUserId}
-                        onSendMessage={(content) => sendMessage(activeConversation.id, content)}
-                        onSendMediaMessage={(content, files) => sendMediaMessage(activeConversation.id, content, files)}
+                        onSendMessage={(content, mentionedUserIds) => sendMessage(activeConversation.id, content, mentionedUserIds)}
+                        onSendMediaMessage={(content, files, mentionedUserIds) => sendMediaMessage(activeConversation.id, content, files, mentionedUserIds)}
                         onMarkRead={() => markConversationAsRead(activeConversation.id)}
                         onSendTyping={(typing) => sendTypingIndicator(activeConversation.id, typing)}
                         onBack={handleBack}
@@ -293,6 +295,7 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [filePreviews, setFilePreviews] = useState([]);
     const [lightboxImage, setLightboxImage] = useState(null);
+    const [mentionedUserIds, setMentionedUserIds] = useState([]);
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
     const typingTimeoutRef = useRef(null);
@@ -354,8 +357,9 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
 
         if (selectedFiles.length > 0) {
             // Send media message
-            onSendMediaMessage(content, selectedFiles);
+            onSendMediaMessage(content, selectedFiles, mentionedUserIds);
             setInputValue('');
+            setMentionedUserIds([]);
             clearFiles();
             handleStopTyping();
             setShowEmojiPicker(false);
@@ -363,8 +367,9 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
         }
 
         if (!content) return;
-        onSendMessage(content);
+        onSendMessage(content, mentionedUserIds);
         setInputValue('');
+        setMentionedUserIds([]);
         handleStopTyping();
         setShowEmojiPicker(false);
     };
@@ -376,8 +381,8 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
         }
     };
 
-    const handleInputChange = (e) => {
-        setInputValue(e.target.value);
+    const handleInputChange = (value) => {
+        setInputValue(value);
 
         if (!isTyping) {
             setIsTyping(true);
@@ -554,7 +559,25 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
                                                 )}
                                                 {/* Text content */}
                                                 {msg.content && (
-                                                    <span className="message-text">{msg.content}</span>
+                                                    <span className="message-text">
+                                                        {parseContentSegments(msg.content).map((segment, idx) => {
+                                                            if (segment.type === 'mention') {
+                                                                return (
+                                                                    <span key={idx} className="mention-text">
+                                                                        {segment.content}
+                                                                    </span>
+                                                                );
+                                                            }
+                                                            if (segment.type === 'hashtag') {
+                                                                return (
+                                                                    <span key={idx} className="hashtag-text">
+                                                                        {segment.content}
+                                                                    </span>
+                                                                );
+                                                            }
+                                                            return <span key={idx}>{segment.content}</span>;
+                                                        })}
+                                                    </span>
                                                 )}
                                             </>
                                         )}
@@ -644,14 +667,15 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
                     />
 
                     {/* Text Input */}
-                    <textarea
-                        ref={inputRef}
+                    <MentionInput
                         className="chat-input"
                         value={inputValue}
                         onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
                         placeholder="Type a message..."
                         rows={1}
+                        onMentionedUsersChange={setMentionedUserIds}
+                        mentionUsersWithin={conversation.type === 'GROUP' ? null : null} // Can optimize to fetch group users only if there is group data
                     />
 
                     {/* Send Button */}
