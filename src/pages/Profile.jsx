@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getUserProfile, getUserProfileByUsername, updateMyProfile } from '../services/api/profile';
+import { getUserProfile, getUserProfileByUsername, updateMyProfile, uploadProfilePicture, deleteProfilePicture } from '../services/api/profile';
 import { getUserPosts } from '../services/api/posts';
 import { followUser, unfollowUser, getFollowStatus } from '../services/api/follows';
 import { formatNumber } from '../services/utils/formatters';
@@ -29,6 +29,13 @@ function Profile() {
     const [hasMore, setHasMore] = useState(true);
     const [editing, setEditing] = useState(false);
     const [saving, setSaving] = useState(false);
+
+    // Profile picture state
+    const [profilePicFile, setProfilePicFile] = useState(null);
+    const [profilePicPreview, setProfilePicPreview] = useState(null);
+    const [removePic, setRemovePic] = useState(false);
+    const fileInputRef = useRef(null);
+    const [showAvatarViewer, setShowAvatarViewer] = useState(false);
 
     // Edit form state
     const [editForm, setEditForm] = useState({
@@ -84,10 +91,23 @@ function Profile() {
                 username: profile.username || '',
                 bio: profile.bio || ''
             });
+            // Reset pic state when entering edit mode
+            setProfilePicFile(null);
+            setProfilePicPreview(null);
+            setRemovePic(false);
         } else {
             setEditing(false);
         }
     }, [isEditMode, profile]);
+
+    // Cleanup preview URL on unmount or change
+    useEffect(() => {
+        return () => {
+            if (profilePicPreview) {
+                URL.revokeObjectURL(profilePicPreview);
+            }
+        };
+    }, [profilePicPreview]);
 
     const loadProfile = async () => {
         try {
@@ -159,16 +179,105 @@ function Profile() {
         setPosts(prev => prev.filter(post => post.id !== postId));
     }, []);
 
+    // Profile picture handlers
+    const handleProfilePicClick = () => {
+        if (editing) {
+            if (fileInputRef.current) fileInputRef.current.click();
+        } else {
+            setShowAvatarViewer(true);
+        }
+    };
+
+    const handleProfilePicChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            showToast('Please select a valid image file (JPG, PNG, GIF, or WEBP)', 'error');
+            return;
+        }
+
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('Image size must be under 5MB', 'error');
+            return;
+        }
+
+        // Set preview
+        if (profilePicPreview) {
+            URL.revokeObjectURL(profilePicPreview);
+        }
+        const previewUrl = URL.createObjectURL(file);
+        setProfilePicFile(file);
+        setProfilePicPreview(previewUrl);
+        setRemovePic(false);
+    };
+
+    const handleRemoveProfilePic = () => {
+        setRemovePic(true);
+        setProfilePicFile(null);
+        if (profilePicPreview) {
+            URL.revokeObjectURL(profilePicPreview);
+            setProfilePicPreview(null);
+        }
+    };
+
+    const getDisplayedAvatar = () => {
+        if (removePic) return null;
+        if (profilePicPreview) return profilePicPreview;
+        return profile?.profilePictureUrl;
+    };
+
     const handleSaveProfile = async () => {
         if (saving) return;
 
         try {
             setSaving(true);
+
+            // Upload new profile picture if selected
+            if (profilePicFile) {
+                try {
+                    const updatedProfileFromPic = await uploadProfilePicture(profilePicFile);
+                    setProfile(prev => ({ ...prev, profilePictureUrl: updatedProfileFromPic.profilePictureUrl }));
+                } catch (error) {
+                    console.error('Error uploading profile picture:', error);
+                    showToast('Failed to upload profile picture', 'error');
+                    setSaving(false);
+                    return;
+                }
+            } else if (removePic && profile?.profilePictureUrl) {
+                // Delete profile picture
+                try {
+                    await deleteProfilePicture();
+                    setProfile(prev => ({ ...prev, profilePictureUrl: null }));
+                } catch (error) {
+                    console.error('Error deleting profile picture:', error);
+                    showToast('Failed to remove profile picture', 'error');
+                    setSaving(false);
+                    return;
+                }
+            }
+
+            // Update text fields
             const updatedProfile = await updateMyProfile(editForm);
             setProfile(updatedProfile);
             setEditing(false);
             searchParams.delete('edit');
             setSearchParams(searchParams);
+
+            // Reset pic state
+            setProfilePicFile(null);
+            if (profilePicPreview) {
+                URL.revokeObjectURL(profilePicPreview);
+                setProfilePicPreview(null);
+            }
+            setRemovePic(false);
+
+            // Notify other components (TopBar) to refresh profile data
+            window.dispatchEvent(new CustomEvent('profileUpdated'));
+
             // U-9: Use toast instead of alert()
             showToast(t('profile.updateSuccess'), 'success');
         } catch (error) {
@@ -188,6 +297,13 @@ function Profile() {
             username: profile?.username || '',
             bio: profile?.bio || ''
         });
+        // Reset pic state
+        setProfilePicFile(null);
+        if (profilePicPreview) {
+            URL.revokeObjectURL(profilePicPreview);
+            setProfilePicPreview(null);
+        }
+        setRemovePic(false);
     };
 
     const handleInputChange = (e) => {
@@ -225,12 +341,50 @@ function Profile() {
                 </div>
 
                 <div className="profile-info-section">
-                    <div className="profile-avatar-wrapper">
+                    <div className={`profile-avatar-wrapper ${editing ? 'profile-avatar-editable' : ''}`} onClick={!editing ? handleProfilePicClick : undefined}>
                         <Avatar
-                            src={profile.profilePictureUrl}
+                            src={getDisplayedAvatar()}
                             alt={profile.displayName}
                             size="xlarge"
+                            onClick={editing ? handleProfilePicClick : undefined}
                         />
+                        {editing && (
+                            <>
+                                <div className="profile-avatar-overlay" onClick={handleProfilePicClick}>
+                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                                        <circle cx="18" cy="18" r="6" fill="var(--primary-color)" />
+                                        <path d="M18 15.5v5M15.5 18h5" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                                    </svg>
+                                    <span className="profile-avatar-overlay-text">
+                                        {t('profile.profilePicture', 'Change Photo')}
+                                    </span>
+                                </div>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                    onChange={handleProfilePicChange}
+                                    className="profile-pic-input"
+                                    id="profile-pic-upload"
+                                />
+                                {(profilePicPreview || (!removePic && profile?.profilePictureUrl)) && (
+                                    <button
+                                        className="profile-pic-remove-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveProfilePic();
+                                        }}
+                                        title="Remove profile picture"
+                                        type="button"
+                                    >
+                                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                                        </svg>
+                                    </button>
+                                )}
+                            </>
+                        )}
                     </div>
 
                     <div className="profile-actions">
@@ -252,7 +406,11 @@ function Profile() {
                                     disabled={saving}
                                     variant="primary"
                                 >
-                                    {saving ? 'Saving...' : t('profile.saveProfile')}
+                                    {saving
+                                        ? uploadingPic
+                                            ? 'Uploading pic...'
+                                            : 'Saving...'
+                                        : t('profile.saveProfile')}
                                 </Button>
                                 <Button
                                     onClick={handleCancelEdit}
@@ -380,6 +538,25 @@ function Profile() {
                     )}
                 </div>
             </div>
+
+            {/* Avatar Viewer Lightbox */}
+            {showAvatarViewer && (
+                <div className="avatar-viewer-overlay" onClick={() => setShowAvatarViewer(false)}>
+                    <button className="avatar-viewer-close" onClick={() => setShowAvatarViewer(false)} title="Close">
+                        ×
+                    </button>
+
+
+
+                    <div className="avatar-viewer-content" onClick={(e) => e.stopPropagation()}>
+                        <Avatar
+                            src={getDisplayedAvatar()}
+                            alt={profile.displayName}
+                            className="avatar-viewer-image"
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

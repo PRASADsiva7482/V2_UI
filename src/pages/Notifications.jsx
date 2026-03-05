@@ -270,6 +270,14 @@ function Notifications() {
         </div>
     );
 
+    const getMediaUrl = (fileUrl) => {
+        if (!fileUrl) return '';
+        if (fileUrl.startsWith('http')) return fileUrl;
+        const cleanPath = fileUrl.startsWith('/') ? fileUrl.substring(1) : fileUrl;
+        const baseUrl = window.config?.api?.mediaBaseUrl || 'http://localhost:2000';
+        return `${baseUrl}/${cleanPath}`;
+    };
+
     const renderNotification = (notification) => {
         const config = getNotificationConfig(notification.type);
 
@@ -294,7 +302,7 @@ function Notifications() {
                     {/* Sender avatar */}
                     {notification.senderProfilePictureUrl ? (
                         <img
-                            src={notification.senderProfilePictureUrl}
+                            src={getMediaUrl(notification.senderProfilePictureUrl)}
                             alt={notification.senderDisplayName}
                             className="notification-avatar"
                         />

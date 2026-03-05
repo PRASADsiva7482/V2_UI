@@ -22,6 +22,15 @@ function TopBar() {
         loadCurrentProfile();
     }, []);
 
+    // Listen for profile updates (e.g., profile picture change on Profile page)
+    useEffect(() => {
+        const handleProfileUpdated = () => {
+            loadCurrentProfile();
+        };
+        window.addEventListener('profileUpdated', handleProfileUpdated);
+        return () => window.removeEventListener('profileUpdated', handleProfileUpdated);
+    }, []);
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {

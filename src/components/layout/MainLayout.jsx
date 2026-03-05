@@ -15,22 +15,29 @@ function MainLayout({ children }) {
 
     useEffect(() => {
         const path = location.pathname;
-        let title = 'V.com';
+        let title = 'v.com';
 
-        if (path === '/' || path === '/home') {
-            title = `${t('navbar.home', 'Home')} / V.com`;
-        } else if (path.startsWith('/explore')) {
-            title = `${t('navbar.explore', 'Explore')} / V.com`;
-        } else if (path.startsWith('/notifications')) {
-            title = `${t('navbar.notifications', 'Notifications')} / V.com`;
-        } else if (path.startsWith('/connections')) {
-            title = `${t('navbar.connect', 'Connect')} / V.com`;
-        } else if (path.startsWith('/messages') || path.startsWith('/chat')) {
-            title = `${t('navbar.messages', 'Messages')} / V.com`;
-        } else if (path.startsWith('/profile')) {
-            title = `${t('navbar.profile', 'Profile')} / V.com`;
-        } else if (path.startsWith('/settings')) {
-            title = `Settings / V.com`;
+        // if (path === '/' || path === '/home') {
+        //     title = `${t('navbar.home', 'Home')} / v.com`;
+        // } else if (path.startsWith('/explore')) {
+        //     title = `${t('navbar.explore', 'Explore')} / v.com`;
+        // } else if (path.startsWith('/notifications')) {
+        //     title = `${t('navbar.notifications', 'Notifications')} / v.com`;
+        // } else if (path.startsWith('/connections')) {
+        //     title = `${t('navbar.connect', 'Connect')} / v.com`;
+        // } else if (path.startsWith('/messages') || path.startsWith('/chat')) {
+        //     title = `${t('navbar.messages', 'Messages')} / v.com`;
+        // } else if (path.startsWith('/profile')) {
+        //     title = `${t('navbar.profile', 'Profile')} / v.com`;
+        // } else if (path.startsWith('/settings')) {
+        //     title = `Settings / v.com`;
+        // }
+
+        if (path && path !== '/') {
+            const route = path.split('/')[1]; // first path segment
+            title = `${t(`navbar.${route}`, route.charAt(0).toUpperCase() + route.slice(1))} / v.com`;
+        } else {
+            title = `${t('navbar.home', 'Home')} / v.com`;
         }
 
         document.title = title;

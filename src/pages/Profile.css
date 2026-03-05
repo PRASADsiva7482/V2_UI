@@ -45,6 +45,83 @@
     border: 4px solid var(--card-background);
     border-radius: 50%;
     width: fit-content;
+    position: relative;
+    cursor: pointer;
+}
+
+.profile-avatar-wrapper .avatar {
+    width: 140px !important;
+    height: 140px !important;
+    transition: filter 0.2s ease;
+}
+
+/* Editable avatar styles (edit mode) */
+.profile-avatar-editable {
+    cursor: pointer;
+}
+
+.profile-avatar-editable:hover .avatar {
+    filter: brightness(0.7);
+}
+
+.profile-avatar-overlay {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    right: 4px;
+    bottom: 4px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.45);
+    color: white;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    gap: 4px;
+}
+
+.profile-avatar-editable:hover .profile-avatar-overlay {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.profile-avatar-overlay-text {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-pic-input {
+    display: none;
+}
+
+.profile-pic-remove-btn {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--danger, #e0245e);
+    border: 2px solid var(--card-background);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+    transition: transform 0.15s ease, background 0.2s ease;
+    padding: 0;
+}
+
+.profile-pic-remove-btn:hover {
+    transform: scale(1.15);
+    background: #c91f50;
 }
 
 .profile-actions {
@@ -254,6 +331,11 @@
         margin-top: -40px;
     }
 
+    .profile-avatar-wrapper .avatar {
+        width: 110px !important;
+        height: 110px !important;
+    }
+
     .profile-name {
         font-size: 20px;
     }
@@ -274,6 +356,11 @@
 
     .profile-avatar-wrapper {
         margin-top: -36px;
+    }
+
+    .profile-avatar-wrapper .avatar {
+        width: 96px !important;
+        height: 96px !important;
     }
 
     .profile-info-section {
@@ -305,4 +392,81 @@
         padding: 12px;
         font-size: 14px;
     }
+}
+
+/* Avatar Viewer Lightbox */
+.avatar-viewer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.avatar-viewer-close {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.avatar-viewer-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.avatar-viewer-close {
+    top: 20px;
+    left: 20px;
+    font-size: 28px;
+    line-height: 1;
+}
+
+.avatar-viewer-content {
+    max-width: 90vw;
+    max-height: 80vh;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.avatar-viewer-image {
+    width: 300px !important;
+    height: 300px !important;
+    max-height: 80vh;
+    max-width: 80vh;
+    object-fit: cover;
+    display: block;
+}
+
+@media (min-width: 768px) {
+    .avatar-viewer-image {
+        width: 400px !important;
+        height: 400px !important;
+    }
+}
+
+.avatar-viewer-input {
+    display: none;
+}
+
+.avatar-viewer-loading {
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    margin-top: 20px;
 }

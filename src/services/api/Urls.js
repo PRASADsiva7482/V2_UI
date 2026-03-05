@@ -34,6 +34,8 @@ export const URLS = {
         BY_ID: (userId) => `${API_BASE}/profile/${userId}`,
         BY_USERNAME: (username) => `${API_BASE}/profile/username/${username}`,
         PICTURE: `${API_BASE}/profile/me/picture`,
+        PICTURE_UPLOAD: `${API_BASE}/profile/me/picture/upload`,
+        PICTURE_DELETE: `${API_BASE}/profile/me/picture`,
         COVER: `${API_BASE}/profile/me/cover`,
         SEARCH: `${API_BASE}/profile/search`,
     },

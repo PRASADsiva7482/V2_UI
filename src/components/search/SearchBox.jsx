@@ -102,6 +102,14 @@ function SearchBox({ onSearch }) {
 
     const totalResults = searchResults.users.length + searchResults.posts.length;
 
+    const getMediaUrl = (fileUrl) => {
+        if (!fileUrl) return '';
+        if (fileUrl.startsWith('http')) return fileUrl;
+        const cleanPath = fileUrl.startsWith('/') ? fileUrl.substring(1) : fileUrl;
+        const baseUrl = window.config?.api?.mediaBaseUrl || 'http://localhost:2000';
+        return `${baseUrl}/${cleanPath}`;
+    };
+
     return (
         <div className="search-box" ref={searchBoxRef}>
             <form className="search-form" onSubmit={handleSubmit}>
@@ -179,7 +187,7 @@ function SearchBox({ onSearch }) {
                                         >
                                             <div className="search-result-avatar">
                                                 {user.profilePictureUrl ? (
-                                                    <img src={user.profilePictureUrl} alt={user.displayName} />
+                                                    <img src={getMediaUrl(user.profilePictureUrl)} alt={user.displayName} />
                                                 ) : (
                                                     <div className="search-result-avatar-placeholder">
                                                         {user.displayName?.charAt(0) || user.username?.charAt(0) || '?'}

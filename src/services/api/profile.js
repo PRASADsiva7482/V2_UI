@@ -30,9 +30,26 @@ export const updateMyProfile = async (profileData) => {
 };
 
 /**
- * Update profile picture
+ * Upload profile picture (multipart file upload)
+ * Server handles: saving file, deleting old pic, updating DB
  */
-export const updateProfilePicture = async (pictureUrl) => {
+export const uploadProfilePicture = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return apiCaller.upload(URLS.PROFILE.PICTURE_UPLOAD, formData);
+};
+
+/**
+ * Delete profile picture
+ */
+export const deleteProfilePicture = async () => {
+    return apiCaller.delete(URLS.PROFILE.PICTURE_DELETE);
+};
+
+/**
+ * Update profile picture (URL-based — legacy)
+ */
+export const updateProfilePictureUrl = async (pictureUrl) => {
     return apiCaller.put(URLS.PROFILE.PICTURE, null, {
         params: { pictureUrl }
     });
@@ -61,7 +78,9 @@ export default {
     getUserProfile,
     getUserProfileByUsername,
     updateMyProfile,
-    updateProfilePicture,
+    uploadProfilePicture,
+    deleteProfilePicture,
+    updateProfilePictureUrl,
     updateCoverPhoto,
     searchUsers
 };
