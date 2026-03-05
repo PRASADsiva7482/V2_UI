@@ -657,10 +657,13 @@
 }
 
 .audio-player audio {
-    height: 32px;
-    max-width: 220px;
-    border-radius: 16px;
+    height: 40px;
+    width: 270px;
+    max-width: 100%;
+    border-radius: 20px;
     pointer-events: auto;
+    outline: none;
+    accent-color: #ef4444;
 }
 
 /* ── File/Doc Attachment ── */

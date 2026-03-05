@@ -795,6 +795,8 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
     );
 }
 
+
+
 /* ──────────────────────────
    MESSAGE ATTACHMENT — Fully functional media previews
    ────────────────────────── */
