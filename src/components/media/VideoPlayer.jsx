@@ -24,32 +24,43 @@ function VideoPlayer({ src, thumbnail, className = '' }) {
         };
 
         const handleEnded = () => {
-            setIsPlaying(false);
             setCurrentTime(0);
+        };
+
+        const handlePlay = () => setIsPlaying(true);
+        const handlePause = () => setIsPlaying(false);
+        const handleVolumeChangeNative = () => {
+            setVolume(video.volume);
+            setIsMuted(video.muted || video.volume === 0);
         };
 
         video.addEventListener('loadedmetadata', handleLoadedMetadata);
         video.addEventListener('timeupdate', handleTimeUpdate);
         video.addEventListener('ended', handleEnded);
+        video.addEventListener('play', handlePlay);
+        video.addEventListener('pause', handlePause);
+        video.addEventListener('volumechange', handleVolumeChangeNative);
 
         return () => {
             video.removeEventListener('loadedmetadata', handleLoadedMetadata);
             video.removeEventListener('timeupdate', handleTimeUpdate);
             video.removeEventListener('ended', handleEnded);
+            video.removeEventListener('play', handlePlay);
+            video.removeEventListener('pause', handlePause);
+            video.removeEventListener('volumechange', handleVolumeChangeNative);
         };
     }, []);
 
     const togglePlay = (e) => {
-        e.stopPropagation();
+        if (e) e.stopPropagation();
         const video = videoRef.current;
         if (!video) return;
 
-        if (isPlaying) {
-            video.pause();
+        if (video.paused || video.ended) {
+            video.play().catch(console.warn);
         } else {
-            video.play();
+            video.pause();
         }
-        setIsPlaying(!isPlaying);
     };
 
     const handleProgressClick = (e) => {
@@ -77,12 +88,11 @@ function VideoPlayer({ src, thumbnail, className = '' }) {
         const video = videoRef.current;
         if (!video) return;
 
-        if (isMuted) {
-            video.volume = volume || 0.5;
-            setIsMuted(false);
+        if (video.muted || video.volume === 0) {
+            video.muted = false;
+            video.volume = volume > 0 ? volume : 0.5;
         } else {
-            video.volume = 0;
-            setIsMuted(true);
+            video.muted = true;
         }
     };
 
@@ -131,6 +141,8 @@ function VideoPlayer({ src, thumbnail, className = '' }) {
                 poster={thumbnail}
                 onClick={togglePlay}
                 className="video-element"
+                data-autoplay-on-scroll="true"
+                muted={true} // Default to muted for auto-play compatibility
             />
 
             {!isPlaying && (

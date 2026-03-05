@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import TopBar from './TopBar';
 import Navbar from './Navbar';
 import RightSidebar from './RightSidebar';
+import useMediaAutoStop, { pauseAllMedia } from '../../hooks/useMediaAutoStop';
 import './MainLayout.css';
 
 function MainLayout({ children }) {
@@ -12,6 +13,12 @@ function MainLayout({ children }) {
     const isSettingsPage = location.pathname.startsWith('/settings');
     const isChatPage = location.pathname.startsWith('/chat') || location.pathname.startsWith('/messages');
     const isFullWidthPage = isSettingsPage || isChatPage;
+    const mediaAutoStopRef = useMediaAutoStop();
+
+    // Pause all media when navigating to a different page
+    useEffect(() => {
+        pauseAllMedia();
+    }, [location.pathname]);
 
     useEffect(() => {
         const path = location.pathname;
@@ -44,7 +51,7 @@ function MainLayout({ children }) {
     }, [location.pathname, t]);
 
     return (
-        <div className="app-wrapper">
+        <div className="app-wrapper" ref={mediaAutoStopRef}>
             <TopBar />
             <div className={`app-container ${isFullWidthPage ? 'full-width-content' : ''}`}>
                 <Navbar />

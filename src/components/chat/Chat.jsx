@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useChat } from '../../context/ChatContext';
 import chatWebSocketService from '../../services/websocket/chatWebSocket';
 import { searchUsers } from '../../services/api/profile';
+import { pauseAllMedia } from '../../hooks/useMediaAutoStop';
 import Avatar from '../common/Avatar';
 import EmojiPicker from './EmojiPicker';
 import MentionInput from '../common/MentionInput';
@@ -39,12 +40,14 @@ function Chat() {
     const [showNewChat, setShowNewChat] = useState(false);
 
     const handleSelectConversation = useCallback((conv) => {
+        pauseAllMedia();
         setActiveConversation(conv);
         loadMessages(conv.id);
         markConversationAsRead(conv.id);
     }, [setActiveConversation, loadMessages, markConversationAsRead]);
 
     const handleBack = useCallback(() => {
+        pauseAllMedia();
         setActiveConversation(null);
     }, [setActiveConversation]);
 
@@ -719,8 +722,8 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
 
             {/* Media Lightbox — supports Image, Video, File */}
             {lightboxMedia && (
-                <div className="chat-lightbox" onClick={() => setLightboxMedia(null)}>
-                    <button className="lightbox-close" onClick={() => setLightboxMedia(null)}>×</button>
+                <div className="chat-lightbox" onClick={() => { pauseAllMedia(); setLightboxMedia(null); }}>
+                    <button className="lightbox-close" onClick={() => { pauseAllMedia(); setLightboxMedia(null); }}>×</button>
 
                     {/* Download button */}
                     <a
