@@ -10,6 +10,8 @@ function MainLayout({ children }) {
     const location = useLocation();
     const { t } = useTranslation();
     const isSettingsPage = location.pathname.startsWith('/settings');
+    const isChatPage = location.pathname.startsWith('/chat') || location.pathname.startsWith('/messages');
+    const isFullWidthPage = isSettingsPage || isChatPage;
 
     useEffect(() => {
         const path = location.pathname;
@@ -37,12 +39,12 @@ function MainLayout({ children }) {
     return (
         <div className="app-wrapper">
             <TopBar />
-            <div className={`app-container ${isSettingsPage ? 'full-width-content' : ''}`}>
+            <div className={`app-container ${isFullWidthPage ? 'full-width-content' : ''}`}>
                 <Navbar />
                 <main className="main-content">
                     {children}
                 </main>
-                {!isSettingsPage && <RightSidebar />}
+                {!isFullWidthPage && <RightSidebar />}
             </div>
         </div>
     );

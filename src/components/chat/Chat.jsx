@@ -8,6 +8,22 @@ import MentionInput from '../common/MentionInput';
 import { parseContentSegments } from '../../services/utils/mentionUtils';
 import './Chat.css';
 
+/**
+ * Resolve backend-relative media URLs to full absolute URLs.
+ * The backend stores fileUrl as /v-app/api/v1/media/images/file.png
+ * but the frontend runs on port 3000, so <img src> would hit the Vite
+ * dev server instead of the backend on port 2000.
+ * This mirrors the getMediaUrl() helper used in PostCard.
+ */
+const getMediaUrl = (fileUrl) => {
+    if (!fileUrl) return '';
+    // Already absolute (e.g. blob: for optimistic previews, or http/https)
+    if (fileUrl.startsWith('http') || fileUrl.startsWith('blob:')) return fileUrl;
+    const cleanPath = fileUrl.startsWith('/') ? fileUrl.substring(1) : fileUrl;
+    const baseUrl = window.config?.api?.mediaBaseUrl || 'http://localhost:2000';
+    return `${baseUrl}/${cleanPath}`;
+};
+
 /* ════════════════════════════════════════════════════════════════
    MAIN CHAT COMPONENT
    WhatsApp-like layout: ChatList (left) + ChatRoom (right)
@@ -294,7 +310,7 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [filePreviews, setFilePreviews] = useState([]);
-    const [lightboxImage, setLightboxImage] = useState(null);
+    const [lightboxMedia, setLightboxMedia] = useState(null); // { type: 'image'|'video', url, name, size }
     const [mentionedUserIds, setMentionedUserIds] = useState([]);
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
@@ -552,7 +568,7 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
                                                             <MessageAttachment
                                                                 key={att.id || attIdx}
                                                                 attachment={att}
-                                                                onImageClick={(url) => setLightboxImage(url)}
+                                                                onMediaClick={(media) => setLightboxMedia(media)}
                                                             />
                                                         ))}
                                                     </div>
@@ -701,11 +717,78 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
                 )}
             </div>
 
-            {/* Image Lightbox */}
-            {lightboxImage && (
-                <div className="chat-lightbox" onClick={() => setLightboxImage(null)}>
-                    <button className="lightbox-close" onClick={() => setLightboxImage(null)}>×</button>
-                    <img src={lightboxImage} alt="Full size" onClick={(e) => e.stopPropagation()} />
+            {/* Media Lightbox — supports Image, Video, File */}
+            {lightboxMedia && (
+                <div className="chat-lightbox" onClick={() => setLightboxMedia(null)}>
+                    <button className="lightbox-close" onClick={() => setLightboxMedia(null)}>×</button>
+
+                    {/* Download button */}
+                    <a
+                        className="lightbox-download"
+                        href={lightboxMedia.url}
+                        download={lightboxMedia.name || 'download'}
+                        onClick={(e) => e.stopPropagation()}
+                        title="Download"
+                    >
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                        </svg>
+                    </a>
+
+                    {lightboxMedia.type === 'image' && (
+                        <img
+                            src={lightboxMedia.url}
+                            alt={lightboxMedia.name || 'Full size'}
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    )}
+
+                    {lightboxMedia.type === 'video' && (
+                        <video
+                            src={lightboxMedia.url}
+                            controls
+                            autoPlay
+                            className="lightbox-video"
+                            onClick={(e) => e.stopPropagation()}
+                            tabIndex="0"
+                            autoFocus
+                            onKeyDown={(e) => {
+                                const el = e.target;
+                                if (e.key === ' ' || e.code === 'Space') {
+                                    e.preventDefault();
+                                    if (el.paused) el.play(); else el.pause();
+                                } else if (e.key === 'ArrowRight') {
+                                    el.currentTime += 5;
+                                } else if (e.key === 'ArrowLeft') {
+                                    el.currentTime -= 5;
+                                } else if (e.key === 'f' || e.key === 'F') {
+                                    if (el.requestFullscreen) el.requestFullscreen();
+                                } else if (e.key === 'Escape') {
+                                    setLightboxMedia(null);
+                                }
+                            }}
+                        />
+                    )}
+
+                    {lightboxMedia.type === 'file' && (
+                        <div className="lightbox-file" onClick={(e) => e.stopPropagation()}>
+                            <span className="lightbox-file-icon">📄</span>
+                            <span className="lightbox-file-name">{lightboxMedia.name || 'File'}</span>
+                            {lightboxMedia.size > 0 && (
+                                <span className="lightbox-file-size">{formatFileSize(lightboxMedia.size)}</span>
+                            )}
+                            <a
+                                className="lightbox-file-download-btn"
+                                href={lightboxMedia.url}
+                                download={lightboxMedia.name || 'download'}
+                            >
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                                </svg>
+                                Download
+                            </a>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
@@ -713,24 +796,40 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
 }
 
 /* ──────────────────────────
-   MESSAGE ATTACHMENT
+   MESSAGE ATTACHMENT — Fully functional media previews
    ────────────────────────── */
-function MessageAttachment({ attachment, onImageClick }) {
+function MessageAttachment({ attachment, onMediaClick }) {
     const { fileUrl, fileName, fileType, fileSize, isUploading } = attachment;
 
     const isImage = fileType?.startsWith('image');
     const isVideo = fileType?.startsWith('video');
     const isAudio = fileType?.startsWith('audio');
 
+    const formatSize = (bytes) => {
+        if (!bytes) return '';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    };
+
+    // Resolve URLs through the backend base URL helper
+    const resolvedUrl = getMediaUrl(fileUrl);
+
     if (isImage) {
         return (
             <div className={`attachment-preview image-attachment ${isUploading ? 'uploading' : ''}`}>
                 <img
-                    src={fileUrl}
+                    src={resolvedUrl}
                     alt={fileName || 'Image'}
-                    onClick={() => onImageClick(fileUrl)}
+                    onClick={() => onMediaClick({ type: 'image', url: resolvedUrl, name: fileName, size: fileSize })}
                     loading="lazy"
                 />
+                <div className="attachment-hover-overlay">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="#fff">
+                        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                        <path d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z" />
+                    </svg>
+                </div>
                 {isUploading && (
                     <div className="attachment-upload-overlay">
                         <div className="upload-spinner" />
@@ -743,7 +842,20 @@ function MessageAttachment({ attachment, onImageClick }) {
     if (isVideo) {
         return (
             <div className={`attachment-preview video-attachment ${isUploading ? 'uploading' : ''}`}>
-                <video src={fileUrl} controls preload="metadata" />
+                <video src={resolvedUrl} preload="metadata" />
+                <div
+                    className="video-play-overlay"
+                    onClick={() => onMediaClick({ type: 'video', url: resolvedUrl, name: fileName, size: fileSize })}
+                >
+                    <div className="video-play-btn">
+                        <svg viewBox="0 0 24 24" width="36" height="36" fill="#fff">
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
+                    </div>
+                    {fileSize > 0 && (
+                        <span className="video-size-badge">{formatSize(fileSize)}</span>
+                    )}
+                </div>
                 {isUploading && (
                     <div className="attachment-upload-overlay">
                         <div className="upload-spinner" />
@@ -756,10 +868,18 @@ function MessageAttachment({ attachment, onImageClick }) {
     if (isAudio) {
         return (
             <div className={`attachment-preview audio-attachment ${isUploading ? 'uploading' : ''}`}>
-                <div className="audio-player">
+                <div className="audio-player" onClick={(e) => e.stopPropagation()}>
                     <span className="audio-icon">🎵</span>
-                    <audio src={fileUrl} controls preload="metadata" />
+                    <audio
+                        src={resolvedUrl}
+                        controls
+                        preload="metadata"
+                        onKeyDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}
+                    />
                 </div>
+                {fileName && <span className="audio-filename">{fileName}</span>}
                 {isUploading && (
                     <div className="attachment-upload-overlay">
                         <div className="upload-spinner" />
@@ -769,26 +889,26 @@ function MessageAttachment({ attachment, onImageClick }) {
         );
     }
 
-    // File/document
-    const formatSize = (bytes) => {
-        if (!bytes) return '';
-        if (bytes < 1024) return bytes + ' B';
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-    };
-
+    // File/document — clickable with download
     const getFileIcon = (name) => {
         const ext = name?.split('.').pop()?.toLowerCase() || '';
         const icons = {
             pdf: '📕', doc: '📘', docx: '📘', xls: '📊', xlsx: '📊',
             ppt: '📙', pptx: '📙', txt: '📝', zip: '📦', rar: '📦',
+            csv: '📊', json: '📋', html: '🌐', css: '🎨', js: '📜',
         };
         return icons[ext] || '📄';
     };
 
     return (
         <div className={`attachment-preview file-attachment ${isUploading ? 'uploading' : ''}`}>
-            <a href={fileUrl} target="_blank" rel="noreferrer" className="file-download-link">
+            <a
+                className="file-download-link"
+                href={resolvedUrl}
+                download={fileName || 'download'}
+                onClick={(e) => e.stopPropagation()}
+                style={{ cursor: 'pointer', textDecoration: 'none', color: 'inherit' }}
+            >
                 <span className="file-icon">{getFileIcon(fileName)}</span>
                 <div className="file-info">
                     <span className="file-name">{fileName || 'File'}</span>

@@ -5,10 +5,9 @@
 /* ──── Container ──── */
 .chat-container {
     display: flex;
-    height: 100vh;
+    height: calc(100vh - 48px);
     background: var(--bg-primary, #0a0a0f);
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.06);
     position: relative;
 }
 
@@ -628,6 +627,7 @@
     position: relative;
     border-radius: 8px;
     overflow: hidden;
+    cursor: pointer;
 }
 
 .video-attachment video {
@@ -637,6 +637,7 @@
     border-radius: 8px;
     display: block;
     background: #000;
+    pointer-events: none;
 }
 
 /* ── Audio Attachment ── */
@@ -659,6 +660,7 @@
     height: 32px;
     max-width: 220px;
     border-radius: 16px;
+    pointer-events: auto;
 }
 
 /* ── File/Doc Attachment ── */
@@ -1029,7 +1031,106 @@
 }
 
 /* ════════════════════════════════════════════════════════
-   IMAGE LIGHTBOX
+   IMAGE/VIDEO ATTACHMENT OVERLAYS
+   ════════════════════════════════════════════════════════ */
+
+/* Image hover overlay */
+.attachment-hover-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0);
+    border-radius: 8px;
+    transition: background 0.2s ease;
+    pointer-events: none;
+}
+
+.image-attachment:hover .attachment-hover-overlay {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+.attachment-hover-overlay svg {
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.2s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.image-attachment:hover .attachment-hover-overlay svg {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Video play overlay */
+.video-play-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.video-play-overlay:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.video-play-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(99, 102, 241, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+}
+
+.video-play-overlay:hover .video-play-btn {
+    background: rgba(99, 102, 241, 1);
+    transform: scale(1.08);
+    box-shadow: 0 6px 24px rgba(99, 102, 241, 0.5);
+}
+
+.video-play-btn svg {
+    margin-left: 3px;
+}
+
+.video-size-badge {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+}
+
+/* Audio filename */
+.audio-filename {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-secondary, #9ca3af);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+    padding: 0 4px 4px;
+}
+
+/* ════════════════════════════════════════════════════════
+   MEDIA LIGHTBOX — Image, Video, File
    ════════════════════════════════════════════════════════ */
 
 .chat-lightbox {
@@ -1042,7 +1143,7 @@
     justify-content: center;
     animation: lbFadeIn 0.25s ease;
     cursor: zoom-out;
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(12px);
 }
 
 @keyframes lbFadeIn {
@@ -1057,12 +1158,23 @@
 
 .chat-lightbox img {
     max-width: 90vw;
-    max-height: 90vh;
+    max-height: 85vh;
     object-fit: contain;
     border-radius: 8px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     cursor: default;
     animation: lbZoomIn 0.3s ease;
+}
+
+.lightbox-video {
+    max-width: 90vw;
+    max-height: 85vh;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    cursor: default;
+    background: #000;
+    animation: lbZoomIn 0.3s ease;
+    outline: none;
 }
 
 @keyframes lbZoomIn {
@@ -1099,6 +1211,86 @@
 .lightbox-close:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: scale(1.1);
+}
+
+/* Download button in lightbox */
+.lightbox-download {
+    position: fixed;
+    top: 20px;
+    right: 72px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 1001;
+    text-decoration: none;
+}
+
+.lightbox-download:hover {
+    background: rgba(99, 102, 241, 0.4);
+    border-color: rgba(99, 102, 241, 0.6);
+    transform: scale(1.1);
+}
+
+/* File viewer in lightbox */
+.lightbox-file {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 40px 48px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    cursor: default;
+    animation: lbZoomIn 0.3s ease;
+    max-width: 420px;
+}
+
+.lightbox-file-icon {
+    font-size: 3.2rem;
+}
+
+.lightbox-file-name {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #e8eaed;
+    text-align: center;
+    word-break: break-all;
+    max-width: 320px;
+}
+
+.lightbox-file-size {
+    font-size: 0.82rem;
+    color: #9ca3af;
+}
+
+.lightbox-file-download-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    margin-top: 6px;
+}
+
+.lightbox-file-download-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
 }
 
 /* ────── Empty State ────── */

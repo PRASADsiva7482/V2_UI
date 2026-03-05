@@ -94,7 +94,6 @@ function Notifications() {
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [showSettings, setShowSettings] = useState(false);
 
     useEffect(() => {
         loadNotifications(true);
@@ -244,7 +243,7 @@ function Notifications() {
                     )}
                     <button
                         className="notifications-settings-btn"
-                        onClick={() => setShowSettings(!showSettings)}
+                        onClick={() => navigate('/settings/notifications')}
                         title="Notification settings"
                     >
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
