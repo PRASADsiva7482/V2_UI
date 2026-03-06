@@ -180,8 +180,8 @@ function Notifications() {
 
         // Navigate to the relevant content
         if (notification.referenceType === 'POST' && notification.referenceId) {
-            // Navigate to post (could be extended later)
-            navigate('/home');
+            // Navigate to post
+            navigate(`/post/${notification.referenceId}`);
         } else if (notification.type === 'FOLLOW' && notification.senderId) {
             navigate(`/profile/${notification.senderId}`);
         } else if (notification.senderUsername) {
