@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTimelineFeed } from '../services/api/posts';
-import { getTrendingPosts } from '../services/api/discovery';
+import { getForYouFeed } from '../services/api/discovery';
 import { useDataCache } from '../context/DataCacheContext';
 import PostCard from '../components/posts/PostCard';
 import Loading from '../components/common/Loading';
@@ -67,17 +67,29 @@ function Home() {
     const loadForYouFeed = async (pageNum = 0) => {
         try {
             setLoading(true);
-            const response = await getTrendingPosts({ page: pageNum, size: 20 });
+            const response = await getForYouFeed({ page: pageNum, size: 20 });
+
+            let fetchedPosts = [];
+            let isMore = false;
+
+            // ForYouFeed returns a structured metadata response object
+            if (response && response.data) {
+                fetchedPosts = response.data.posts || [];
+                isMore = response.data.pagination?.hasNext || false;
+            } else if (Array.isArray(response)) {
+                // Fallback in case of raw array return
+                fetchedPosts = response;
+                isMore = fetchedPosts.length === 20;
+            }
 
             let newPosts;
             if (pageNum === 0) {
-                newPosts = response.content || [];
+                newPosts = fetchedPosts;
             } else {
-                newPosts = [...forYouPosts, ...(response.content || [])];
+                newPosts = [...forYouPosts, ...fetchedPosts];
             }
 
             setForYouPosts(newPosts);
-            const isMore = !response.last;
             setHasMore(isMore);
 
             // Update cache

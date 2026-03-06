@@ -11,6 +11,15 @@ export const getTrendingPosts = async (limit = 10) => {
 };
 
 /**
+ * Get personalized For You feed
+ */
+export const getForYouFeed = async ({ page = 0, size = 20 } = {}) => {
+    return apiCaller.get(URLS.DISCOVERY.FOR_YOU, {
+        params: { page, size }
+    });
+};
+
+/**
  * Get popular users to follow
  */
 export const getPopularUsers = async (limit = 10) => {
@@ -37,6 +46,7 @@ export const getSmartSuggestions = async (limit = 10) => {
 
 export default {
     getTrendingPosts,
+    getForYouFeed,
     getPopularUsers,
     getSmartSuggestions,
     getPlatformStats

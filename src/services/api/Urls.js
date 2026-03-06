@@ -45,6 +45,7 @@ export const URLS = {
         POPULAR_USERS: `${API_BASE}/discovery/popular/users`,
         STATS: `${API_BASE}/discovery/stats`,
         SUGGESTIONS: `${API_BASE}/discovery/suggestions/users`,
+        FOR_YOU: `${API_BASE}/discovery/for-you`,
     },
     MEDIA: {
         BASE: `${API_BASE}/media`,
