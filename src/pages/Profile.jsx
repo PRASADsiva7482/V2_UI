@@ -41,7 +41,10 @@ function Profile() {
     const [editForm, setEditForm] = useState({
         displayName: '',
         username: '',
-        bio: ''
+        bio: '',
+        phoneNumber: '',
+        nickname: '',
+        website: ''
     });
 
     // If navigated via username route (/profile/u/:username), resolve to userId first
@@ -89,7 +92,10 @@ function Profile() {
             setEditForm({
                 displayName: profile.displayName || '',
                 username: profile.username || '',
-                bio: profile.bio || ''
+                bio: profile.bio || '',
+                phoneNumber: profile.phoneNumber || '',
+                nickname: profile.nickname || '',
+                website: profile.website || ''
             });
             // Reset pic state when entering edit mode
             setProfilePicFile(null);
@@ -295,7 +301,10 @@ function Profile() {
         setEditForm({
             displayName: profile?.displayName || '',
             username: profile?.username || '',
-            bio: profile?.bio || ''
+            bio: profile?.bio || '',
+            phoneNumber: profile?.phoneNumber || '',
+            nickname: profile?.nickname || '',
+            website: profile?.website || ''
         });
         // Reset pic state
         setProfilePicFile(null);
@@ -433,42 +442,37 @@ function Profile() {
 
                     <div className="profile-details">
                         {editing ? (
-                            <div className="edit-form">
-                                <div className="form-group">
-                                    <label htmlFor="displayName">{t('profile.displayName')}</label>
-                                    <input
-                                        type="text"
-                                        id="displayName"
-                                        name="displayName"
-                                        value={editForm.displayName}
-                                        onChange={handleInputChange}
-                                        className="form-input"
-                                        placeholder="Your display name"
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="username">{t('profile.username')}</label>
-                                    <input
-                                        type="text"
-                                        id="username"
-                                        name="username"
-                                        value={editForm.username}
-                                        onChange={handleInputChange}
-                                        className="form-input"
-                                        placeholder="@username"
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="bio">{t('profile.bio')}</label>
-                                    <textarea
-                                        id="bio"
-                                        name="bio"
-                                        value={editForm.bio}
-                                        onChange={handleInputChange}
-                                        className="form-textarea"
-                                        placeholder="Tell us about yourself..."
-                                        rows="4"
-                                    />
+                            <div className="edit-form edit-form-compact">
+                                <div className="edit-form-grid">
+                                    <div className="form-group">
+                                        <label htmlFor="displayName">{t('profile.displayName')}</label>
+                                        <input type="text" id="displayName" name="displayName" value={editForm.displayName} onChange={handleInputChange} className="form-input" placeholder="Display name" maxLength={50} />
+                                        <span className="form-char-count">{editForm.displayName.length}/50</span>
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="username">{t('profile.username')}</label>
+                                        <div className="form-input-prefix-wrap">
+                                            <span className="form-input-prefix">@</span>
+                                            <input type="text" id="username" name="username" value={editForm.username} onChange={handleInputChange} className="form-input form-input-with-prefix" placeholder="username" />
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="nickname">Nickname</label>
+                                        <input type="text" id="nickname" name="nickname" value={editForm.nickname} onChange={handleInputChange} className="form-input" placeholder="Optional nickname" maxLength={30} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="phoneNumber">Phone</label>
+                                        <input type="tel" id="phoneNumber" name="phoneNumber" value={editForm.phoneNumber} onChange={handleInputChange} className="form-input" placeholder="+1 (555) 123-4567" />
+                                    </div>
+                                    <div className="form-group form-group-full">
+                                        <label htmlFor="website">Website</label>
+                                        <input type="url" id="website" name="website" value={editForm.website} onChange={handleInputChange} className="form-input" placeholder="https://yoursite.com" />
+                                    </div>
+                                    <div className="form-group form-group-full">
+                                        <label htmlFor="bio">{t('profile.bio')}</label>
+                                        <textarea id="bio" name="bio" value={editForm.bio} onChange={handleInputChange} className="form-textarea" placeholder="Tell us about yourself..." rows="3" maxLength={160} />
+                                        <span className="form-char-count">{editForm.bio.length}/160</span>
+                                    </div>
                                 </div>
                             </div>
                         ) : (
@@ -479,6 +483,27 @@ function Profile() {
                                 {profile.bio && (
                                     <p className="profile-bio">{profile.bio}</p>
                                 )}
+
+                                <div className="profile-meta-info">
+                                    {profile.phoneNumber && (
+                                        <span className="profile-meta-item">
+                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" /></svg>
+                                            {profile.phoneNumber}
+                                        </span>
+                                    )}
+                                    {profile.website && (
+                                        <a href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`} target="_blank" rel="noopener noreferrer" className="profile-meta-item profile-meta-link">
+                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" /></svg>
+                                            {profile.website.replace(/^https?:\/\//, '')}
+                                        </a>
+                                    )}
+                                    {profile.createdAt && (
+                                        <span className="profile-meta-item">
+                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z" /></svg>
+                                            Joined {new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                                        </span>
+                                    )}
+                                </div>
                             </>
                         )}
 
