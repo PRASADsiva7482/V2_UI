@@ -416,7 +416,7 @@ function Profile() {
                                     variant="primary"
                                 >
                                     {saving
-                                        ? uploadingPic
+                                        ? profilePicFile
                                             ? 'Uploading pic...'
                                             : 'Saving...'
                                         : t('profile.saveProfile')}

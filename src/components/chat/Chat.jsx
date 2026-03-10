@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useChat } from '../../context/ChatContext';
 import chatWebSocketService from '../../services/websocket/chatWebSocket';
 import { searchUsers } from '../../services/api/profile';
@@ -321,21 +321,66 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
     const fileInputRef = useRef(null);
     const inputRef = useRef(null);
 
+    // Track scroll positions
+    const prevMsgCountRef = useRef(0);
+    const prevFirstMsgIdRef = useRef(null);
+    const scrollHeightRef = useRef(0);
+    const scrollTopRef = useRef(0);
+
+
     const displayName = conversation.type === 'DIRECT'
         ? (conversation.otherUserDisplayName || conversation.otherUserName || 'Unknown')
         : (conversation.groupName || 'Group Chat');
     const isOnline = conversation.otherUserOnline;
 
-    // Auto-scroll to bottom on new messages
-    useEffect(() => {
+    // Auto-scroll logic: instant on open, smooth on new message, preserve on load more
+    useLayoutEffect(() => {
         const container = messagesContainerRef.current;
-        if (container) {
-            const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
-            if (isNearBottom || messages.length <= 30) {
+        if (!container) return;
+
+        // Has conversation changed?
+        const isNewConversation = container.dataset.convId !== conversation.id;
+        if (isNewConversation) {
+            container.dataset.convId = conversation.id;
+            prevMsgCountRef.current = 0;
+            prevFirstMsgIdRef.current = null;
+            scrollHeightRef.current = 0;
+            scrollTopRef.current = 0;
+        }
+
+        const currentMsgCount = messages.length;
+        const prevMsgCount = prevMsgCountRef.current;
+        const firstMsgId = messages[0]?.id || messages[0]?.tempId;
+        const prevFirstMsgId = prevFirstMsgIdRef.current;
+
+        // Is it the initial load of a conversation?
+        if (currentMsgCount > 0 && prevMsgCount === 0) {
+            // Jump to the bottom immediately
+            container.scrollTop = container.scrollHeight;
+        }
+        // Prepended messages (pagination)
+        else if (currentMsgCount > prevMsgCount && firstMsgId !== prevFirstMsgId && prevFirstMsgId) {
+            // Preserve scroll position
+            const diff = container.scrollHeight - scrollHeightRef.current;
+            container.scrollTop = scrollTopRef.current + diff;
+        }
+        // Appended message (new message at the end)
+        else if (currentMsgCount > prevMsgCount || messages[messages.length - 1]?.id !== prevFirstMsgId) {
+            const isNearBottom = scrollHeightRef.current - scrollTopRef.current - container.clientHeight < 250;
+            const lastMsg = messages[messages.length - 1];
+            const isMyMessage = lastMsg?.senderId === currentUserId;
+
+            if (isNearBottom || isMyMessage) {
+                // Smooth scroll down for new messages
                 messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
             }
         }
-    }, [messages]);
+
+        prevMsgCountRef.current = currentMsgCount;
+        prevFirstMsgIdRef.current = firstMsgId;
+        scrollHeightRef.current = container.scrollHeight;
+        scrollTopRef.current = container.scrollTop;
+    }, [messages, currentUserId, conversation.id]);
 
     // Mark as read when conversation opens
     useEffect(() => {
@@ -482,12 +527,19 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
         setFilePreviews([]);
     };
 
-    // Scroll to load more
+    // Keep track of scroll position for layout effects
     const handleScroll = (e) => {
-        if (e.target.scrollTop === 0 && messages.length > 0) {
+        const container = e.target;
+        scrollTopRef.current = container.scrollTop;
+        scrollHeightRef.current = container.scrollHeight;
+
+        // Scroll to load more
+        if (container.scrollTop === 0 && messages.length > 0) {
             onLoadMore();
         }
     };
+
+
 
     // Group messages by date
     const groupedMessages = groupMessagesByDate(messages);
@@ -572,6 +624,17 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
                                                                 key={att.id || attIdx}
                                                                 attachment={att}
                                                                 onMediaClick={(media) => setLightboxMedia(media)}
+                                                                onMediaLoad={() => {
+                                                                    // Re-adjust scroll if we were already at the bottom
+                                                                    const container = messagesContainerRef.current;
+                                                                    if (container) {
+                                                                        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 250;
+                                                                        if (isNearBottom || isMine) {
+                                                                            messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+                                                                            scrollHeightRef.current = container.scrollHeight;
+                                                                        }
+                                                                    }
+                                                                }}
                                                             />
                                                         ))}
                                                     </div>
@@ -803,7 +866,7 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
 /* ──────────────────────────
    MESSAGE ATTACHMENT — Fully functional media previews
    ────────────────────────── */
-function MessageAttachment({ attachment, onMediaClick }) {
+function MessageAttachment({ attachment, onMediaClick, onMediaLoad }) {
     const { fileUrl, fileName, fileType, fileSize, isUploading } = attachment;
 
     const isImage = fileType?.startsWith('image');
@@ -827,6 +890,7 @@ function MessageAttachment({ attachment, onMediaClick }) {
                     src={resolvedUrl}
                     alt={fileName || 'Image'}
                     onClick={() => onMediaClick({ type: 'image', url: resolvedUrl, name: fileName, size: fileSize })}
+                    onLoad={onMediaLoad}
                     loading="lazy"
                 />
                 <div className="attachment-hover-overlay">
@@ -847,7 +911,7 @@ function MessageAttachment({ attachment, onMediaClick }) {
     if (isVideo) {
         return (
             <div className={`attachment-preview video-attachment ${isUploading ? 'uploading' : ''}`}>
-                <video src={resolvedUrl} preload="metadata" />
+                <video src={resolvedUrl} preload="metadata" onLoadedMetadata={onMediaLoad} />
                 <div
                     className="video-play-overlay"
                     onClick={() => onMediaClick({ type: 'video', url: resolvedUrl, name: fileName, size: fileSize })}

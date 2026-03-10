@@ -117,11 +117,18 @@ export const ChatProvider = ({ children }) => {
                 const existing = page > 0 ? (prev[conversationId] || []) : [];
                 // Reverse to chronological order (newest-first from API)
                 const reversed = [...messageList].reverse();
+
+                if (page === 0) {
+                    return { ...prev, [conversationId]: reversed };
+                }
+
+                // Append but filter duplicates
+                const existingIds = new Set(existing.map(m => m.id).filter(Boolean));
+                const newMessages = reversed.filter(m => !existingIds.has(m.id));
+
                 return {
                     ...prev,
-                    [conversationId]: page > 0
-                        ? [...reversed, ...existing]
-                        : reversed,
+                    [conversationId]: [...newMessages, ...existing],
                 };
             });
 
@@ -146,7 +153,9 @@ export const ChatProvider = ({ children }) => {
                 return {
                     ...prev,
                     [message.conversationId]: convMessages.map(m =>
-                        (m.tempId && m.tempId === message.tempId) ? message : m
+                        ((m.tempId && message.tempId && m.tempId === message.tempId) ||
+                            (m.id && message.id && m.id === message.id))
+                            ? message : m
                     ),
                 };
             }
