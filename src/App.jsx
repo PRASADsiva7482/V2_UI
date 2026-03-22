@@ -5,6 +5,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { DataCacheProvider } from './context/DataCacheContext';
 import { ChatProvider } from './context/ChatContext';
 import { ToastProvider } from './components/common/Toast';
+import { SettingsProvider } from './context/SettingsContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import PrivateRoute from './auth/PrivateRoute';
 import MainLayout from './components/layout/MainLayout';
@@ -33,42 +34,44 @@ function App() {
         <ErrorBoundary>
             <ThemeProvider>
                 <AuthProvider>
-                    <ToastProvider>
-                        <ChatProvider>
-                            <DataCacheProvider>
-                                <Router>
-                                    <Routes>
-                                        <Route
-                                            path="/*"
-                                            element={
-                                                <PrivateRoute>
-                                                    <MainLayout>
-                                                        <Suspense fallback={<PageLoader />}>
-                                                            <ErrorBoundary>
-                                                                <Routes>
-                                                                    <Route path="/" element={<Home />} />
-                                                                    <Route path="/home" element={<Home />} />
-                                                                    <Route path="/explore" element={<Explore />} />
-                                                                    <Route path="/notifications" element={<Notifications />} />
-                                                                    <Route path="/profile/u/:username" element={<Profile />} />
-                                                                    <Route path="/profile/:userId" element={<Profile />} />
-                                                                    <Route path="/hashtag/:tagName" element={<HashtagPage />} />
-                                                                    <Route path="/connections" element={<Connections />} />
-                                                                    <Route path="/settings/*" element={<Settings />} />
-                                                                    <Route path="/post/:postId" element={<PostPage />} />
-                                                                    <Route path="/chat" element={<Chat />} />
-                                                                </Routes>
-                                                            </ErrorBoundary>
-                                                        </Suspense>
-                                                    </MainLayout>
-                                                </PrivateRoute>
-                                            }
-                                        />
-                                    </Routes>
-                                </Router>
-                            </DataCacheProvider>
-                        </ChatProvider>
-                    </ToastProvider>
+                    <SettingsProvider>
+                        <ToastProvider>
+                            <ChatProvider>
+                                <DataCacheProvider>
+                                    <Router>
+                                        <Routes>
+                                            <Route
+                                                path="/*"
+                                                element={
+                                                    <PrivateRoute>
+                                                        <MainLayout>
+                                                            <Suspense fallback={<PageLoader />}>
+                                                                <ErrorBoundary>
+                                                                    <Routes>
+                                                                        <Route path="/" element={<Home />} />
+                                                                        <Route path="/home" element={<Home />} />
+                                                                        <Route path="/explore" element={<Explore />} />
+                                                                        <Route path="/notifications" element={<Notifications />} />
+                                                                        <Route path="/profile/u/:username" element={<Profile />} />
+                                                                        <Route path="/profile/:userId" element={<Profile />} />
+                                                                        <Route path="/hashtag/:tagName" element={<HashtagPage />} />
+                                                                        <Route path="/connections" element={<Connections />} />
+                                                                        <Route path="/settings/*" element={<Settings />} />
+                                                                        <Route path="/post/:postId" element={<PostPage />} />
+                                                                        <Route path="/chat" element={<Chat />} />
+                                                                    </Routes>
+                                                                </ErrorBoundary>
+                                                            </Suspense>
+                                                        </MainLayout>
+                                                    </PrivateRoute>
+                                                }
+                                            />
+                                        </Routes>
+                                    </Router>
+                                </DataCacheProvider>
+                            </ChatProvider>
+                        </ToastProvider>
+                    </SettingsProvider>
                 </AuthProvider>
             </ThemeProvider>
         </ErrorBoundary>

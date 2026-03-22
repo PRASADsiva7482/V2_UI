@@ -8,6 +8,7 @@ import {
     uploadChatMedia,
     sendMessageWithMedia,
 } from '../services/api/chat';
+import { useSettings } from './SettingsContext';
 
 const ChatContext = createContext(null);
 
@@ -21,6 +22,7 @@ export const useChat = () => {
 
 export const ChatProvider = ({ children }) => {
     const { user, getToken, keycloak } = useAuth();
+    const { settings } = useSettings();
     const [conversations, setConversations] = useState([]);
     const [activeConversation, setActiveConversation] = useState(null);
     const [messages, setMessages] = useState({});
@@ -342,13 +344,15 @@ export const ChatProvider = ({ children }) => {
     }, [currentUserId, user]);
 
     const markConversationAsRead = useCallback((conversationId) => {
-        chatWebSocketService.markAsRead(conversationId);
+        if (settings?.readReceipts !== false) {
+            chatWebSocketService.markAsRead(conversationId);
+        }
         setUnreadCounts(prev => {
             const updated = { ...prev };
             delete updated[conversationId];
             return updated;
         });
-    }, []);
+    }, [settings?.readReceipts]);
 
     const sendTypingIndicator = useCallback((conversationId, typing) => {
         chatWebSocketService.sendTyping(conversationId, typing);

@@ -968,3 +968,45 @@
         height: 28px;
     }
 }
+
+/* ---- Legal/Additional Pages ---- */
+.settings-legal-content {
+    padding: 0 20px 40px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-primary);
+}
+
+.settings-legal-content h3 {
+    margin: 32px 0 12px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.settings-legal-content p {
+    margin: 0 0 16px;
+    color: var(--text-secondary);
+}
+
+.settings-legal-content ul {
+    margin: 0 0 16px;
+    padding-left: 20px;
+    color: var(--text-secondary);
+}
+
+.settings-legal-content li {
+    margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+    .settings-legal-content {
+        padding: 0 16px 30px;
+        font-size: 14px;
+    }
+
+    .settings-legal-content h3 {
+        font-size: 16px;
+        margin: 24px 0 10px;
+    }
+}

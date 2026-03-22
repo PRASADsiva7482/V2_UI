@@ -6,7 +6,9 @@ import { useAuth } from '../auth/AuthProvider';
 import { useToast } from '../components/common/Toast';
 import { getUserSettings, updateUserSettings, deleteUserAccount } from '../services/api/settings';
 import { getMyProfile } from '../services/api/profile';
+import { useSettings } from '../context/SettingsContext';
 import ToggleSwitch from '../components/common/ToggleSwitch';
+import { TermsOfService, PrivacyPolicy, CookiePolicy, AboutUs, ReleaseNotes } from './LegalPages';
 import './Settings.css';
 
 // U-2: SavedIndicator extracted to module level (was inside render body)
@@ -473,7 +475,7 @@ function AccessibilitySettings({ settings, handleSettingChange, handleThemeChang
     );
 }
 
-function AboutSettings() {
+function AboutSettings({ navigate }) {
     return (
         <div className="settings-pane">
             <h2 className="settings-pane-title">Additional resources</h2>
@@ -481,17 +483,17 @@ function AboutSettings() {
 
             <div className="settings-section-title">Legal</div>
             <div className="settings-list">
-                <div className="settings-list-item">
+                <div className="settings-list-item" onClick={() => navigate('/settings/about/terms')}>
                     <div className="settings-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" /></svg></div>
                     <div className="settings-item-content"><h3>Terms of Service</h3></div>
                     <div className="settings-item-arrow">›</div>
                 </div>
-                <div className="settings-list-item">
+                <div className="settings-list-item" onClick={() => navigate('/settings/about/privacy')}>
                     <div className="settings-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" /></svg></div>
                     <div className="settings-item-content"><h3>Privacy Policy</h3></div>
                     <div className="settings-item-arrow">›</div>
                 </div>
-                <div className="settings-list-item">
+                <div className="settings-list-item" onClick={() => navigate('/settings/about/cookies')}>
                     <div className="settings-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1 14H5V8h14v10z" /></svg></div>
                     <div className="settings-item-content"><h3>Cookie Policy</h3></div>
                     <div className="settings-item-arrow">›</div>
@@ -500,12 +502,12 @@ function AboutSettings() {
 
             <div className="settings-section-title">Miscellaneous</div>
             <div className="settings-list">
-                <div className="settings-list-item">
+                <div className="settings-list-item" onClick={() => navigate('/settings/about/us')}>
                     <div className="settings-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" /></svg></div>
                     <div className="settings-item-content"><h3>About Us</h3></div>
                     <div className="settings-item-arrow">›</div>
                 </div>
-                <div className="settings-list-item">
+                <div className="settings-list-item" onClick={() => navigate('/settings/about/release-notes')}>
                     <div className="settings-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" /></svg></div>
                     <div className="settings-item-content"><h3>Release notes</h3><p>v2.0 - Social media application</p></div>
                     <div className="settings-item-arrow">›</div>
@@ -525,6 +527,7 @@ function Settings() {
     const { theme, toggleTheme } = useTheme();
     const { user, logout, keycloak } = useAuth();
     const { showToast } = useToast();
+    const { updateContextSettings } = useSettings();
 
     const [settings, setSettings] = useState(null);
     const [profile, setProfile] = useState(null);
@@ -580,6 +583,9 @@ function Settings() {
 
     const handleSettingChange = async (key, value) => {
         setSettings(prev => ({ ...prev, [key]: value }));
+        if (updateContextSettings) {
+            updateContextSettings({ [key]: value });
+        }
         try {
             setSaving(true);
             await updateUserSettings({ [key]: value });
@@ -728,7 +734,12 @@ function Settings() {
                     <Route path="/accessibility" element={
                         <AccessibilitySettings {...sharedProps} handleThemeChange={handleThemeChange} handleLanguageChange={handleLanguageChange} i18n={i18n} />
                     } />
-                    <Route path="/about" element={<AboutSettings />} />
+                    <Route path="/about" element={<AboutSettings navigate={navigate} />} />
+                    <Route path="/about/terms" element={<TermsOfService />} />
+                    <Route path="/about/privacy" element={<PrivacyPolicy />} />
+                    <Route path="/about/cookies" element={<CookiePolicy />} />
+                    <Route path="/about/us" element={<AboutUs />} />
+                    <Route path="/about/release-notes" element={<ReleaseNotes />} />
                 </Routes>
             </div>
 
