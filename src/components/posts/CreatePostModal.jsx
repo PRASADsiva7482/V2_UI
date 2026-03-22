@@ -17,6 +17,9 @@ function CreatePostModal({ onClose, onPostCreated }) {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [mentionedUserIds, setMentionedUserIds] = useState([]);
     const [showPollCreator, setShowPollCreator] = useState(false);
+    const [isDraft, setIsDraft] = useState(false);
+    const [showGifPicker, setShowGifPicker] = useState(false);
+    const [gifSearch, setGifSearch] = useState('');
     const [pollData, setPollData] = useState({
         question: '',
         options: ['', ''],
@@ -133,8 +136,8 @@ function CreatePostModal({ onClose, onPostCreated }) {
                 durationHours: pollData.durationHours
             } : null;
 
-            console.log('Creating post with content:', content, 'media:', mediaIds, 'mentions:', mentionedUserIds, 'poll:', finalPollData);
-            const newPost = await createPost(content, mediaIds, mentionedUserIds, finalPollData);
+            console.log('Creating post with content:', content, 'media:', mediaIds, 'mentions:', mentionedUserIds, 'poll:', finalPollData, 'draft:', isDraft);
+            const newPost = await createPost(content, mediaIds, mentionedUserIds, finalPollData, isDraft);
 
             console.log('Post created successfully:', newPost);
             setContent('');
@@ -274,6 +277,27 @@ function CreatePostModal({ onClose, onPostCreated }) {
                                 </svg>
                             </button>
 
+                            <button
+                                type="button"
+                                className="modal-action-icon-btn"
+                                onClick={() => setShowGifPicker(!showGifPicker)}
+                                title="Add GIF"
+                                style={{ fontWeight: 'bold', fontSize: '12px', border: '1px solid currentColor', borderRadius: '4px', padding: '1px 4px', height: '20px', display: 'flex', alignItems: 'center' }}
+                            >
+                                GIF
+                            </button>
+
+                            {showGifPicker && (
+                                <div style={{ position: 'absolute', bottom: '40px', left: '120px', background: 'var(--card-bg, #16181c)', border: '1px solid var(--border-color, #2f3336)', borderRadius: '12px', padding: '12px', width: '280px', zIndex: 100 }}>
+                                    <input
+                                        type="text" placeholder="Search GIFs (powered by Tenor)"
+                                        value={gifSearch} onChange={(e) => setGifSearch(e.target.value)}
+                                        style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color, #2f3336)', background: 'transparent', color: 'inherit', fontSize: '13px', boxSizing: 'border-box' }}
+                                    />
+                                    <p style={{ color: '#71767b', fontSize: '11px', marginTop: '8px', textAlign: 'center' }}>GIF search integration requires Tenor/Giphy API key configured in backend.</p>
+                                </div>
+                            )}
+
                             {/* Emoji Picker Popup */}
                             {showEmojiPicker && (
                                 <div className="modal-emoji-picker" ref={emojiPickerRef}>
@@ -299,6 +323,11 @@ function CreatePostModal({ onClose, onPostCreated }) {
                                     <span>{charCount}/{maxChars}</span>
                                 </div>
                             )}
+
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: isDraft ? 'var(--primary-color, #1d9bf0)' : '#666', borderRight: '1px solid #333', paddingRight: '10px', cursor: 'pointer' }}>
+                                <input type="checkbox" checked={isDraft} onChange={(e) => setIsDraft(e.target.checked)} />
+                                {isDraft ? '📝 Draft' : 'Save as Draft'}
+                            </label>
 
                             <Button
                                 type="submit"

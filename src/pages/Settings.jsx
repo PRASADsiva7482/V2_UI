@@ -303,6 +303,16 @@ function PrivacySettings({ settings, handleSettingChange, saveSuccess }) {
             <div className="settings-section-title">Discoverability and contacts</div>
             <div className="settings-control-group">
                 <div className="settings-control">
+                    <div className="settings-control-text">
+                        <h3>Incognito "Ghost" Mode <span style={{fontSize:'10px', color:'purple', border:'1px solid purple', padding:'2px', borderRadius:'4px', marginLeft:'6px'}}>PREMIUM</span></h3>
+                        <p>When enabled, your online status is hidden and you will not appear in "recently viewed" lists.</p>
+                    </div>
+                    <div className="settings-control-actions">
+                        <ToggleSwitch checked={settings?.isGhostMode || false} onChange={(v) => handleSettingChange('isGhostMode', v)} label="Ghost mode" />
+                        <SavedIndicator field="isGhostMode" saveSuccess={saveSuccess} />
+                    </div>
+                </div>
+                <div className="settings-control">
                     <div className="settings-control-text"><h3>Let others find you by email</h3><p>Let people who have your email address find and connect with you here.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.discoverableByEmail ?? true} onChange={(v) => handleSettingChange('discoverableByEmail', v)} label="Discoverable by email" />

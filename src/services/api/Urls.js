@@ -99,7 +99,24 @@ export const URLS = {
         VOTE: (pollId) => `${API_BASE}/polls/${pollId}/vote`,
         BY_POST: (postId) => `${API_BASE}/polls/post/${postId}`,
         BY_ID: (pollId) => `${API_BASE}/polls/${pollId}`,
-    }
+    },
+    LISTS: {
+        BASE: `${API_BASE}/lists`,
+        BY_ID: (listId) => `${API_BASE}/lists/${listId}`,
+        USER_LISTS: (userId) => `${API_BASE}/lists/user/${userId}`,
+        MEMBERS: (listId) => `${API_BASE}/lists/${listId}/members`,
+        ADD_MEMBER: (listId, memberId) => `${API_BASE}/lists/${listId}/members/${memberId}`,
+    },
+    COMMUNITY_NOTES: {
+        BY_POST: (postId) => `${API_BASE}/community-notes/post/${postId}`,
+        APPROVED: (postId) => `${API_BASE}/community-notes/post/${postId}/approved`,
+        VOTE: (noteId) => `${API_BASE}/community-notes/${noteId}/vote`,
+    },
+    SUBSCRIPTIONS: {
+        BASE: `${API_BASE}/subscriptions`,
+        BY_USER: (userId) => `${API_BASE}/subscriptions/${userId}`,
+        STATUS: (userId) => `${API_BASE}/subscriptions/${userId}/status`,
+    },
 };
 
 export default URLS;

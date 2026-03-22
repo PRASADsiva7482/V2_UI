@@ -22,6 +22,8 @@ const Settings = lazy(() => import('./pages/Settings'));
 const PostPage = lazy(() => import('./pages/PostPage'));
 const Bookmarks = lazy(() => import('./pages/Bookmarks'));
 const Chat = lazy(() => import('./components/chat/Chat'));
+const Spaces = lazy(() => import('./pages/Spaces'));
+const Lists = lazy(() => import('./pages/Lists'));
 
 // Suspense fallback for lazy-loaded pages
 const PageLoader = () => (
@@ -61,6 +63,8 @@ function App() {
                                                                         <Route path="/post/:postId" element={<PostPage />} />
                                                                         <Route path="/bookmarks" element={<Bookmarks />} />
                                                                         <Route path="/chat" element={<Chat />} />
+                                                                        <Route path="/spaces" element={<Spaces />} />
+                                                                        <Route path="/lists" element={<Lists />} />
                                                                     </Routes>
                                                                 </ErrorBoundary>
                                                             </Suspense>

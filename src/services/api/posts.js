@@ -42,7 +42,7 @@ export const getPostById = async (postId) => {
  * @param {string[]} mentionedUserIds - Array of user IDs mentioned in the post (optional)
  * @param {Object} poll - Poll data (optional)
  */
-export const createPost = async (content, mediaIds = null, mentionedUserIds = null, poll = null) => {
+export const createPost = async (content, mediaIds = null, mentionedUserIds = null, poll = null, isDraft = false) => {
     const requestBody = {};
 
     if (content && content.trim()) {
@@ -59,6 +59,10 @@ export const createPost = async (content, mediaIds = null, mentionedUserIds = nu
 
     if (poll) {
         requestBody.poll = poll;
+    }
+
+    if (isDraft) {
+        requestBody.isDraft = true;
     }
 
     return apiCaller.post(URLS.POSTS.BASE, requestBody);
