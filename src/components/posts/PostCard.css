@@ -675,6 +675,24 @@
     background: rgba(29, 161, 242, 0.1);
 }
 
+/* Bookmark button */
+.bookmark-btn:hover {
+    color: var(--twitter-blue, #1d9bf0);
+}
+
+.bookmark-btn:hover svg {
+    background: rgba(29, 161, 240, 0.1);
+}
+
+.bookmark-btn.bookmarked {
+    color: var(--twitter-blue, #1d9bf0);
+}
+
+.bookmark-btn.bookmarked svg {
+    fill: var(--twitter-blue, #1d9bf0);
+    stroke: var(--twitter-blue, #1d9bf0);
+}
+
 /* ========== Responsive ========== */
 @media (max-width: 768px) {
     .post-card {

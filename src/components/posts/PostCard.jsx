@@ -2,11 +2,14 @@ import { useState, useEffect, memo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { likePost, unlikePost, incrementViewCount, updatePost, deletePost } from '../../services/api/posts';
+import { bookmarkPost, unbookmarkPost } from '../../services/api/bookmarks';
 import { uploadMedia } from '../../services/api/media';
 import { formatRelativeTime, formatNumber } from '../../services/utils/formatters';
 import { parseContentSegments } from '../../services/utils/mentionUtils';
 import Avatar from '../common/Avatar';
+import VerificationBadge from '../common/VerificationBadge';
 import CommentModal from '../comments/CommentModal';
+import PollDisplay from './PollDisplay';
 import VideoPlayer from '../media/VideoPlayer';
 import './PostCard.css';
 
@@ -33,6 +36,8 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
     const [isDeleting, setIsDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [editError, setEditError] = useState(null);
+    const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked || false);
+    const [isBookmarking, setIsBookmarking] = useState(false);
     const optionsMenuRef = useRef(null);
     const editFileInputRef = useRef(null);
 
@@ -42,7 +47,8 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
         setLikesCount(post.likesCount || 0);
         setCommentsCount(post.commentsCount || 0);
         setViewsCount(post.viewsCount || 0);
-    }, [post.isLiked, post.likesCount, post.commentsCount, post.viewsCount]);
+        setIsBookmarked(post.isBookmarked || false);
+    }, [post.isLiked, post.likesCount, post.commentsCount, post.viewsCount, post.isBookmarked]);
 
     // Close options menu on click outside
     useEffect(() => {
@@ -263,6 +269,61 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
         setShowDeleteConfirm(false);
     }, []);
 
+    // ==================== Bookmark Handlers ====================
+
+    const handleBookmark = useCallback(async (e) => {
+        e.stopPropagation();
+        if (isBookmarking) return;
+
+        try {
+            setIsBookmarking(true);
+            if (isBookmarked) {
+                await unbookmarkPost(post.id);
+                setIsBookmarked(false);
+            } else {
+                await bookmarkPost(post.id);
+                setIsBookmarked(true);
+            }
+        } catch (error) {
+            console.error('Error toggling bookmark:', error);
+        } finally {
+            setIsBookmarking(false);
+        }
+    }, [isBookmarked, isBookmarking, post.id]);
+
+    // ==================== Share Handler ====================
+
+    const handleShare = useCallback(async (e) => {
+        e.stopPropagation();
+        const postUrl = `${window.location.origin}/post/${post.id}`;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: post.author?.displayName || 'Post',
+                    text: post.content?.substring(0, 100) || '',
+                    url: postUrl
+                });
+            } catch (err) {
+                // User cancelled or error
+                if (err.name !== 'AbortError') {
+                    fallbackCopyLink(postUrl);
+                }
+            }
+        } else {
+            fallbackCopyLink(postUrl);
+        }
+    }, [post.id, post.content, post.author]);
+
+    const fallbackCopyLink = (url) => {
+        navigator.clipboard.writeText(url).then(() => {
+            // Could show a toast, but for now just log
+            console.log('Link copied to clipboard');
+        }).catch(() => {
+            console.error('Failed to copy link');
+        });
+    };
+
     // ==================== Helpers ====================
 
     const getMediaUrl = (fileUrl) => {
@@ -291,6 +352,7 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                         <span className="author-name" onClick={handleProfileClick}>
                             {post.author?.displayName || post.author?.username || 'Unknown'}
                         </span>
+                        <VerificationBadge tier={post.author?.verificationTier} size={18} />
                         <span className="author-username" onClick={handleProfileClick}>
                             @{post.author?.username || 'unknown'}
                         </span>
@@ -568,6 +630,10 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                                 })}
                             </div>
                         )}
+                        {/* Poll Display */}
+                        {post.poll && (
+                            <PollDisplay poll={post.poll} />
+                        )}
                     </>
                 )}
 
@@ -590,7 +656,7 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                         <span>{formatNumber(likesCount)}</span>
                     </button>
 
-                    <button className="action-btn share-btn" onClick={(e) => e.stopPropagation()}>
+                    <button className="action-btn share-btn" onClick={handleShare}>
                         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
                             <path d="M12 2.59l5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41l-3.3 3.3-1.41-1.42L12 2.59zM21 15l-.02 3.51c0 1.38-1.12 2.49-2.5 2.49H5.5C4.11 21 3 19.88 3 18.5V15h2v3.5c0 .28.22.5.5.5h12.98c.28 0 .5-.22.5-.5L19 15h2z" />
                         </svg>
@@ -601,6 +667,16 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                             <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
                         </svg>
                         <span>{formatNumber(viewsCount)}</span>
+                    </button>
+
+                    <button
+                        className={`action-btn bookmark-btn ${isBookmarked ? 'bookmarked' : ''}`}
+                        onClick={handleBookmark}
+                        disabled={isBookmarking}
+                    >
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill={isBookmarked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                        </svg>
                     </button>
                 </div>
             </div>

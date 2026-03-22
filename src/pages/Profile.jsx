@@ -8,6 +8,7 @@ import { formatNumber } from '../services/utils/formatters';
 import { useToast } from '../components/common/Toast';
 import Avatar from '../components/common/Avatar';
 import Button from '../components/common/Button';
+import VerificationBadge from '../components/common/VerificationBadge';
 import PostCard from '../components/posts/PostCard';
 import './Profile.css';
 
@@ -44,7 +45,8 @@ function Profile() {
         bio: '',
         phoneNumber: '',
         nickname: '',
-        website: ''
+        website: '',
+        verificationTier: 'NONE'
     });
 
     // If navigated via username route (/profile/u/:username), resolve to userId first
@@ -95,7 +97,8 @@ function Profile() {
                 bio: profile.bio || '',
                 phoneNumber: profile.phoneNumber || '',
                 nickname: profile.nickname || '',
-                website: profile.website || ''
+                website: profile.website || '',
+                verificationTier: profile.verificationTier || 'NONE'
             });
             // Reset pic state when entering edit mode
             setProfilePicFile(null);
@@ -304,7 +307,8 @@ function Profile() {
             bio: profile?.bio || '',
             phoneNumber: profile?.phoneNumber || '',
             nickname: profile?.nickname || '',
-            website: profile?.website || ''
+            website: profile?.website || '',
+            verificationTier: profile?.verificationTier || 'NONE'
         });
         // Reset pic state
         setProfilePicFile(null);
@@ -461,6 +465,15 @@ function Profile() {
                                         <input type="text" id="nickname" name="nickname" value={editForm.nickname} onChange={handleInputChange} className="form-input" placeholder="Optional nickname" maxLength={30} />
                                     </div>
                                     <div className="form-group">
+                                        <label htmlFor="verificationTier">Verification Badge</label>
+                                        <select id="verificationTier" name="verificationTier" value={editForm.verificationTier} onChange={handleInputChange} className="form-input">
+                                            <option value="NONE">None</option>
+                                            <option value="BLUE">Blue (Verified)</option>
+                                            <option value="GOLD">Gold (Business)</option>
+                                            <option value="GREY">Grey (Official)</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
                                         <label htmlFor="phoneNumber">Phone</label>
                                         <input type="tel" id="phoneNumber" name="phoneNumber" value={editForm.phoneNumber} onChange={handleInputChange} className="form-input" placeholder="+1 (555) 123-4567" />
                                     </div>
@@ -477,7 +490,10 @@ function Profile() {
                             </div>
                         ) : (
                             <>
-                                <h1 className="profile-name">{profile.displayName}</h1>
+                                <h1 className="profile-name">
+                                    {profile.displayName}
+                                    <VerificationBadge tier={profile.verificationTier} size={22} />
+                                </h1>
                                 <p className="profile-username">@{profile.username}</p>
 
                                 {profile.bio && (

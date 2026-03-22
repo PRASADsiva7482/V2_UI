@@ -11,7 +11,8 @@
     "profile": "Profile",
     "logout": "Logout",
     "language": "Language",
-    "messages": "Messages"
+    "messages": "Messages",
+    "bookmarks": "Bookmarks"
   },
   "connections": {
     "title": "Connect",
@@ -157,5 +158,23 @@
     "confirm": "Confirm",
     "yes": "Yes",
     "no": "No"
+  },
+  "bookmarks": {
+    "title": "Bookmarks",
+    "subtitle": "Posts you've saved for later",
+    "emptyTitle": "No bookmarks yet",
+    "emptyMessage": "Save posts to read them later. Bookmark a post by tapping the bookmark icon."
+  },
+  "poll": {
+    "votes": "{{count}} votes",
+    "ended": "Poll ended",
+    "daysLeft": "{{count}} days left",
+    "hoursLeft": "{{count}}h {{minutes}}m left",
+    "minutesLeft": "{{count}}m left",
+    "question": "Poll question",
+    "addOption": "Add option",
+    "removeOption": "Remove",
+    "duration": "Duration",
+    "hours": "hours"
   }
 }

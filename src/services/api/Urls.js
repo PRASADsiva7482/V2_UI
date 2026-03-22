@@ -88,6 +88,17 @@ export const URLS = {
         MARK_ALL_READ: `${API_BASE}/notifications/mark-all-read`,
         MARK_ALL_SEEN: `${API_BASE}/notifications/mark-all-seen`,
         MARK_READ: (id) => `${API_BASE}/notifications/${id}/read`,
+    },
+    BOOKMARKS: {
+        BASE: `${API_BASE}/bookmarks`,
+        BY_POST: (postId) => `${API_BASE}/bookmarks/${postId}`,
+        STATUS: (postId) => `${API_BASE}/bookmarks/${postId}/status`,
+        COUNT: `${API_BASE}/bookmarks/count`,
+    },
+    POLLS: {
+        VOTE: (pollId) => `${API_BASE}/polls/${pollId}/vote`,
+        BY_POST: (postId) => `${API_BASE}/polls/post/${postId}`,
+        BY_ID: (pollId) => `${API_BASE}/polls/${pollId}`,
     }
 };
 

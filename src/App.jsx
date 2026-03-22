@@ -20,6 +20,7 @@ const Notifications = lazy(() => import('./pages/Notifications'));
 const Connections = lazy(() => import('./pages/Connections'));
 const Settings = lazy(() => import('./pages/Settings'));
 const PostPage = lazy(() => import('./pages/PostPage'));
+const Bookmarks = lazy(() => import('./pages/Bookmarks'));
 const Chat = lazy(() => import('./components/chat/Chat'));
 
 // Suspense fallback for lazy-loaded pages
@@ -58,6 +59,7 @@ function App() {
                                                                         <Route path="/connections" element={<Connections />} />
                                                                         <Route path="/settings/*" element={<Settings />} />
                                                                         <Route path="/post/:postId" element={<PostPage />} />
+                                                                        <Route path="/bookmarks" element={<Bookmarks />} />
                                                                         <Route path="/chat" element={<Chat />} />
                                                                     </Routes>
                                                                 </ErrorBoundary>

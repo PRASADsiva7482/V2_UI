@@ -1,0 +1,28 @@
+.verification-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 1;
+    vertical-align: middle;
+    margin-left: 2px;
+    cursor: default;
+    transition: transform 0.15s ease;
+}
+
+.verification-badge:hover {
+    transform: scale(1.15);
+}
+
+/* Subtle glow effects for each tier */
+.badge-blue svg {
+    filter: drop-shadow(0 0 3px rgba(29, 155, 240, 0.3));
+}
+
+.badge-gold svg {
+    filter: drop-shadow(0 0 3px rgba(232, 165, 23, 0.3));
+}
+
+.badge-grey svg {
+    filter: drop-shadow(0 0 3px rgba(130, 154, 171, 0.3));
+}
