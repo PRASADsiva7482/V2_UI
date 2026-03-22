@@ -117,6 +117,21 @@ export const URLS = {
         BY_USER: (userId) => `${API_BASE}/subscriptions/${userId}`,
         STATUS: (userId) => `${API_BASE}/subscriptions/${userId}/status`,
     },
+    STORIES: {
+        BASE: `${API_BASE}/stories`,
+        MINE: `${API_BASE}/stories/me`,
+        FEED: `${API_BASE}/stories/feed`,
+        VIEW: (storyId) => `${API_BASE}/stories/${storyId}/view`,
+        DELETE: (storyId) => `${API_BASE}/stories/${storyId}`,
+    },
+    VERIFICATION: {
+        REQUEST: `${API_BASE}/verification/request`,
+        REQUESTS: `${API_BASE}/verification/requests`,
+        STATUS: `${API_BASE}/verification/status`,
+    },
+    ANALYTICS: {
+        DASHBOARD: `${API_BASE}/analytics/dashboard`,
+    },
 };
 
 export default URLS;

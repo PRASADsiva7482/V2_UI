@@ -328,6 +328,47 @@ function PrivacySettings({ settings, handleSettingChange, saveSuccess }) {
                 </div>
             </div>
 
+            <div className="settings-section-title">🌐 Auto-Translation</div>
+            <div className="settings-control-group">
+                <div className="settings-control">
+                    <div className="settings-control-text"><h3>Auto-translate posts</h3><p>Automatically translate posts from other languages into your preferred language.</p></div>
+                    <div className="settings-control-actions">
+                        <ToggleSwitch checked={settings?.autoTranslate || false} onChange={(v) => handleSettingChange('autoTranslate', v)} label="Auto translate" />
+                        <SavedIndicator field="autoTranslate" saveSuccess={saveSuccess} />
+                    </div>
+                </div>
+                {settings?.autoTranslate && (
+                    <div className="settings-control">
+                        <div className="settings-control-text"><h3>Translation language</h3><p>Posts will be translated into this language.</p></div>
+                        <div className="settings-control-actions">
+                            <select value={settings?.translateLanguage || 'en'} onChange={(e) => handleSettingChange('translateLanguage', e.target.value)} style={{background:'var(--card-bg,#16181c)',color:'inherit',border:'1px solid var(--border-color,#2f3336)',borderRadius:'8px',padding:'6px 12px',fontSize:'14px'}}>
+                                <option value="en">English</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="ja">Japanese</option><option value="ko">Korean</option><option value="zh">Chinese</option><option value="hi">Hindi</option><option value="ar">Arabic</option><option value="pt">Portuguese</option><option value="ta">Tamil</option>
+                            </select>
+                            <SavedIndicator field="translateLanguage" saveSuccess={saveSuccess} />
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <div className="settings-section-title">🔒 Chat Encryption</div>
+            <div className="settings-control-group">
+                <div className="settings-control">
+                    <div className="settings-control-text"><h3>E2E Encrypted DMs <span style={{fontSize:'10px', color:'#00ba7c', border:'1px solid #00ba7c', padding:'2px', borderRadius:'4px', marginLeft:'6px'}}>SECURE</span></h3><p>Enable end-to-end encryption for your direct messages. Only you and the recipient can read them.</p></div>
+                    <div className="settings-control-actions">
+                        <ToggleSwitch checked={settings?.chatEncryption || false} onChange={(v) => handleSettingChange('chatEncryption', v)} label="Chat encryption" />
+                        <SavedIndicator field="chatEncryption" saveSuccess={saveSuccess} />
+                    </div>
+                </div>
+            </div>
+
+            <div className="settings-section-title">✅ Verification Application</div>
+            <div className="settings-control-group">
+                <div className="settings-control" style={{cursor:'pointer'}}>
+                    <div className="settings-control-text"><h3>Apply for Verified Checkmark <span style={{fontSize:'10px', color:'#1d9bf0', border:'1px solid #1d9bf0', padding:'2px 4px', borderRadius:'4px', marginLeft:'6px'}}>✓</span></h3><p>Submit an application to get verified. You'll need to provide your name, category, and reason.</p></div>
+                    <div className="settings-control-actions"><span style={{color:'#71767b',fontSize:'20px'}}>→</span></div>
+                </div>
+            </div>
+
             <div className="settings-section-title">Data sharing and personalization</div>
             <div className="settings-control-group">
                 <div className="settings-control">
