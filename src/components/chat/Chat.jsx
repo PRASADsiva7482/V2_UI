@@ -7,6 +7,7 @@ import Avatar from '../common/Avatar';
 import EmojiPicker from './EmojiPicker';
 import MentionInput from '../common/MentionInput';
 import { parseContentSegments } from '../../services/utils/mentionUtils';
+import { useToast } from '../common/Toast';
 import './Chat.css';
 
 /**
@@ -38,6 +39,8 @@ function Chat() {
     } = useChat();
 
     const [showNewChat, setShowNewChat] = useState(false);
+    const [showCreateGroup, setShowCreateGroup] = useState(false);
+    const { showToast } = useToast();
 
     const handleSelectConversation = useCallback((conv) => {
         pauseAllMedia();
@@ -63,10 +66,30 @@ function Chat() {
 
             <div className={`chat-sidebar ${activeConversation ? 'chat-sidebar-hidden' : ''}`}>
                 <ChatListHeader
-                    onNewChat={() => setShowNewChat(true)}
+                    onNewChat={() => { setShowNewChat(true); setShowCreateGroup(false); }}
+                    onNewGroup={() => { setShowCreateGroup(true); setShowNewChat(false); }}
                     wsConnected={wsConnected}
                 />
-                {showNewChat ? (
+                {showCreateGroup ? (
+                    <GroupChatCreator
+                        onCreateGroup={async (groupName, memberIds) => {
+                            try {
+                                const apiCaller = (await import('../../services/api/apiCaller')).default;
+                                const resp = await apiCaller.post('/api/v1/chat/conversations/group', {
+                                    type: 'GROUP',
+                                    groupName,
+                                    participantIds: memberIds
+                                });
+                                setShowCreateGroup(false);
+                                showToast('Group chat created! 🎉', 'success');
+                                handleSelectConversation(resp);
+                            } catch (err) {
+                                showToast('Failed to create group', 'error');
+                            }
+                        }}
+                        onClose={() => setShowCreateGroup(false)}
+                    />
+                ) : showNewChat ? (
                     <NewChatSearch
                         onStartConversation={async (userId) => {
                             const conv = await startConversation(userId);
@@ -114,19 +137,26 @@ function Chat() {
 /* ──────────────────────────
    CHAT LIST HEADER
    ────────────────────────── */
-function ChatListHeader({ onNewChat, wsConnected }) {
+function ChatListHeader({ onNewChat, onNewGroup, wsConnected }) {
     return (
         <div className="chat-list-header">
             <h2 className="chat-list-title">
                 Messages
                 {wsConnected && <span className="online-dot" title="Connected" />}
             </h2>
-            <button className="new-chat-btn" onClick={onNewChat} title="New conversation">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
-                    <path d="M11 5h2v4h4v2h-4v4h-2v-4H7V9h4z" />
-                </svg>
-            </button>
+            <div style={{ display: 'flex', gap: '6px' }}>
+                <button className="new-chat-btn" onClick={onNewGroup} title="Create group chat" style={{ opacity: 0.7 }}>
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                    </svg>
+                </button>
+                <button className="new-chat-btn" onClick={onNewChat} title="New conversation">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
+                        <path d="M11 5h2v4h4v2h-4v4h-2v-4H7V9h4z" />
+                    </svg>
+                </button>
+            </div>
         </div>
     );
 }
@@ -202,6 +232,128 @@ function NewChatSearch({ onStartConversation, onClose }) {
                     <div className="search-no-results">No users found</div>
                 )}
             </div>
+        </div>
+    );
+}
+
+/* ──────────────────────────
+   GROUP CHAT CREATOR
+   ────────────────────────── */
+function GroupChatCreator({ onCreateGroup, onClose }) {
+    const [groupName, setGroupName] = useState('');
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState([]);
+    const [selectedMembers, setSelectedMembers] = useState([]);
+    const [searching, setSearching] = useState(false);
+    const debounceRef = useRef(null);
+
+    const handleSearch = useCallback((value) => {
+        setQuery(value);
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        if (value.trim().length < 2) { setResults([]); return; }
+
+        debounceRef.current = setTimeout(async () => {
+            setSearching(true);
+            try {
+                const data = await searchUsers(value, { page: 0, size: 10 });
+                setResults(data?.content || []);
+            } catch (err) {
+                console.error('Search error:', err);
+            } finally {
+                setSearching(false);
+            }
+        }, 300);
+    }, []);
+
+    const toggleMember = (user) => {
+        setSelectedMembers(prev => {
+            const exists = prev.find(m => m.userId === user.userId);
+            if (exists) return prev.filter(m => m.userId !== user.userId);
+            return [...prev, user];
+        });
+    };
+
+    return (
+        <div className="new-chat-search">
+            <div className="new-chat-search-header">
+                <button className="back-btn" onClick={onClose}>
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                    </svg>
+                </button>
+                <span style={{ fontSize: '16px', fontWeight: '700' }}>Create Group</span>
+            </div>
+            <div style={{ padding: '12px' }}>
+                <input
+                    type="text"
+                    placeholder="Group name..."
+                    value={groupName}
+                    onChange={(e) => setGroupName(e.target.value)}
+                    className="new-chat-input"
+                    style={{ marginBottom: '10px', width: '100%', boxSizing: 'border-box' }}
+                />
+                {selectedMembers.length > 0 && (
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                        {selectedMembers.map(m => (
+                            <span key={m.userId} style={{
+                                display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                padding: '4px 10px', borderRadius: '16px',
+                                background: 'rgba(29,155,240,0.15)', color: '#1d9bf0',
+                                fontSize: '13px', fontWeight: '600'
+                            }}>
+                                @{m.username}
+                                <button onClick={() => toggleMember(m)} style={{
+                                    background: 'none', border: 'none', color: '#1d9bf0',
+                                    cursor: 'pointer', padding: '0 2px', fontSize: '14px'
+                                }}>×</button>
+                            </span>
+                        ))}
+                    </div>
+                )}
+                <input
+                    type="text"
+                    placeholder="Search people to add..."
+                    value={query}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    className="new-chat-input"
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                />
+            </div>
+            <div className="new-chat-results">
+                {searching && <div className="search-loading">Searching...</div>}
+                {results.map(user => (
+                    <button
+                        key={user.userId}
+                        className={`search-result-item ${selectedMembers.find(m => m.userId === user.userId) ? 'selected' : ''}`}
+                        onClick={() => toggleMember(user)}
+                    >
+                        <Avatar src={user.profilePictureUrl} alt={user.displayName || user.username} size="small" />
+                        <div className="search-result-info">
+                            <span className="search-result-name">{user.displayName || user.username}</span>
+                            <span className="search-result-username">@{user.username}</span>
+                        </div>
+                        {selectedMembers.find(m => m.userId === user.userId) && (
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="#1d9bf0" style={{ marginLeft: 'auto' }}>
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                            </svg>
+                        )}
+                    </button>
+                ))}
+            </div>
+            {selectedMembers.length >= 1 && (
+                <div style={{ padding: '12px', borderTop: '1px solid var(--border-color, #2f3336)' }}>
+                    <button
+                        onClick={() => onCreateGroup(groupName || 'Group Chat', selectedMembers.map(m => m.username || m.userId))}
+                        style={{
+                            width: '100%', padding: '10px', border: 'none', borderRadius: '20px',
+                            background: '#1d9bf0', color: '#fff', fontWeight: '700', fontSize: '14px',
+                            cursor: 'pointer', transition: 'all 0.2s'
+                        }}
+                    >
+                        Create Group ({selectedMembers.length} members)
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

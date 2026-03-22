@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useToast } from '../components/common/Toast';
 import './Spaces.css';
 
 function Spaces() {
     const [activeTab, setActiveTab] = useState('discover');
+    const { showToast } = useToast();
 
     // Placeholder spaces data (would come from API)
     const liveSpaces = [];
@@ -30,7 +32,7 @@ function Spaces() {
                     <h3>Start a Space</h3>
                     <p>Host a live audio room and connect with your followers in real-time.</p>
                 </div>
-                <button className="spaces-start-btn" onClick={() => alert('Audio Spaces requires WebRTC integration. Coming in the next release!')}>
+                <button className="spaces-start-btn" onClick={() => showToast('Audio Spaces requires WebRTC integration. Coming in the next release!', 'info')}>
                     Start Now
                 </button>
             </div>

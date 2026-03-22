@@ -132,6 +132,32 @@ export const URLS = {
     ANALYTICS: {
         DASHBOARD: `${API_BASE}/analytics/dashboard`,
     },
+    MUSIC: {
+        SHARE: `${API_BASE}/music/share`,
+        ME: `${API_BASE}/music/me`,
+        RECENT: `${API_BASE}/music/recent`,
+        USER: (userId) => `${API_BASE}/music/user/${userId}`,
+        POST: (postId) => `${API_BASE}/music/post/${postId}`,
+        DELETE: (id) => `${API_BASE}/music/${id}`
+    },
+    MODERATION: {
+        REPORT: `${API_BASE}/moderation/report`,
+        SCAN: `${API_BASE}/moderation/scan`,
+        PENDING: `${API_BASE}/moderation/pending`,
+        POST: (postId) => `${API_BASE}/moderation/post/${postId}`
+    },
+    WATCH_PARTY: {
+        CREATE: `${API_BASE}/watch-party`,
+        ACTIVE: `${API_BASE}/watch-party/active`,
+        POPULAR: `${API_BASE}/watch-party/popular`,
+        ME: `${API_BASE}/watch-party/me`,
+        JOIN: (id) => `${API_BASE}/watch-party/${id}/join`,
+        LEAVE: (id) => `${API_BASE}/watch-party/${id}/leave`,
+        END: (id) => `${API_BASE}/watch-party/${id}/end`
+    },
+    LOCATION: {
+        NEARBY: `${API_BASE}/location/nearby`
+    }
 };
 
 export default URLS;

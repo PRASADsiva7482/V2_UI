@@ -4,9 +4,11 @@ import { likeComment, unlikeComment, deleteComment } from '../../services/api/co
 import { formatRelativeTime, formatNumber } from '../../services/utils/formatters';
 import { parseContentSegments } from '../../services/utils/mentionUtils';
 import Avatar from '../common/Avatar';
+import { useToast } from '../common/Toast';
 import './CommentItem.css';
 
 function CommentItem({ comment, onUpdate, onDelete }) {
+    const { showToast } = useToast();
     const [isLiked, setIsLiked] = useState(comment.isLiked || false);
     const [likesCount, setLikesCount] = useState(comment.likesCount || 0);
     const [isLiking, setIsLiking] = useState(false);
@@ -57,7 +59,7 @@ function CommentItem({ comment, onUpdate, onDelete }) {
             }
         } catch (error) {
             console.error('Error deleting comment:', error);
-            alert('Failed to delete comment. Please try again.');
+            showToast('Failed to delete comment. Please try again.', 'error');
         } finally {
             setIsDeleting(false);
         }

@@ -25,6 +25,9 @@ const Chat = lazy(() => import('./components/chat/Chat'));
 const Spaces = lazy(() => import('./pages/Spaces'));
 const Lists = lazy(() => import('./pages/Lists'));
 const Analytics = lazy(() => import('./pages/Analytics'));
+const WatchParties = lazy(() => import('./pages/WatchParties'));
+const MusicFeed = lazy(() => import('./pages/MusicFeed'));
+const LocationFeed = lazy(() => import('./pages/LocationFeed'));
 
 // Suspense fallback for lazy-loaded pages
 const PageLoader = () => (
@@ -67,6 +70,9 @@ function App() {
                                                                         <Route path="/spaces" element={<Spaces />} />
                                                                         <Route path="/lists" element={<Lists />} />
                                                                         <Route path="/analytics" element={<Analytics />} />
+                                                                        <Route path="/watch-parties" element={<WatchParties />} />
+                                                                        <Route path="/music" element={<MusicFeed />} />
+                                                                        <Route path="/location" element={<LocationFeed />} />
                                                                     </Routes>
                                                                 </ErrorBoundary>
                                                             </Suspense>

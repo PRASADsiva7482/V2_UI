@@ -12,6 +12,8 @@ import VerificationBadge from '../common/VerificationBadge';
 import CommentModal from '../comments/CommentModal';
 import PollDisplay from './PollDisplay';
 import VideoPlayer from '../media/VideoPlayer';
+import InputModal from '../common/InputModal';
+import { useToast } from '../common/Toast';
 import './PostCard.css';
 
 // U-17: Wrapped in React.memo to prevent unnecessary re-renders in feed lists
@@ -38,6 +40,11 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [editError, setEditError] = useState(null);
     const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked || false);
+    
+    // Toast and Modal hooks
+    const { showToast } = useToast();
+    const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+    const [noteText, setNoteText] = useState('');
     const [isBookmarking, setIsBookmarking] = useState(false);
     const optionsMenuRef = useRef(null);
     const editFileInputRef = useRef(null);
@@ -395,7 +402,7 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                                             </svg>
                                             <span>{t('post.delete', 'Delete')}</span>
                                         </button>
-                                        <button className="post-option-item" onClick={async (e) => { e.stopPropagation(); try { const { updateProfile } = await import('../../services/api/profile'); await updateProfile({ pinnedPostId: post.id }); setShowOptionsMenu(false); alert('Post pinned to your profile!'); } catch(err) { console.error(err); } }}>
+                                        <button className="post-option-item" onClick={async (e) => { e.stopPropagation(); try { const { updateProfile } = await import('../../services/api/profile'); await updateProfile({ pinnedPostId: post.id }); setShowOptionsMenu(false); showToast('Post pinned to your profile!', 'success'); } catch(err) { console.error(err); } }}>
                                             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                                                 <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/>
                                             </svg>
@@ -403,11 +410,27 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                                         </button>
                                     </>
                                 )}
-                                <button className="post-option-item" onClick={async (e) => { e.stopPropagation(); const noteText = prompt('Write your community note for this post:'); if (noteText && noteText.trim()) { try { await addCommunityNote(post.id, noteText); setShowOptionsMenu(false); alert('Community note submitted! It will be reviewed by the community.'); } catch(err) { console.error(err); } } else { setShowOptionsMenu(false); } }}>
+                                <button className="post-option-item" onClick={(e) => { e.stopPropagation(); setShowOptionsMenu(false); setIsNoteModalOpen(true); }}>
                                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                                         <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
                                     </svg>
                                     <span>{t('post.addNote', 'Add Community Note')}</span>
+                                </button>
+                                <button className="post-option-item post-option-delete" onClick={async (e) => {
+                                    e.stopPropagation();
+                                    try {
+                                        const { reportContent } = await import('../../services/api/moderation');
+                                        await reportContent({ postId: String(post.id), flagType: 'USER_REPORT', reason: 'User reported content' });
+                                        setShowOptionsMenu(false);
+                                        showToast('Post reported. Our team will review it.', 'info');
+                                    } catch (err) {
+                                        showToast(err.message || 'Already reported or failed', 'warning');
+                                    }
+                                }}>
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                        <path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6h-5.6z"/>
+                                    </svg>
+                                    <span>{t('post.report', 'Report Post')}</span>
                                 </button>
                             </div>
                         )}
@@ -697,6 +720,34 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                     onCommentAdded={handleCommentAdded}
                 />
             )}
+            
+            <InputModal
+                isOpen={isNoteModalOpen}
+                title="Add Community Note"
+                message="Provide extra context to help others understand this post better."
+                value={noteText}
+                onChange={setNoteText}
+                placeholder="Write your note here..."
+                submitText="Submit Note"
+                isTextarea={true}
+                onCancel={() => {
+                    setIsNoteModalOpen(false);
+                    setNoteText('');
+                }}
+                onSubmit={async () => {
+                    if (noteText && noteText.trim()) {
+                        try {
+                            await addCommunityNote(post.id, noteText);
+                            showToast('Community note submitted! It will be reviewed by the community.', 'success');
+                        } catch(err) {
+                            console.error(err);
+                            showToast('Failed to submit note', 'error');
+                        }
+                    }
+                    setIsNoteModalOpen(false);
+                    setNoteText('');
+                }}
+            />
         </div>
     );
 });

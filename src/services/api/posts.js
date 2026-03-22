@@ -41,8 +41,10 @@ export const getPostById = async (postId) => {
  * @param {number[]} mediaIds - Array of media IDs to attach (optional)
  * @param {string[]} mentionedUserIds - Array of user IDs mentioned in the post (optional)
  * @param {Object} poll - Poll data (optional)
+ * @param {Object} location - Location data {lat, lng, name} (optional)
+ * @param {Object} musicShare - Music share data (optional)
  */
-export const createPost = async (content, mediaIds = null, mentionedUserIds = null, poll = null, isDraft = false) => {
+export const createPost = async (content, mediaIds = null, mentionedUserIds = null, poll = null, location = null, musicShare = null, isDraft = false) => {
     const requestBody = {};
 
     if (content && content.trim()) {
@@ -59,6 +61,16 @@ export const createPost = async (content, mediaIds = null, mentionedUserIds = nu
 
     if (poll) {
         requestBody.poll = poll;
+    }
+
+    if (location) {
+        requestBody.latitude = location.lat;
+        requestBody.longitude = location.lng;
+        requestBody.locationName = location.name;
+    }
+
+    if (musicShare) {
+        requestBody.musicShare = musicShare;
     }
 
     if (isDraft) {
