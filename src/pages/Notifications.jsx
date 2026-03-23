@@ -48,7 +48,7 @@ const NOTIFICATION_ICONS = {
     MENTION: {
         icon: (
             <svg viewBox="0 0 24 24" width="28" height="28" fill="#794BC4">
-                <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91-.79-.78-2.09-.79-2.91-.09zM12 15.5c.83-.83 1.5-1.5 1.5-1.5 1.5-3 0-6-3-9-3 3-4.5 6-3 9 0 0 .67.67 1.5 1.5L5 22h10l3-7z" />
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10h5v-2h-5c-4.34 0-8-3.66-8-8s3.66-8 8-8 8 3.66 8 8v1.43c0 .79-.71 1.57-1.5 1.57s-1.5-.78-1.5-1.57V12c0-2.76-2.24-5-5-5s-5 2.24-5 5 2.24 5 5 5c1.38 0 2.64-.56 3.54-1.47.65.89 1.77 1.47 2.96 1.47 1.97 0 3.5-1.6 3.5-3.57V12c0-5.52-4.48-10-10-10zm0 13c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z" />
             </svg>
         ),
         color: '#794BC4',
@@ -94,7 +94,6 @@ function Notifications() {
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [showSettings, setShowSettings] = useState(false);
 
     useEffect(() => {
         loadNotifications(true);
@@ -181,8 +180,8 @@ function Notifications() {
 
         // Navigate to the relevant content
         if (notification.referenceType === 'POST' && notification.referenceId) {
-            // Navigate to post (could be extended later)
-            navigate('/home');
+            // Navigate to post
+            navigate(`/post/${notification.referenceId}`);
         } else if (notification.type === 'FOLLOW' && notification.senderId) {
             navigate(`/profile/${notification.senderId}`);
         } else if (notification.senderUsername) {
@@ -244,7 +243,7 @@ function Notifications() {
                     )}
                     <button
                         className="notifications-settings-btn"
-                        onClick={() => setShowSettings(!showSettings)}
+                        onClick={() => navigate('/settings/notifications')}
                         title="Notification settings"
                     >
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
@@ -271,6 +270,14 @@ function Notifications() {
         </div>
     );
 
+    const getMediaUrl = (fileUrl) => {
+        if (!fileUrl) return '';
+        if (fileUrl.startsWith('http')) return fileUrl;
+        const cleanPath = fileUrl.startsWith('/') ? fileUrl.substring(1) : fileUrl;
+        const baseUrl = window.config?.api?.mediaBaseUrl || 'http://localhost:2000';
+        return `${baseUrl}/${cleanPath}`;
+    };
+
     const renderNotification = (notification) => {
         const config = getNotificationConfig(notification.type);
 
@@ -295,7 +302,7 @@ function Notifications() {
                     {/* Sender avatar */}
                     {notification.senderProfilePictureUrl ? (
                         <img
-                            src={notification.senderProfilePictureUrl}
+                            src={getMediaUrl(notification.senderProfilePictureUrl)}
                             alt={notification.senderDisplayName}
                             className="notification-avatar"
                         />

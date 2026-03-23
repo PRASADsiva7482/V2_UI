@@ -1,0 +1,162 @@
+/* ========== Poll Display ========== */
+.poll-display {
+    margin: 8px 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 12px;
+    background: var(--bg-primary, #15202b);
+}
+
+.poll-question {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    line-height: 1.3;
+}
+
+.poll-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.poll-option-wrapper {
+    width: 100%;
+}
+
+/* ========== Voting Button (before voting) ========== */
+.poll-option-btn {
+    width: 100%;
+    padding: 10px 16px;
+    border: 1.5px solid var(--twitter-blue, #1d9bf0);
+    border-radius: 9999px;
+    background: transparent;
+    color: var(--twitter-blue, #1d9bf0);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.poll-option-btn:hover:not(:disabled) {
+    background: rgba(29, 155, 240, 0.1);
+    transform: scale(1.01);
+}
+
+.poll-option-btn:active:not(:disabled) {
+    transform: scale(0.99);
+}
+
+.poll-option-btn.selected {
+    background: var(--twitter-blue, #1d9bf0);
+    color: #fff;
+    pointer-events: none;
+}
+
+.poll-option-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ========== Results View (after voting) ========== */
+.poll-option-result {
+    position: relative;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    min-height: 36px;
+    background: var(--surface, #1e2732);
+}
+
+.poll-option-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 8px;
+    background: rgba(29, 155, 240, 0.15);
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 0;
+}
+
+.poll-option-result.voted .poll-option-bar {
+    background: rgba(29, 155, 240, 0.3);
+}
+
+.poll-option-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+}
+
+.poll-option-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.poll-voted-check {
+    color: var(--twitter-blue, #1d9bf0);
+    flex-shrink: 0;
+}
+
+.poll-option-result.voted .poll-option-text {
+    font-weight: 700;
+}
+
+.poll-option-percentage {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    flex-shrink: 0;
+    margin-left: 12px;
+}
+
+/* ========== Poll Footer ========== */
+.poll-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+}
+
+.poll-votes-count,
+.poll-time-remaining {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.poll-time-remaining {
+    font-weight: 500;
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 480px) {
+    .poll-display {
+        padding: 10px;
+    }
+
+    .poll-option-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .poll-option-content {
+        padding: 6px 10px;
+    }
+
+    .poll-option-text,
+    .poll-option-percentage {
+        font-size: 13px;
+    }
+}

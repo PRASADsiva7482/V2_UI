@@ -39,8 +39,12 @@ export const getPostById = async (postId) => {
  * Create a new post
  * @param {string} content - Post content (optional if media is provided)
  * @param {number[]} mediaIds - Array of media IDs to attach (optional)
+ * @param {string[]} mentionedUserIds - Array of user IDs mentioned in the post (optional)
+ * @param {Object} poll - Poll data (optional)
+ * @param {Object} location - Location data {lat, lng, name} (optional)
+ * @param {Object} musicShare - Music share data (optional)
  */
-export const createPost = async (content, mediaIds = null) => {
+export const createPost = async (content, mediaIds = null, mentionedUserIds = null, poll = null, location = null, musicShare = null, isDraft = false, scheduledFor = null) => {
     const requestBody = {};
 
     if (content && content.trim()) {
@@ -49,6 +53,32 @@ export const createPost = async (content, mediaIds = null) => {
 
     if (mediaIds && mediaIds.length > 0) {
         requestBody.mediaIds = mediaIds;
+    }
+
+    if (mentionedUserIds && mentionedUserIds.length > 0) {
+        requestBody.mentionedUserIds = mentionedUserIds;
+    }
+
+    if (poll) {
+        requestBody.poll = poll;
+    }
+
+    if (location) {
+        requestBody.latitude = location.lat;
+        requestBody.longitude = location.lng;
+        requestBody.locationName = location.name;
+    }
+
+    if (musicShare) {
+        requestBody.musicShare = musicShare;
+    }
+
+    if (isDraft) {
+        requestBody.isDraft = true;
+    }
+
+    if (scheduledFor) {
+        requestBody.scheduledFor = scheduledFor;
     }
 
     return apiCaller.post(URLS.POSTS.BASE, requestBody);

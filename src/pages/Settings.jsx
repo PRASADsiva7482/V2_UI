@@ -5,7 +5,10 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../auth/AuthProvider';
 import { useToast } from '../components/common/Toast';
 import { getUserSettings, updateUserSettings, deleteUserAccount } from '../services/api/settings';
+import { getMyProfile } from '../services/api/profile';
+import { useSettings } from '../context/SettingsContext';
 import ToggleSwitch from '../components/common/ToggleSwitch';
+import { TermsOfService, PrivacyPolicy, CookiePolicy, AboutUs, ReleaseNotes } from './LegalPages';
 import './Settings.css';
 
 // U-2: SavedIndicator extracted to module level (was inside render body)
@@ -20,24 +23,103 @@ function SavedIndicator({ field, saveSuccess }) {
 // module-level components that receive shared state via props.
 // ============================
 
-function AccountSettings({ user, handleChangePassword, handleDeleteAccount, showDeleteModal, setShowDeleteModal, deleteConfirmText, setDeleteConfirmText, showPasswordModal, setShowPasswordModal, saving }) {
+function AccountSettings({ user, profile, handleChangePassword, handleDeleteAccount, showDeleteModal, setShowDeleteModal, deleteConfirmText, setDeleteConfirmText, showPasswordModal, setShowPasswordModal, saving, navigate }) {
     return (
         <div className="settings-pane">
             <h2 className="settings-pane-title">Your account</h2>
-            <p className="settings-pane-desc">See information about your account, download an archive of your data, or learn about your account deactivation options.</p>
+            <p className="settings-pane-desc">See information about your account, manage your profile details, or learn about your account deactivation options.</p>
 
-            <div className="settings-list">
-                <div className="settings-list-item">
-                    <div className="settings-item-icon">
-                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+            {/* Profile Overview Card */}
+            <div className="account-profile-card">
+                <div className="account-profile-header">
+                    <div className="account-profile-avatar">
+                        {profile?.profilePictureUrl ? (
+                            <img src={profile.profilePictureUrl} alt={profile?.displayName || user?.username} />
+                        ) : (
+                            <div className="account-avatar-placeholder">
+                                <svg viewBox="0 0 24 24" width="36" height="36" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+                            </div>
+                        )}
                     </div>
-                    <div className="settings-item-content">
-                        <h3>Account information</h3>
-                        <p>Username: @{user?.username || 'N/A'}</p>
-                        {user?.email && <p>Email: {user.email}</p>}
+                    <div className="account-profile-name-block">
+                        <h3 className="account-profile-displayname">{profile?.displayName || user?.firstName || 'No name set'}</h3>
+                        <span className="account-profile-handle">@{user?.username || 'N/A'}</span>
                     </div>
+                    <button className="account-edit-profile-btn" onClick={() => {
+                        if (profile?.userId) {
+                            navigate(`/profile/${profile.userId}?edit=true`);
+                        }
+                    }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" /></svg>
+                        Edit Profile
+                    </button>
                 </div>
 
+                {profile?.bio && (
+                    <p className="account-profile-bio">{profile.bio}</p>
+                )}
+
+                <div className="account-info-grid">
+                    <div className="account-info-item">
+                        <div className="account-info-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" /></svg>
+                        </div>
+                        <div className="account-info-detail">
+                            <span className="account-info-label">Email</span>
+                            <span className="account-info-value">{user?.email || profile?.email || 'Not set'}</span>
+                        </div>
+                    </div>
+                    <div className="account-info-item">
+                        <div className="account-info-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" /></svg>
+                        </div>
+                        <div className="account-info-detail">
+                            <span className="account-info-label">Phone</span>
+                            <span className="account-info-value">{profile?.phoneNumber || user?.attributes?.phoneNumber?.[0] || 'Not set'}</span>
+                        </div>
+                    </div>
+                    <div className="account-info-item">
+                        <div className="account-info-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>
+                        </div>
+                        <div className="account-info-detail">
+                            <span className="account-info-label">Nickname</span>
+                            <span className="account-info-value">{profile?.nickname || profile?.displayName || 'Not set'}</span>
+                        </div>
+                    </div>
+                    <div className="account-info-item">
+                        <div className="account-info-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95c-.32-1.25-.78-2.45-1.38-3.56 1.84.63 3.37 1.91 4.33 3.56zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56-1.84-.63-3.37-1.9-4.33-3.56zm2.95-8H5.08c.96-1.66 2.49-2.93 4.33-3.56C8.81 5.55 8.35 6.75 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95c-.96 1.65-2.49 2.93-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z" /></svg>
+                        </div>
+                        <div className="account-info-detail">
+                            <span className="account-info-label">Website</span>
+                            <span className="account-info-value">{profile?.website ? (
+                                <a href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`} target="_blank" rel="noopener noreferrer" className="account-info-link">{profile.website}</a>
+                            ) : 'Not set'}</span>
+                        </div>
+                    </div>
+                    <div className="account-info-item">
+                        <div className="account-info-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z" /></svg>
+                        </div>
+                        <div className="account-info-detail">
+                            <span className="account-info-label">Member since</span>
+                            <span className="account-info-value">{profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'N/A'}</span>
+                        </div>
+                    </div>
+                    <div className="account-info-item">
+                        <div className="account-info-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+                        </div>
+                        <div className="account-info-detail">
+                            <span className="account-info-label">Username</span>
+                            <span className="account-info-value">@{user?.username || 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="settings-list">
                 <div className="settings-list-item" onClick={handleChangePassword}>
                     <div className="settings-item-icon">
                         <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM15.1 8H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" /></svg>
@@ -221,6 +303,16 @@ function PrivacySettings({ settings, handleSettingChange, saveSuccess }) {
             <div className="settings-section-title">Discoverability and contacts</div>
             <div className="settings-control-group">
                 <div className="settings-control">
+                    <div className="settings-control-text">
+                        <h3>Incognito "Ghost" Mode <span style={{fontSize:'10px', color:'purple', border:'1px solid purple', padding:'2px', borderRadius:'4px', marginLeft:'6px'}}>PREMIUM</span></h3>
+                        <p>When enabled, your online status is hidden and you will not appear in "recently viewed" lists.</p>
+                    </div>
+                    <div className="settings-control-actions">
+                        <ToggleSwitch checked={settings?.isGhostMode || false} onChange={(v) => handleSettingChange('isGhostMode', v)} label="Ghost mode" />
+                        <SavedIndicator field="isGhostMode" saveSuccess={saveSuccess} />
+                    </div>
+                </div>
+                <div className="settings-control">
                     <div className="settings-control-text"><h3>Let others find you by email</h3><p>Let people who have your email address find and connect with you here.</p></div>
                     <div className="settings-control-actions">
                         <ToggleSwitch checked={settings?.discoverableByEmail ?? true} onChange={(v) => handleSettingChange('discoverableByEmail', v)} label="Discoverable by email" />
@@ -233,6 +325,47 @@ function PrivacySettings({ settings, handleSettingChange, saveSuccess }) {
                         <ToggleSwitch checked={settings?.discoverableByPhone ?? true} onChange={(v) => handleSettingChange('discoverableByPhone', v)} label="Discoverable by phone" />
                         <SavedIndicator field="discoverableByPhone" saveSuccess={saveSuccess} />
                     </div>
+                </div>
+            </div>
+
+            <div className="settings-section-title">🌐 Auto-Translation</div>
+            <div className="settings-control-group">
+                <div className="settings-control">
+                    <div className="settings-control-text"><h3>Auto-translate posts</h3><p>Automatically translate posts from other languages into your preferred language.</p></div>
+                    <div className="settings-control-actions">
+                        <ToggleSwitch checked={settings?.autoTranslate || false} onChange={(v) => handleSettingChange('autoTranslate', v)} label="Auto translate" />
+                        <SavedIndicator field="autoTranslate" saveSuccess={saveSuccess} />
+                    </div>
+                </div>
+                {settings?.autoTranslate && (
+                    <div className="settings-control">
+                        <div className="settings-control-text"><h3>Translation language</h3><p>Posts will be translated into this language.</p></div>
+                        <div className="settings-control-actions">
+                            <select value={settings?.translateLanguage || 'en'} onChange={(e) => handleSettingChange('translateLanguage', e.target.value)} style={{background:'var(--card-bg,#16181c)',color:'inherit',border:'1px solid var(--border-color,#2f3336)',borderRadius:'8px',padding:'6px 12px',fontSize:'14px'}}>
+                                <option value="en">English</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="ja">Japanese</option><option value="ko">Korean</option><option value="zh">Chinese</option><option value="hi">Hindi</option><option value="ar">Arabic</option><option value="pt">Portuguese</option><option value="ta">Tamil</option>
+                            </select>
+                            <SavedIndicator field="translateLanguage" saveSuccess={saveSuccess} />
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <div className="settings-section-title">🔒 Chat Encryption</div>
+            <div className="settings-control-group">
+                <div className="settings-control">
+                    <div className="settings-control-text"><h3>E2E Encrypted DMs <span style={{fontSize:'10px', color:'#00ba7c', border:'1px solid #00ba7c', padding:'2px', borderRadius:'4px', marginLeft:'6px'}}>SECURE</span></h3><p>Enable end-to-end encryption for your direct messages. Only you and the recipient can read them.</p></div>
+                    <div className="settings-control-actions">
+                        <ToggleSwitch checked={settings?.chatEncryption || false} onChange={(v) => handleSettingChange('chatEncryption', v)} label="Chat encryption" />
+                        <SavedIndicator field="chatEncryption" saveSuccess={saveSuccess} />
+                    </div>
+                </div>
+            </div>
+
+            <div className="settings-section-title">✅ Verification Application</div>
+            <div className="settings-control-group">
+                <div className="settings-control" style={{cursor:'pointer'}}>
+                    <div className="settings-control-text"><h3>Apply for Verified Checkmark <span style={{fontSize:'10px', color:'#1d9bf0', border:'1px solid #1d9bf0', padding:'2px 4px', borderRadius:'4px', marginLeft:'6px'}}>✓</span></h3><p>Submit an application to get verified. You'll need to provide your name, category, and reason.</p></div>
+                    <div className="settings-control-actions"><span style={{color:'#71767b',fontSize:'20px'}}>→</span></div>
                 </div>
             </div>
 
@@ -393,7 +526,7 @@ function AccessibilitySettings({ settings, handleSettingChange, handleThemeChang
     );
 }
 
-function AboutSettings() {
+function AboutSettings({ navigate }) {
     return (
         <div className="settings-pane">
             <h2 className="settings-pane-title">Additional resources</h2>
@@ -401,17 +534,17 @@ function AboutSettings() {
 
             <div className="settings-section-title">Legal</div>
             <div className="settings-list">
-                <div className="settings-list-item">
+                <div className="settings-list-item" onClick={() => navigate('/settings/about/terms')}>
                     <div className="settings-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" /></svg></div>
                     <div className="settings-item-content"><h3>Terms of Service</h3></div>
                     <div className="settings-item-arrow">›</div>
                 </div>
-                <div className="settings-list-item">
+                <div className="settings-list-item" onClick={() => navigate('/settings/about/privacy')}>
                     <div className="settings-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" /></svg></div>
                     <div className="settings-item-content"><h3>Privacy Policy</h3></div>
                     <div className="settings-item-arrow">›</div>
                 </div>
-                <div className="settings-list-item">
+                <div className="settings-list-item" onClick={() => navigate('/settings/about/cookies')}>
                     <div className="settings-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1 14H5V8h14v10z" /></svg></div>
                     <div className="settings-item-content"><h3>Cookie Policy</h3></div>
                     <div className="settings-item-arrow">›</div>
@@ -420,12 +553,12 @@ function AboutSettings() {
 
             <div className="settings-section-title">Miscellaneous</div>
             <div className="settings-list">
-                <div className="settings-list-item">
+                <div className="settings-list-item" onClick={() => navigate('/settings/about/us')}>
                     <div className="settings-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" /></svg></div>
                     <div className="settings-item-content"><h3>About Us</h3></div>
                     <div className="settings-item-arrow">›</div>
                 </div>
-                <div className="settings-list-item">
+                <div className="settings-list-item" onClick={() => navigate('/settings/about/release-notes')}>
                     <div className="settings-item-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" /></svg></div>
                     <div className="settings-item-content"><h3>Release notes</h3><p>v2.0 - Social media application</p></div>
                     <div className="settings-item-arrow">›</div>
@@ -445,8 +578,10 @@ function Settings() {
     const { theme, toggleTheme } = useTheme();
     const { user, logout, keycloak } = useAuth();
     const { showToast } = useToast();
+    const { updateContextSettings } = useSettings();
 
     const [settings, setSettings] = useState(null);
+    const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState('');
@@ -456,6 +591,7 @@ function Settings() {
 
     useEffect(() => {
         loadSettings();
+        loadProfile();
     }, []);
 
     useEffect(() => {
@@ -464,6 +600,15 @@ function Settings() {
             return () => clearTimeout(timer);
         }
     }, [saveSuccess]);
+
+    const loadProfile = async () => {
+        try {
+            const data = await getMyProfile();
+            setProfile(data);
+        } catch (error) {
+            console.error('Failed to load profile for settings', error);
+        }
+    };
 
     const loadSettings = async () => {
         try {
@@ -489,6 +634,9 @@ function Settings() {
 
     const handleSettingChange = async (key, value) => {
         setSettings(prev => ({ ...prev, [key]: value }));
+        if (updateContextSettings) {
+            updateContextSettings({ [key]: value });
+        }
         try {
             setSaving(true);
             await updateUserSettings({ [key]: value });
@@ -618,6 +766,8 @@ function Settings() {
                     <Route path="/account" element={
                         <AccountSettings
                             user={user}
+                            profile={profile}
+                            navigate={navigate}
                             handleChangePassword={handleChangePassword}
                             handleDeleteAccount={handleDeleteAccount}
                             showDeleteModal={showDeleteModal}
@@ -635,7 +785,12 @@ function Settings() {
                     <Route path="/accessibility" element={
                         <AccessibilitySettings {...sharedProps} handleThemeChange={handleThemeChange} handleLanguageChange={handleLanguageChange} i18n={i18n} />
                     } />
-                    <Route path="/about" element={<AboutSettings />} />
+                    <Route path="/about" element={<AboutSettings navigate={navigate} />} />
+                    <Route path="/about/terms" element={<TermsOfService />} />
+                    <Route path="/about/privacy" element={<PrivacyPolicy />} />
+                    <Route path="/about/cookies" element={<CookiePolicy />} />
+                    <Route path="/about/us" element={<AboutUs />} />
+                    <Route path="/about/release-notes" element={<ReleaseNotes />} />
                 </Routes>
             </div>
 

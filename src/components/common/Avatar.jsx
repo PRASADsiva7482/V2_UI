@@ -15,10 +15,22 @@ const Avatar = memo(function Avatar({
         className
     ].filter(Boolean).join(' ');
 
+    const getMediaUrl = (fileUrl) => {
+        if (!fileUrl) return '';
+        if (fileUrl.startsWith('http')) return fileUrl;
+        if (fileUrl.startsWith('blob:')) return fileUrl; // Needed for local preview URLs
+
+        const cleanPath = fileUrl.startsWith('/') ? fileUrl.substring(1) : fileUrl;
+        const baseUrl = window.config?.api?.mediaBaseUrl || 'http://localhost:2000';
+        return `${baseUrl}/${cleanPath}`;
+    };
+
+    const resolvedSrc = getMediaUrl(src);
+
     return (
         <div className={avatarClasses} onClick={onClick}>
-            {src ? (
-                <img src={src} alt={alt} />
+            {resolvedSrc ? (
+                <img src={resolvedSrc} alt={alt} />
             ) : (
                 <div className="avatar-placeholder">
                     <svg viewBox="0 0 24 24" fill="currentColor">

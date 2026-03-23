@@ -2,16 +2,23 @@ import { useState, useEffect, memo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { likePost, unlikePost, incrementViewCount, updatePost, deletePost } from '../../services/api/posts';
+import { bookmarkPost, unbookmarkPost } from '../../services/api/bookmarks';
 import { uploadMedia } from '../../services/api/media';
+import { addCommunityNote } from '../../services/api/communityNotes';
+import { translateText } from '../../services/api/translation';
 import { formatRelativeTime, formatNumber } from '../../services/utils/formatters';
-import { parseHashtagsInText } from '../../services/utils/hashtagUtils';
+import { parseContentSegments } from '../../services/utils/mentionUtils';
 import Avatar from '../common/Avatar';
+import VerificationBadge from '../common/VerificationBadge';
 import CommentModal from '../comments/CommentModal';
+import PollDisplay from './PollDisplay';
 import VideoPlayer from '../media/VideoPlayer';
+import InputModal from '../common/InputModal';
+import { useToast } from '../common/Toast';
 import './PostCard.css';
 
 // U-17: Wrapped in React.memo to prevent unnecessary re-renders in feed lists
-const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
+const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted, showPinAction, isPinned, onPinPost, onUnpinPost }) {
     const navigate = useNavigate();
     const { t } = useTranslation();
 
@@ -33,6 +40,19 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
     const [isDeleting, setIsDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [editError, setEditError] = useState(null);
+    const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked || false);
+
+    // Toast and Modal hooks
+    const { showToast } = useToast();
+    const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+    const [noteText, setNoteText] = useState('');
+    const [isBookmarking, setIsBookmarking] = useState(false);
+
+    // Translation state
+    const [translatedText, setTranslatedText] = useState(null);
+    const [isTranslating, setIsTranslating] = useState(false);
+    const [showTranslation, setShowTranslation] = useState(false);
+
     const optionsMenuRef = useRef(null);
     const editFileInputRef = useRef(null);
 
@@ -42,7 +62,8 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
         setLikesCount(post.likesCount || 0);
         setCommentsCount(post.commentsCount || 0);
         setViewsCount(post.viewsCount || 0);
-    }, [post.isLiked, post.likesCount, post.commentsCount, post.viewsCount]);
+        setIsBookmarked(post.isBookmarked || false);
+    }, [post.isLiked, post.likesCount, post.commentsCount, post.viewsCount, post.isBookmarked]);
 
     // Close options menu on click outside
     useEffect(() => {
@@ -123,6 +144,10 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
 
     const handleHashtagClick = useCallback((tagName) => {
         navigate(`/hashtag/${tagName}`);
+    }, [navigate]);
+
+    const handleMentionClick = useCallback((username) => {
+        navigate(`/profile/u/${username}`);
     }, [navigate]);
 
     // ==================== Edit Handlers ====================
@@ -259,6 +284,61 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
         setShowDeleteConfirm(false);
     }, []);
 
+    // ==================== Bookmark Handlers ====================
+
+    const handleBookmark = useCallback(async (e) => {
+        e.stopPropagation();
+        if (isBookmarking) return;
+
+        try {
+            setIsBookmarking(true);
+            if (isBookmarked) {
+                await unbookmarkPost(post.id);
+                setIsBookmarked(false);
+            } else {
+                await bookmarkPost(post.id);
+                setIsBookmarked(true);
+            }
+        } catch (error) {
+            console.error('Error toggling bookmark:', error);
+        } finally {
+            setIsBookmarking(false);
+        }
+    }, [isBookmarked, isBookmarking, post.id]);
+
+    // ==================== Share Handler ====================
+
+    const handleShare = useCallback(async (e) => {
+        e.stopPropagation();
+        const postUrl = `${window.location.origin}/post/${post.id}`;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: post.author?.displayName || 'Post',
+                    text: post.content?.substring(0, 100) || '',
+                    url: postUrl
+                });
+            } catch (err) {
+                // User cancelled or error
+                if (err.name !== 'AbortError') {
+                    fallbackCopyLink(postUrl);
+                }
+            }
+        } else {
+            fallbackCopyLink(postUrl);
+        }
+    }, [post.id, post.content, post.author]);
+
+    const fallbackCopyLink = (url) => {
+        navigator.clipboard.writeText(url).then(() => {
+            // Could show a toast, but for now just log
+            console.log('Link copied to clipboard');
+        }).catch(() => {
+            console.error('Failed to copy link');
+        });
+    };
+
     // ==================== Helpers ====================
 
     const getMediaUrl = (fileUrl) => {
@@ -287,6 +367,7 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                         <span className="author-name" onClick={handleProfileClick}>
                             {post.author?.displayName || post.author?.username || 'Unknown'}
                         </span>
+                        <VerificationBadge tier={post.author?.verificationTier} size={18} />
                         <span className="author-username" onClick={handleProfileClick}>
                             @{post.author?.username || 'unknown'}
                         </span>
@@ -295,48 +376,110 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                         </span>
                     </div>
 
-                    {/* Options menu (three-dot) for own editable posts */}
-                    {canEditOrDelete && (
-                        <div className="post-options-wrapper" ref={optionsMenuRef}>
-                            <button
-                                className="post-options-btn"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowOptionsMenu(!showOptionsMenu);
-                                }}
-                                aria-label="Post options"
-                            >
-                                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                                    <circle cx="12" cy="5" r="2" />
-                                    <circle cx="12" cy="12" r="2" />
-                                    <circle cx="12" cy="19" r="2" />
-                                </svg>
-                            </button>
+                    {/* Options menu (three-dot) */}
+                    <div className="post-options-wrapper" ref={optionsMenuRef}>
+                        <button
+                            className="post-options-btn"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowOptionsMenu(!showOptionsMenu);
+                            }}
+                            aria-label="Post options"
+                        >
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                <circle cx="12" cy="5" r="2" />
+                                <circle cx="12" cy="12" r="2" />
+                                <circle cx="12" cy="19" r="2" />
+                            </svg>
+                        </button>
 
-                            {showOptionsMenu && (
-                                <div className="post-options-menu">
-                                    <button
-                                        className="post-option-item"
-                                        onClick={handleEditClick}
-                                    >
+                        {showOptionsMenu && (
+                            <div className="post-options-menu">
+                                {canEditOrDelete && (
+                                    <>
+                                        <button className="post-option-item" onClick={handleEditClick}>
+                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                                            </svg>
+                                            <span>{t('post.edit', 'Edit')}</span>
+                                        </button>
+                                        <button className="post-option-item post-option-delete" onClick={handleDeleteClick}>
+                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                                            </svg>
+                                            <span>{t('post.delete', 'Delete')}</span>
+                                        </button>
+                                    </>
+                                )}
+                                {/* Pin/Unpin action — only shown from Profile page */}
+                                {showPinAction && (
+                                    <button className="post-option-item" onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowOptionsMenu(false);
+                                        if (isPinned) {
+                                            onUnpinPost && onUnpinPost();
+                                        } else {
+                                            onPinPost && onPinPost();
+                                        }
+                                    }}>
                                         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                                            <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
                                         </svg>
-                                        <span>{t('post.edit', 'Edit')}</span>
+                                        <span>{isPinned ? t('post.unpinPost', 'Unpin from profile') : t('post.pinPost', 'Pin to profile')}</span>
                                     </button>
-                                    <button
-                                        className="post-option-item post-option-delete"
-                                        onClick={handleDeleteClick}
-                                    >
+                                )}
+                                {/* Translate action */}
+                                {post.content && (
+                                    <button className="post-option-item" onClick={async (e) => {
+                                        e.stopPropagation();
+                                        setShowOptionsMenu(false);
+                                        if (showTranslation) {
+                                            setShowTranslation(false);
+                                            return;
+                                        }
+                                        try {
+                                            setIsTranslating(true);
+                                            const result = await translateText(post.content);
+                                            setTranslatedText(result?.translatedText || result?.text || 'Translation unavailable');
+                                            setShowTranslation(true);
+                                        } catch (err) {
+                                            console.error('Translation failed:', err);
+                                            showToast('Translation service unavailable', 'warning');
+                                        } finally {
+                                            setIsTranslating(false);
+                                        }
+                                    }}>
                                         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                                            <path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" />
                                         </svg>
-                                        <span>{t('post.delete', 'Delete')}</span>
+                                        <span>{showTranslation ? t('post.showOriginal', 'Show original') : t('post.translate', 'Translate')}</span>
                                     </button>
-                                </div>
-                            )}
-                        </div>
-                    )}
+                                )}
+                                <button className="post-option-item" onClick={(e) => { e.stopPropagation(); setShowOptionsMenu(false); setIsNoteModalOpen(true); }}>
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+                                    </svg>
+                                    <span>{t('post.addNote', 'Add Community Note')}</span>
+                                </button>
+                                <button className="post-option-item post-option-delete" onClick={async (e) => {
+                                    e.stopPropagation();
+                                    try {
+                                        const { reportContent } = await import('../../services/api/moderation');
+                                        await reportContent({ postId: String(post.id), flagType: 'USER_REPORT', reason: 'User reported content' });
+                                        setShowOptionsMenu(false);
+                                        showToast('Post reported. Our team will review it.', 'info');
+                                    } catch (err) {
+                                        showToast(err.message || 'Already reported or failed', 'warning');
+                                    }
+                                }}>
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                        <path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6h-5.6z" />
+                                    </svg>
+                                    <span>{t('post.report', 'Report Post')}</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Delete confirmation dialog */}
@@ -491,7 +634,7 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                     <>
                         {post.content && (
                             <div className="post-text">
-                                {parseHashtagsInText(post.content, handleHashtagClick).map((segment, index) => {
+                                {parseContentSegments(post.content, handleMentionClick, handleHashtagClick).map((segment, index) => {
                                     const stableKey = `${post.id}-seg-${index}-${segment.type}`;
                                     if (segment.type === 'hashtag') {
                                         return (
@@ -507,8 +650,39 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                                             </span>
                                         );
                                     }
+                                    if (segment.type === 'mention') {
+                                        return (
+                                            <span
+                                                key={stableKey}
+                                                className="mention-link"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    segment.onClick(segment.username);
+                                                }}
+                                            >
+                                                {segment.content}
+                                            </span>
+                                        );
+                                    }
                                     return <span key={stableKey}>{segment.content}</span>;
                                 })}
+                            </div>
+                        )}
+
+                        {/* Translation display */}
+                        {isTranslating && (
+                            <div className="post-translation-loading">
+                                <span>Translating...</span>
+                            </div>
+                        )}
+                        {showTranslation && translatedText && (
+                            <div className="post-translation">
+                                <div className="post-translation-header">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" /></svg>
+                                    <span>Translated</span>
+                                    <button className="post-translation-close" onClick={(e) => { e.stopPropagation(); setShowTranslation(false); }}>✕</button>
+                                </div>
+                                <p className="post-translation-text">{translatedText}</p>
                             </div>
                         )}
 
@@ -550,6 +724,10 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                                 })}
                             </div>
                         )}
+                        {/* Poll Display */}
+                        {post.poll && (
+                            <PollDisplay poll={post.poll} />
+                        )}
                     </>
                 )}
 
@@ -572,7 +750,7 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                         <span>{formatNumber(likesCount)}</span>
                     </button>
 
-                    <button className="action-btn share-btn" onClick={(e) => e.stopPropagation()}>
+                    <button className="action-btn share-btn" onClick={handleShare}>
                         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
                             <path d="M12 2.59l5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41l-3.3 3.3-1.41-1.42L12 2.59zM21 15l-.02 3.51c0 1.38-1.12 2.49-2.5 2.49H5.5C4.11 21 3 19.88 3 18.5V15h2v3.5c0 .28.22.5.5.5h12.98c.28 0 .5-.22.5-.5L19 15h2z" />
                         </svg>
@@ -584,6 +762,16 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                         </svg>
                         <span>{formatNumber(viewsCount)}</span>
                     </button>
+
+                    <button
+                        className={`action-btn bookmark-btn ${isBookmarked ? 'bookmarked' : ''}`}
+                        onClick={handleBookmark}
+                        disabled={isBookmarking}
+                    >
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill={isBookmarked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                        </svg>
+                    </button>
                 </div>
             </div>
 
@@ -594,6 +782,34 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                     onCommentAdded={handleCommentAdded}
                 />
             )}
+
+            <InputModal
+                isOpen={isNoteModalOpen}
+                title="Add Community Note"
+                message="Provide extra context to help others understand this post better."
+                value={noteText}
+                onChange={setNoteText}
+                placeholder="Write your note here..."
+                submitText="Submit Note"
+                isTextarea={true}
+                onCancel={() => {
+                    setIsNoteModalOpen(false);
+                    setNoteText('');
+                }}
+                onSubmit={async () => {
+                    if (noteText && noteText.trim()) {
+                        try {
+                            await addCommunityNote(post.id, noteText);
+                            showToast('Community note submitted! It will be reviewed by the community.', 'success');
+                        } catch (err) {
+                            console.error(err);
+                            showToast('Failed to submit note', 'error');
+                        }
+                    }
+                    setIsNoteModalOpen(false);
+                    setNoteText('');
+                }}
+            />
         </div>
     );
 });

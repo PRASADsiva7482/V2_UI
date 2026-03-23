@@ -1,10 +1,30 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useChat } from '../../context/ChatContext';
 import chatWebSocketService from '../../services/websocket/chatWebSocket';
 import { searchUsers } from '../../services/api/profile';
+import { pauseAllMedia } from '../../hooks/useMediaAutoStop';
 import Avatar from '../common/Avatar';
 import EmojiPicker from './EmojiPicker';
+import MentionInput from '../common/MentionInput';
+import { parseContentSegments } from '../../services/utils/mentionUtils';
+import { useToast } from '../common/Toast';
 import './Chat.css';
+
+/**
+ * Resolve backend-relative media URLs to full absolute URLs.
+ * The backend stores fileUrl as /v-app/api/v1/media/images/file.png
+ * but the frontend runs on port 3000, so <img src> would hit the Vite
+ * dev server instead of the backend on port 2000.
+ * This mirrors the getMediaUrl() helper used in PostCard.
+ */
+const getMediaUrl = (fileUrl) => {
+    if (!fileUrl) return '';
+    // Already absolute (e.g. blob: for optimistic previews, or http/https)
+    if (fileUrl.startsWith('http') || fileUrl.startsWith('blob:')) return fileUrl;
+    const cleanPath = fileUrl.startsWith('/') ? fileUrl.substring(1) : fileUrl;
+    const baseUrl = window.config?.api?.mediaBaseUrl || 'http://localhost:2000';
+    return `${baseUrl}/${cleanPath}`;
+};
 
 /* ════════════════════════════════════════════════════════════════
    MAIN CHAT COMPONENT
@@ -19,14 +39,18 @@ function Chat() {
     } = useChat();
 
     const [showNewChat, setShowNewChat] = useState(false);
+    const [showCreateGroup, setShowCreateGroup] = useState(false);
+    const { showToast } = useToast();
 
     const handleSelectConversation = useCallback((conv) => {
+        pauseAllMedia();
         setActiveConversation(conv);
         loadMessages(conv.id);
         markConversationAsRead(conv.id);
     }, [setActiveConversation, loadMessages, markConversationAsRead]);
 
     const handleBack = useCallback(() => {
+        pauseAllMedia();
         setActiveConversation(null);
     }, [setActiveConversation]);
 
@@ -42,10 +66,30 @@ function Chat() {
 
             <div className={`chat-sidebar ${activeConversation ? 'chat-sidebar-hidden' : ''}`}>
                 <ChatListHeader
-                    onNewChat={() => setShowNewChat(true)}
+                    onNewChat={() => { setShowNewChat(true); setShowCreateGroup(false); }}
+                    onNewGroup={() => { setShowCreateGroup(true); setShowNewChat(false); }}
                     wsConnected={wsConnected}
                 />
-                {showNewChat ? (
+                {showCreateGroup ? (
+                    <GroupChatCreator
+                        onCreateGroup={async (groupName, memberIds) => {
+                            try {
+                                const apiCaller = (await import('../../services/api/apiCaller')).default;
+                                const resp = await apiCaller.post('/api/v1/chat/conversations/group', {
+                                    type: 'GROUP',
+                                    groupName,
+                                    participantIds: memberIds
+                                });
+                                setShowCreateGroup(false);
+                                showToast('Group chat created! 🎉', 'success');
+                                handleSelectConversation(resp);
+                            } catch (err) {
+                                showToast('Failed to create group', 'error');
+                            }
+                        }}
+                        onClose={() => setShowCreateGroup(false)}
+                    />
+                ) : showNewChat ? (
                     <NewChatSearch
                         onStartConversation={async (userId) => {
                             const conv = await startConversation(userId);
@@ -71,8 +115,8 @@ function Chat() {
                         conversation={activeConversation}
                         messages={messages[activeConversation.id] || []}
                         currentUserId={currentUserId}
-                        onSendMessage={(content) => sendMessage(activeConversation.id, content)}
-                        onSendMediaMessage={(content, files) => sendMediaMessage(activeConversation.id, content, files)}
+                        onSendMessage={(content, mentionedUserIds) => sendMessage(activeConversation.id, content, mentionedUserIds)}
+                        onSendMediaMessage={(content, files, mentionedUserIds) => sendMediaMessage(activeConversation.id, content, files, mentionedUserIds)}
                         onMarkRead={() => markConversationAsRead(activeConversation.id)}
                         onSendTyping={(typing) => sendTypingIndicator(activeConversation.id, typing)}
                         onBack={handleBack}
@@ -93,19 +137,26 @@ function Chat() {
 /* ──────────────────────────
    CHAT LIST HEADER
    ────────────────────────── */
-function ChatListHeader({ onNewChat, wsConnected }) {
+function ChatListHeader({ onNewChat, onNewGroup, wsConnected }) {
     return (
         <div className="chat-list-header">
             <h2 className="chat-list-title">
                 Messages
                 {wsConnected && <span className="online-dot" title="Connected" />}
             </h2>
-            <button className="new-chat-btn" onClick={onNewChat} title="New conversation">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
-                    <path d="M11 5h2v4h4v2h-4v4h-2v-4H7V9h4z" />
-                </svg>
-            </button>
+            <div style={{ display: 'flex', gap: '6px' }}>
+                <button className="new-chat-btn" onClick={onNewGroup} title="Create group chat" style={{ opacity: 0.7 }}>
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                    </svg>
+                </button>
+                <button className="new-chat-btn" onClick={onNewChat} title="New conversation">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
+                        <path d="M11 5h2v4h4v2h-4v4h-2v-4H7V9h4z" />
+                    </svg>
+                </button>
+            </div>
         </div>
     );
 }
@@ -181,6 +232,128 @@ function NewChatSearch({ onStartConversation, onClose }) {
                     <div className="search-no-results">No users found</div>
                 )}
             </div>
+        </div>
+    );
+}
+
+/* ──────────────────────────
+   GROUP CHAT CREATOR
+   ────────────────────────── */
+function GroupChatCreator({ onCreateGroup, onClose }) {
+    const [groupName, setGroupName] = useState('');
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState([]);
+    const [selectedMembers, setSelectedMembers] = useState([]);
+    const [searching, setSearching] = useState(false);
+    const debounceRef = useRef(null);
+
+    const handleSearch = useCallback((value) => {
+        setQuery(value);
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        if (value.trim().length < 2) { setResults([]); return; }
+
+        debounceRef.current = setTimeout(async () => {
+            setSearching(true);
+            try {
+                const data = await searchUsers(value, { page: 0, size: 10 });
+                setResults(data?.content || []);
+            } catch (err) {
+                console.error('Search error:', err);
+            } finally {
+                setSearching(false);
+            }
+        }, 300);
+    }, []);
+
+    const toggleMember = (user) => {
+        setSelectedMembers(prev => {
+            const exists = prev.find(m => m.userId === user.userId);
+            if (exists) return prev.filter(m => m.userId !== user.userId);
+            return [...prev, user];
+        });
+    };
+
+    return (
+        <div className="new-chat-search">
+            <div className="new-chat-search-header">
+                <button className="back-btn" onClick={onClose}>
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                    </svg>
+                </button>
+                <span style={{ fontSize: '16px', fontWeight: '700' }}>Create Group</span>
+            </div>
+            <div style={{ padding: '12px' }}>
+                <input
+                    type="text"
+                    placeholder="Group name..."
+                    value={groupName}
+                    onChange={(e) => setGroupName(e.target.value)}
+                    className="new-chat-input"
+                    style={{ marginBottom: '10px', width: '100%', boxSizing: 'border-box' }}
+                />
+                {selectedMembers.length > 0 && (
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                        {selectedMembers.map(m => (
+                            <span key={m.userId} style={{
+                                display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                padding: '4px 10px', borderRadius: '16px',
+                                background: 'rgba(29,155,240,0.15)', color: '#1d9bf0',
+                                fontSize: '13px', fontWeight: '600'
+                            }}>
+                                @{m.username}
+                                <button onClick={() => toggleMember(m)} style={{
+                                    background: 'none', border: 'none', color: '#1d9bf0',
+                                    cursor: 'pointer', padding: '0 2px', fontSize: '14px'
+                                }}>×</button>
+                            </span>
+                        ))}
+                    </div>
+                )}
+                <input
+                    type="text"
+                    placeholder="Search people to add..."
+                    value={query}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    className="new-chat-input"
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                />
+            </div>
+            <div className="new-chat-results">
+                {searching && <div className="search-loading">Searching...</div>}
+                {results.map(user => (
+                    <button
+                        key={user.userId}
+                        className={`search-result-item ${selectedMembers.find(m => m.userId === user.userId) ? 'selected' : ''}`}
+                        onClick={() => toggleMember(user)}
+                    >
+                        <Avatar src={user.profilePictureUrl} alt={user.displayName || user.username} size="small" />
+                        <div className="search-result-info">
+                            <span className="search-result-name">{user.displayName || user.username}</span>
+                            <span className="search-result-username">@{user.username}</span>
+                        </div>
+                        {selectedMembers.find(m => m.userId === user.userId) && (
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="#1d9bf0" style={{ marginLeft: 'auto' }}>
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                            </svg>
+                        )}
+                    </button>
+                ))}
+            </div>
+            {selectedMembers.length >= 1 && (
+                <div style={{ padding: '12px', borderTop: '1px solid var(--border-color, #2f3336)' }}>
+                    <button
+                        onClick={() => onCreateGroup(groupName || 'Group Chat', selectedMembers.map(m => m.username || m.userId))}
+                        style={{
+                            width: '100%', padding: '10px', border: 'none', borderRadius: '20px',
+                            background: '#1d9bf0', color: '#fff', fontWeight: '700', fontSize: '14px',
+                            cursor: 'pointer', transition: 'all 0.2s'
+                        }}
+                    >
+                        Create Group ({selectedMembers.length} members)
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
@@ -292,28 +465,85 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [filePreviews, setFilePreviews] = useState([]);
-    const [lightboxImage, setLightboxImage] = useState(null);
+    const [lightboxMedia, setLightboxMedia] = useState(null);
+    const [mentionedUserIds, setMentionedUserIds] = useState([]);
+
+    // Voice Recorder state
+    const [isRecording, setIsRecording] = useState(false);
+    const [recordingTime, setRecordingTime] = useState(0);
+    const mediaRecorderRef = useRef(null);
+    const audioChunksRef = useRef([]);
+    const recordingTimerRef = useRef(null);
+
+    // Vanish Mode state
+    const [vanishMode, setVanishMode] = useState(false);
+    const [vanishTimer, setVanishTimer] = useState(30); // seconds
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
     const typingTimeoutRef = useRef(null);
     const fileInputRef = useRef(null);
     const inputRef = useRef(null);
 
+    // Track scroll positions
+    const prevMsgCountRef = useRef(0);
+    const prevFirstMsgIdRef = useRef(null);
+    const scrollHeightRef = useRef(0);
+    const scrollTopRef = useRef(0);
+
+
     const displayName = conversation.type === 'DIRECT'
         ? (conversation.otherUserDisplayName || conversation.otherUserName || 'Unknown')
         : (conversation.groupName || 'Group Chat');
     const isOnline = conversation.otherUserOnline;
 
-    // Auto-scroll to bottom on new messages
-    useEffect(() => {
+    // Auto-scroll logic: instant on open, smooth on new message, preserve on load more
+    useLayoutEffect(() => {
         const container = messagesContainerRef.current;
-        if (container) {
-            const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
-            if (isNearBottom || messages.length <= 30) {
+        if (!container) return;
+
+        // Has conversation changed?
+        const isNewConversation = container.dataset.convId !== conversation.id;
+        if (isNewConversation) {
+            container.dataset.convId = conversation.id;
+            prevMsgCountRef.current = 0;
+            prevFirstMsgIdRef.current = null;
+            scrollHeightRef.current = 0;
+            scrollTopRef.current = 0;
+        }
+
+        const currentMsgCount = messages.length;
+        const prevMsgCount = prevMsgCountRef.current;
+        const firstMsgId = messages[0]?.id || messages[0]?.tempId;
+        const prevFirstMsgId = prevFirstMsgIdRef.current;
+
+        // Is it the initial load of a conversation?
+        if (currentMsgCount > 0 && prevMsgCount === 0) {
+            // Jump to the bottom immediately
+            container.scrollTop = container.scrollHeight;
+        }
+        // Prepended messages (pagination)
+        else if (currentMsgCount > prevMsgCount && firstMsgId !== prevFirstMsgId && prevFirstMsgId) {
+            // Preserve scroll position
+            const diff = container.scrollHeight - scrollHeightRef.current;
+            container.scrollTop = scrollTopRef.current + diff;
+        }
+        // Appended message (new message at the end)
+        else if (currentMsgCount > prevMsgCount || messages[messages.length - 1]?.id !== prevFirstMsgId) {
+            const isNearBottom = scrollHeightRef.current - scrollTopRef.current - container.clientHeight < 250;
+            const lastMsg = messages[messages.length - 1];
+            const isMyMessage = lastMsg?.senderId === currentUserId;
+
+            if (isNearBottom || isMyMessage) {
+                // Smooth scroll down for new messages
                 messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
             }
         }
-    }, [messages]);
+
+        prevMsgCountRef.current = currentMsgCount;
+        prevFirstMsgIdRef.current = firstMsgId;
+        scrollHeightRef.current = container.scrollHeight;
+        scrollTopRef.current = container.scrollTop;
+    }, [messages, currentUserId, conversation.id]);
 
     // Mark as read when conversation opens
     useEffect(() => {
@@ -354,8 +584,9 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
 
         if (selectedFiles.length > 0) {
             // Send media message
-            onSendMediaMessage(content, selectedFiles);
+            onSendMediaMessage(content, selectedFiles, mentionedUserIds);
             setInputValue('');
+            setMentionedUserIds([]);
             clearFiles();
             handleStopTyping();
             setShowEmojiPicker(false);
@@ -363,8 +594,9 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
         }
 
         if (!content) return;
-        onSendMessage(content);
+        onSendMessage(content, mentionedUserIds);
         setInputValue('');
+        setMentionedUserIds([]);
         handleStopTyping();
         setShowEmojiPicker(false);
     };
@@ -376,8 +608,8 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
         }
     };
 
-    const handleInputChange = (e) => {
-        setInputValue(e.target.value);
+    const handleInputChange = (value) => {
+        setInputValue(value);
 
         if (!isTyping) {
             setIsTyping(true);
@@ -458,12 +690,19 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
         setFilePreviews([]);
     };
 
-    // Scroll to load more
+    // Keep track of scroll position for layout effects
     const handleScroll = (e) => {
-        if (e.target.scrollTop === 0 && messages.length > 0) {
+        const container = e.target;
+        scrollTopRef.current = container.scrollTop;
+        scrollHeightRef.current = container.scrollHeight;
+
+        // Scroll to load more
+        if (container.scrollTop === 0 && messages.length > 0) {
             onLoadMore();
         }
     };
+
+
 
     // Group messages by date
     const groupedMessages = groupMessagesByDate(messages);
@@ -515,6 +754,18 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
                         {remoteTyping ? 'typing...' : isOnline ? 'Online' : 'Offline'}
                     </span>
                 </div>
+                {/* Vanish Mode Toggle */}
+                <button
+                    className={`vanish-mode-btn ${vanishMode ? 'active' : ''}`}
+                    onClick={() => setVanishMode(prev => !prev)}
+                    title={vanishMode ? `Vanish Mode ON (${vanishTimer}s)` : 'Enable Vanish Mode'}
+                    type="button"
+                >
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                    </svg>
+                    {vanishMode && <span className="vanish-mode-dot" />}
+                </button>
             </div>
 
             {/* Messages */}
@@ -547,14 +798,43 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
                                                             <MessageAttachment
                                                                 key={att.id || attIdx}
                                                                 attachment={att}
-                                                                onImageClick={(url) => setLightboxImage(url)}
+                                                                onMediaClick={(media) => setLightboxMedia(media)}
+                                                                onMediaLoad={() => {
+                                                                    // Re-adjust scroll if we were already at the bottom
+                                                                    const container = messagesContainerRef.current;
+                                                                    if (container) {
+                                                                        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 250;
+                                                                        if (isNearBottom || isMine) {
+                                                                            messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+                                                                            scrollHeightRef.current = container.scrollHeight;
+                                                                        }
+                                                                    }
+                                                                }}
                                                             />
                                                         ))}
                                                     </div>
                                                 )}
                                                 {/* Text content */}
                                                 {msg.content && (
-                                                    <span className="message-text">{msg.content}</span>
+                                                    <span className="message-text">
+                                                        {parseContentSegments(msg.content).map((segment, idx) => {
+                                                            if (segment.type === 'mention') {
+                                                                return (
+                                                                    <span key={idx} className="mention-text">
+                                                                        {segment.content}
+                                                                    </span>
+                                                                );
+                                                            }
+                                                            if (segment.type === 'hashtag') {
+                                                                return (
+                                                                    <span key={idx} className="hashtag-text">
+                                                                        {segment.content}
+                                                                    </span>
+                                                                );
+                                                            }
+                                                            return <span key={idx}>{segment.content}</span>;
+                                                        })}
+                                                    </span>
                                                 )}
                                             </>
                                         )}
@@ -643,15 +923,74 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
                         style={{ display: 'none' }}
                     />
 
+                    {/* Voice Recorder Button */}
+                    <button
+                        className={`chat-action-btn voice-btn ${isRecording ? 'recording' : ''}`}
+                        onClick={() => {
+                            if (isRecording) {
+                                // Stop recording
+                                if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+                                    mediaRecorderRef.current.stop();
+                                }
+                                clearInterval(recordingTimerRef.current);
+                                setIsRecording(false);
+                                setRecordingTime(0);
+                            } else {
+                                // Start recording
+                                navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                                    const recorder = new MediaRecorder(stream);
+                                    audioChunksRef.current = [];
+                                    mediaRecorderRef.current = recorder;
+
+                                    recorder.ondataavailable = (e) => {
+                                        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+                                    };
+
+                                    recorder.onstop = () => {
+                                        stream.getTracks().forEach(t => t.stop());
+                                        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                                        const file = new File([blob], `voice_${Date.now()}.webm`, { type: 'audio/webm' });
+                                        onSendMediaMessage('🎤 Voice message', [file], []);
+                                    };
+
+                                    recorder.start();
+                                    setIsRecording(true);
+                                    setRecordingTime(0);
+                                    recordingTimerRef.current = setInterval(() => {
+                                        setRecordingTime(prev => prev + 1);
+                                    }, 1000);
+                                }).catch(err => {
+                                    console.error('Microphone access denied:', err);
+                                });
+                            }
+                        }}
+                        title={isRecording ? 'Stop recording' : 'Record voice message'}
+                        type="button"
+                    >
+                        {isRecording ? (
+                            <>
+                                <span className="voice-recording-dot" />
+                                <span className="voice-recording-time">
+                                    {Math.floor(recordingTime / 60)}:{String(recordingTime % 60).padStart(2, '0')}
+                                </span>
+                            </>
+                        ) : (
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1.02 1.15.49 3.52 3.27 6.27 6.93 6.7V21h2v-3.15c3.66-.43 6.44-3.18 6.93-6.7.07-.61-.41-1.15-1.02-1.15z" />
+                            </svg>
+                        )}
+                    </button>
+
                     {/* Text Input */}
-                    <textarea
-                        ref={inputRef}
+                    <MentionInput
                         className="chat-input"
                         value={inputValue}
                         onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
                         placeholder="Type a message..."
                         rows={1}
+                        onMentionedUsersChange={setMentionedUserIds}
+                        mentionUsersWithin={conversation.type === 'GROUP' ? null : null} // Can optimize to fetch group users only if there is group data
                     />
 
                     {/* Send Button */}
@@ -677,36 +1016,122 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
                 )}
             </div>
 
-            {/* Image Lightbox */}
-            {lightboxImage && (
-                <div className="chat-lightbox" onClick={() => setLightboxImage(null)}>
-                    <button className="lightbox-close" onClick={() => setLightboxImage(null)}>×</button>
-                    <img src={lightboxImage} alt="Full size" onClick={(e) => e.stopPropagation()} />
+            {/* Media Lightbox — supports Image, Video, File */}
+            {lightboxMedia && (
+                <div className="chat-lightbox" onClick={() => { pauseAllMedia(); setLightboxMedia(null); }}>
+                    <button className="lightbox-close" onClick={() => { pauseAllMedia(); setLightboxMedia(null); }}>×</button>
+
+                    {/* Download button */}
+                    <a
+                        className="lightbox-download"
+                        href={lightboxMedia.url}
+                        download={lightboxMedia.name || 'download'}
+                        onClick={(e) => e.stopPropagation()}
+                        title="Download"
+                    >
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                        </svg>
+                    </a>
+
+                    {lightboxMedia.type === 'image' && (
+                        <img
+                            src={lightboxMedia.url}
+                            alt={lightboxMedia.name || 'Full size'}
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    )}
+
+                    {lightboxMedia.type === 'video' && (
+                        <video
+                            src={lightboxMedia.url}
+                            controls
+                            autoPlay
+                            className="lightbox-video"
+                            onClick={(e) => e.stopPropagation()}
+                            tabIndex="0"
+                            autoFocus
+                            onKeyDown={(e) => {
+                                const el = e.target;
+                                if (e.key === ' ' || e.code === 'Space') {
+                                    e.preventDefault();
+                                    if (el.paused) el.play(); else el.pause();
+                                } else if (e.key === 'ArrowRight') {
+                                    el.currentTime += 5;
+                                } else if (e.key === 'ArrowLeft') {
+                                    el.currentTime -= 5;
+                                } else if (e.key === 'f' || e.key === 'F') {
+                                    if (el.requestFullscreen) el.requestFullscreen();
+                                } else if (e.key === 'Escape') {
+                                    setLightboxMedia(null);
+                                }
+                            }}
+                        />
+                    )}
+
+                    {lightboxMedia.type === 'file' && (
+                        <div className="lightbox-file" onClick={(e) => e.stopPropagation()}>
+                            <span className="lightbox-file-icon">📄</span>
+                            <span className="lightbox-file-name">{lightboxMedia.name || 'File'}</span>
+                            {lightboxMedia.size > 0 && (
+                                <span className="lightbox-file-size">{formatFileSize(lightboxMedia.size)}</span>
+                            )}
+                            <a
+                                className="lightbox-file-download-btn"
+                                href={lightboxMedia.url}
+                                download={lightboxMedia.name || 'download'}
+                            >
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                                </svg>
+                                Download
+                            </a>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
     );
 }
 
+
+
 /* ──────────────────────────
-   MESSAGE ATTACHMENT
+   MESSAGE ATTACHMENT — Fully functional media previews
    ────────────────────────── */
-function MessageAttachment({ attachment, onImageClick }) {
+function MessageAttachment({ attachment, onMediaClick, onMediaLoad }) {
     const { fileUrl, fileName, fileType, fileSize, isUploading } = attachment;
 
     const isImage = fileType?.startsWith('image');
     const isVideo = fileType?.startsWith('video');
     const isAudio = fileType?.startsWith('audio');
 
+    const formatSize = (bytes) => {
+        if (!bytes) return '';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    };
+
+    // Resolve URLs through the backend base URL helper
+    const resolvedUrl = getMediaUrl(fileUrl);
+
     if (isImage) {
         return (
             <div className={`attachment-preview image-attachment ${isUploading ? 'uploading' : ''}`}>
                 <img
-                    src={fileUrl}
+                    src={resolvedUrl}
                     alt={fileName || 'Image'}
-                    onClick={() => onImageClick(fileUrl)}
+                    onClick={() => onMediaClick({ type: 'image', url: resolvedUrl, name: fileName, size: fileSize })}
+                    onLoad={onMediaLoad}
                     loading="lazy"
                 />
+                <div className="attachment-hover-overlay">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="#fff">
+                        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                        <path d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z" />
+                    </svg>
+                </div>
                 {isUploading && (
                     <div className="attachment-upload-overlay">
                         <div className="upload-spinner" />
@@ -719,7 +1144,20 @@ function MessageAttachment({ attachment, onImageClick }) {
     if (isVideo) {
         return (
             <div className={`attachment-preview video-attachment ${isUploading ? 'uploading' : ''}`}>
-                <video src={fileUrl} controls preload="metadata" />
+                <video src={resolvedUrl} preload="metadata" onLoadedMetadata={onMediaLoad} />
+                <div
+                    className="video-play-overlay"
+                    onClick={() => onMediaClick({ type: 'video', url: resolvedUrl, name: fileName, size: fileSize })}
+                >
+                    <div className="video-play-btn">
+                        <svg viewBox="0 0 24 24" width="36" height="36" fill="#fff">
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
+                    </div>
+                    {fileSize > 0 && (
+                        <span className="video-size-badge">{formatSize(fileSize)}</span>
+                    )}
+                </div>
                 {isUploading && (
                     <div className="attachment-upload-overlay">
                         <div className="upload-spinner" />
@@ -732,10 +1170,18 @@ function MessageAttachment({ attachment, onImageClick }) {
     if (isAudio) {
         return (
             <div className={`attachment-preview audio-attachment ${isUploading ? 'uploading' : ''}`}>
-                <div className="audio-player">
+                <div className="audio-player" onClick={(e) => e.stopPropagation()}>
                     <span className="audio-icon">🎵</span>
-                    <audio src={fileUrl} controls preload="metadata" />
+                    <audio
+                        src={resolvedUrl}
+                        controls
+                        preload="metadata"
+                        onKeyDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}
+                    />
                 </div>
+                {fileName && <span className="audio-filename">{fileName}</span>}
                 {isUploading && (
                     <div className="attachment-upload-overlay">
                         <div className="upload-spinner" />
@@ -745,26 +1191,26 @@ function MessageAttachment({ attachment, onImageClick }) {
         );
     }
 
-    // File/document
-    const formatSize = (bytes) => {
-        if (!bytes) return '';
-        if (bytes < 1024) return bytes + ' B';
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-    };
-
+    // File/document — clickable with download
     const getFileIcon = (name) => {
         const ext = name?.split('.').pop()?.toLowerCase() || '';
         const icons = {
             pdf: '📕', doc: '📘', docx: '📘', xls: '📊', xlsx: '📊',
             ppt: '📙', pptx: '📙', txt: '📝', zip: '📦', rar: '📦',
+            csv: '📊', json: '📋', html: '🌐', css: '🎨', js: '📜',
         };
         return icons[ext] || '📄';
     };
 
     return (
         <div className={`attachment-preview file-attachment ${isUploading ? 'uploading' : ''}`}>
-            <a href={fileUrl} target="_blank" rel="noreferrer" className="file-download-link">
+            <a
+                className="file-download-link"
+                href={resolvedUrl}
+                download={fileName || 'download'}
+                onClick={(e) => e.stopPropagation()}
+                style={{ cursor: 'pointer', textDecoration: 'none', color: 'inherit' }}
+            >
                 <span className="file-icon">{getFileIcon(fileName)}</span>
                 <div className="file-info">
                     <span className="file-name">{fileName || 'File'}</span>

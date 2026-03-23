@@ -92,6 +92,66 @@ function Navbar() {
                     </button>
 
                     <button
+                        className={`nav-btn ${isActive('/spaces') ? 'active' : ''}`}
+                        onClick={() => navigate('/spaces')}
+                    >
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1.02 1.15V12c0 3.53 2.61 6.43 6 6.92V21h2v-2.08c3.39-.49 6-3.39 6-6.92v-.08c.07-.61-.41-1.15-1.02-1.15z"/>
+                        </svg>
+                        <span>Spaces</span>
+                    </button>
+
+                    <button
+                        className={`nav-btn ${isActive('/lists') ? 'active' : ''}`}
+                        onClick={() => navigate('/lists')}
+                    >
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                            <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+                        </svg>
+                        <span>Lists</span>
+                    </button>
+
+                    <button
+                        className={`nav-btn ${isActive('/music') ? 'active' : ''}`}
+                        onClick={() => navigate('/music')}
+                    >
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                        </svg>
+                        <span>Music</span>
+                    </button>
+
+                    <button
+                        className={`nav-btn ${isActive('/watch-parties') ? 'active' : ''}`}
+                        onClick={() => navigate('/watch-parties')}
+                    >
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                            <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12zM10 8v6l5-3z"/>
+                        </svg>
+                        <span>Watch</span>
+                    </button>
+
+                    <button
+                        className={`nav-btn ${isActive('/location') ? 'active' : ''}`}
+                        onClick={() => navigate('/location')}
+                    >
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                        <span>Nearby</span>
+                    </button>
+
+                    <button
+                        className={`nav-btn ${isActive('/bookmarks') ? 'active' : ''}`}
+                        onClick={() => navigate('/bookmarks')}
+                    >
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                            <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z" />
+                        </svg>
+                        <span>{t('navbar.bookmarks', 'Bookmarks')}</span>
+                    </button>
+
+                    <button
                         className={`nav-btn ${location.pathname.startsWith('/profile') ? 'active' : ''}`}
                         onClick={() => navigate('/profile/me')}
                     >

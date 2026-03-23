@@ -8,6 +8,7 @@ import {
     uploadChatMedia,
     sendMessageWithMedia,
 } from '../services/api/chat';
+import { useSettings } from './SettingsContext';
 
 const ChatContext = createContext(null);
 
@@ -21,6 +22,7 @@ export const useChat = () => {
 
 export const ChatProvider = ({ children }) => {
     const { user, getToken, keycloak } = useAuth();
+    const { settings } = useSettings();
     const [conversations, setConversations] = useState([]);
     const [activeConversation, setActiveConversation] = useState(null);
     const [messages, setMessages] = useState({});
@@ -117,11 +119,18 @@ export const ChatProvider = ({ children }) => {
                 const existing = page > 0 ? (prev[conversationId] || []) : [];
                 // Reverse to chronological order (newest-first from API)
                 const reversed = [...messageList].reverse();
+
+                if (page === 0) {
+                    return { ...prev, [conversationId]: reversed };
+                }
+
+                // Append but filter duplicates
+                const existingIds = new Set(existing.map(m => m.id).filter(Boolean));
+                const newMessages = reversed.filter(m => !existingIds.has(m.id));
+
                 return {
                     ...prev,
-                    [conversationId]: page > 0
-                        ? [...reversed, ...existing]
-                        : reversed,
+                    [conversationId]: [...newMessages, ...existing],
                 };
             });
 
@@ -146,7 +155,9 @@ export const ChatProvider = ({ children }) => {
                 return {
                     ...prev,
                     [message.conversationId]: convMessages.map(m =>
-                        (m.tempId && m.tempId === message.tempId) ? message : m
+                        ((m.tempId && message.tempId && m.tempId === message.tempId) ||
+                            (m.id && message.id && m.id === message.id))
+                            ? message : m
                     ),
                 };
             }
@@ -209,7 +220,7 @@ export const ChatProvider = ({ children }) => {
     /**
      * Send a text-only message via WebSocket (fast path).
      */
-    const sendMessage = useCallback((conversationId, content, type = 'TEXT', replyToId = null) => {
+    const sendMessage = useCallback((conversationId, content, mentionedUserIds = [], type = 'TEXT', replyToId = null) => {
         const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         // Optimistic UI update
@@ -240,6 +251,7 @@ export const ChatProvider = ({ children }) => {
             type,
             replyToId,
             tempId,
+            mentionedUserIds,
         });
     }, [currentUserId, user]);
 
@@ -249,7 +261,7 @@ export const ChatProvider = ({ children }) => {
      * 2. Send message via REST with attachment info
      * 3. WebSocket will broadcast the saved message to recipients
      */
-    const sendMediaMessage = useCallback(async (conversationId, content, files, replyToId = null) => {
+    const sendMediaMessage = useCallback(async (conversationId, content, files, mentionedUserIds = [], replyToId = null) => {
         const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         // Determine message type from files
@@ -311,6 +323,7 @@ export const ChatProvider = ({ children }) => {
                 replyToId,
                 tempId,
                 attachments: uploadedAttachments,
+                mentionedUserIds,
             };
 
             await sendMessageWithMedia(request);
@@ -331,13 +344,15 @@ export const ChatProvider = ({ children }) => {
     }, [currentUserId, user]);
 
     const markConversationAsRead = useCallback((conversationId) => {
-        chatWebSocketService.markAsRead(conversationId);
+        if (settings?.readReceipts !== false) {
+            chatWebSocketService.markAsRead(conversationId);
+        }
         setUnreadCounts(prev => {
             const updated = { ...prev };
             delete updated[conversationId];
             return updated;
         });
-    }, []);
+    }, [settings?.readReceipts]);
 
     const sendTypingIndicator = useCallback((conversationId, typing) => {
         chatWebSocketService.sendTyping(conversationId, typing);

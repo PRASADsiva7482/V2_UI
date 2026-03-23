@@ -5,6 +5,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { DataCacheProvider } from './context/DataCacheContext';
 import { ChatProvider } from './context/ChatContext';
 import { ToastProvider } from './components/common/Toast';
+import { SettingsProvider } from './context/SettingsContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import PrivateRoute from './auth/PrivateRoute';
 import MainLayout from './components/layout/MainLayout';
@@ -18,7 +19,15 @@ const Explore = lazy(() => import('./pages/Explore'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const Connections = lazy(() => import('./pages/Connections'));
 const Settings = lazy(() => import('./pages/Settings'));
+const PostPage = lazy(() => import('./pages/PostPage'));
+const Bookmarks = lazy(() => import('./pages/Bookmarks'));
 const Chat = lazy(() => import('./components/chat/Chat'));
+const Spaces = lazy(() => import('./pages/Spaces'));
+const Lists = lazy(() => import('./pages/Lists'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+const WatchParties = lazy(() => import('./pages/WatchParties'));
+const MusicFeed = lazy(() => import('./pages/MusicFeed'));
+const LocationFeed = lazy(() => import('./pages/LocationFeed'));
 
 // Suspense fallback for lazy-loaded pages
 const PageLoader = () => (
@@ -32,40 +41,51 @@ function App() {
         <ErrorBoundary>
             <ThemeProvider>
                 <AuthProvider>
-                    <ToastProvider>
-                        <ChatProvider>
-                            <DataCacheProvider>
-                                <Router>
-                                    <Routes>
-                                        <Route
-                                            path="/*"
-                                            element={
-                                                <PrivateRoute>
-                                                    <MainLayout>
-                                                        <Suspense fallback={<PageLoader />}>
-                                                            <ErrorBoundary>
-                                                                <Routes>
-                                                                    <Route path="/" element={<Home />} />
-                                                                    <Route path="/home" element={<Home />} />
-                                                                    <Route path="/explore" element={<Explore />} />
-                                                                    <Route path="/notifications" element={<Notifications />} />
-                                                                    <Route path="/profile/:userId" element={<Profile />} />
-                                                                    <Route path="/hashtag/:tagName" element={<HashtagPage />} />
-                                                                    <Route path="/connections" element={<Connections />} />
-                                                                    <Route path="/settings/*" element={<Settings />} />
-                                                                    <Route path="/chat" element={<Chat />} />
-                                                                </Routes>
-                                                            </ErrorBoundary>
-                                                        </Suspense>
-                                                    </MainLayout>
-                                                </PrivateRoute>
-                                            }
-                                        />
-                                    </Routes>
-                                </Router>
-                            </DataCacheProvider>
-                        </ChatProvider>
-                    </ToastProvider>
+                    <SettingsProvider>
+                        <ToastProvider>
+                            <ChatProvider>
+                                <DataCacheProvider>
+                                    <Router>
+                                        <Routes>
+                                            <Route
+                                                path="/*"
+                                                element={
+                                                    <PrivateRoute>
+                                                        <MainLayout>
+                                                            <Suspense fallback={<PageLoader />}>
+                                                                <ErrorBoundary>
+                                                                    <Routes>
+                                                                        <Route path="/" element={<Home />} />
+                                                                        <Route path="/home" element={<Home />} />
+                                                                        <Route path="/explore" element={<Explore />} />
+                                                                        <Route path="/notifications" element={<Notifications />} />
+                                                                        <Route path="/profile/u/:username" element={<Profile />} />
+                                                                        <Route path="/profile/:userId" element={<Profile />} />
+                                                                        <Route path="/hashtag/:tagName" element={<HashtagPage />} />
+                                                                        <Route path="/connections" element={<Connections />} />
+                                                                        <Route path="/settings/*" element={<Settings />} />
+                                                                        <Route path="/post/:postId" element={<PostPage />} />
+                                                                        <Route path="/bookmarks" element={<Bookmarks />} />
+                                                                        <Route path="/chat" element={<Chat />} />
+                                                                        <Route path="/spaces" element={<Spaces />} />
+                                                                        <Route path="/lists" element={<Lists />} />
+                                                                        <Route path="/analytics" element={<Analytics />} />
+                                                                        <Route path="/watch-parties" element={<WatchParties />} />
+                                                                        <Route path="/music" element={<MusicFeed />} />
+                                                                        <Route path="/location" element={<LocationFeed />} />
+                                                                    </Routes>
+                                                                </ErrorBoundary>
+                                                            </Suspense>
+                                                        </MainLayout>
+                                                    </PrivateRoute>
+                                                }
+                                            />
+                                        </Routes>
+                                    </Router>
+                                </DataCacheProvider>
+                            </ChatProvider>
+                        </ToastProvider>
+                    </SettingsProvider>
                 </AuthProvider>
             </ThemeProvider>
         </ErrorBoundary>

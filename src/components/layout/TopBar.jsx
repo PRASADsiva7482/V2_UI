@@ -4,6 +4,7 @@ import { useAuth } from '../../auth/AuthProvider';
 import { getMyProfile } from '../../services/api/profile';
 import { searchPosts } from '../../services/api/posts';
 import Avatar from '../common/Avatar';
+import VerificationBadge from '../common/VerificationBadge';
 import NavbarSettings from './NavbarSettings';
 import SearchBox from '../search/SearchBox';
 import CreatePostModal from '../posts/CreatePostModal';
@@ -20,6 +21,15 @@ function TopBar() {
 
     useEffect(() => {
         loadCurrentProfile();
+    }, []);
+
+    // Listen for profile updates (e.g., profile picture change on Profile page)
+    useEffect(() => {
+        const handleProfileUpdated = () => {
+            loadCurrentProfile();
+        };
+        window.addEventListener('profileUpdated', handleProfileUpdated);
+        return () => window.removeEventListener('profileUpdated', handleProfileUpdated);
     }, []);
 
     useEffect(() => {
@@ -203,7 +213,10 @@ function TopBar() {
                                             size="medium"
                                         />
                                         <div className="topbar-dropdown-info">
-                                            <div className="topbar-dropdown-name">{currentProfile?.displayName || user?.username || 'User'}</div>
+                                            <div className="topbar-dropdown-name">
+                                                {currentProfile?.displayName || user?.username || 'User'}
+                                                {currentProfile && <VerificationBadge tier={currentProfile.verificationTier} size={16} />}
+                                            </div>
                                             <div className="topbar-dropdown-username">@{currentProfile?.username || user?.username || 'username'}</div>
                                         </div>
                                         <button className="topbar-dropdown-edit" onClick={(e) => { e.stopPropagation(); handleEditProfile(); }} title="Edit Profile">

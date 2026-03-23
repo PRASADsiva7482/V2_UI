@@ -34,6 +34,8 @@ export const URLS = {
         BY_ID: (userId) => `${API_BASE}/profile/${userId}`,
         BY_USERNAME: (username) => `${API_BASE}/profile/username/${username}`,
         PICTURE: `${API_BASE}/profile/me/picture`,
+        PICTURE_UPLOAD: `${API_BASE}/profile/me/picture/upload`,
+        PICTURE_DELETE: `${API_BASE}/profile/me/picture`,
         COVER: `${API_BASE}/profile/me/cover`,
         SEARCH: `${API_BASE}/profile/search`,
     },
@@ -43,6 +45,7 @@ export const URLS = {
         POPULAR_USERS: `${API_BASE}/discovery/popular/users`,
         STATS: `${API_BASE}/discovery/stats`,
         SUGGESTIONS: `${API_BASE}/discovery/suggestions/users`,
+        FOR_YOU: `${API_BASE}/discovery/for-you`,
     },
     MEDIA: {
         BASE: `${API_BASE}/media`,
@@ -85,6 +88,96 @@ export const URLS = {
         MARK_ALL_READ: `${API_BASE}/notifications/mark-all-read`,
         MARK_ALL_SEEN: `${API_BASE}/notifications/mark-all-seen`,
         MARK_READ: (id) => `${API_BASE}/notifications/${id}/read`,
+    },
+    BOOKMARKS: {
+        BASE: `${API_BASE}/bookmarks`,
+        BY_POST: (postId) => `${API_BASE}/bookmarks/${postId}`,
+        STATUS: (postId) => `${API_BASE}/bookmarks/${postId}/status`,
+        COUNT: `${API_BASE}/bookmarks/count`,
+    },
+    POLLS: {
+        VOTE: (pollId) => `${API_BASE}/polls/${pollId}/vote`,
+        BY_POST: (postId) => `${API_BASE}/polls/post/${postId}`,
+        BY_ID: (pollId) => `${API_BASE}/polls/${pollId}`,
+    },
+    LISTS: {
+        BASE: `${API_BASE}/lists`,
+        BY_ID: (listId) => `${API_BASE}/lists/${listId}`,
+        USER_LISTS: (userId) => `${API_BASE}/lists/user/${userId}`,
+        MEMBERS: (listId) => `${API_BASE}/lists/${listId}/members`,
+        ADD_MEMBER: (listId, memberId) => `${API_BASE}/lists/${listId}/members/${memberId}`,
+    },
+    COMMUNITY_NOTES: {
+        BY_POST: (postId) => `${API_BASE}/community-notes/post/${postId}`,
+        APPROVED: (postId) => `${API_BASE}/community-notes/post/${postId}/approved`,
+        VOTE: (noteId) => `${API_BASE}/community-notes/${noteId}/vote`,
+    },
+    SUBSCRIPTIONS: {
+        BASE: `${API_BASE}/subscriptions`,
+        BY_USER: (userId) => `${API_BASE}/subscriptions/${userId}`,
+        STATUS: (userId) => `${API_BASE}/subscriptions/${userId}/status`,
+    },
+    STORIES: {
+        BASE: `${API_BASE}/stories`,
+        MINE: `${API_BASE}/stories/me`,
+        FEED: `${API_BASE}/stories/feed`,
+        VIEW: (storyId) => `${API_BASE}/stories/${storyId}/view`,
+        DELETE: (storyId) => `${API_BASE}/stories/${storyId}`,
+    },
+    VERIFICATION: {
+        REQUEST: `${API_BASE}/verification/request`,
+        REQUESTS: `${API_BASE}/verification/requests`,
+        STATUS: `${API_BASE}/verification/status`,
+    },
+    ANALYTICS: {
+        DASHBOARD: `${API_BASE}/analytics/dashboard`,
+    },
+    MUSIC: {
+        SHARE: `${API_BASE}/music/share`,
+        ME: `${API_BASE}/music/me`,
+        RECENT: `${API_BASE}/music/recent`,
+        USER: (userId) => `${API_BASE}/music/user/${userId}`,
+        POST: (postId) => `${API_BASE}/music/post/${postId}`,
+        DELETE: (id) => `${API_BASE}/music/${id}`
+    },
+    MODERATION: {
+        REPORT: `${API_BASE}/moderation/report`,
+        SCAN: `${API_BASE}/moderation/scan`,
+        PENDING: `${API_BASE}/moderation/pending`,
+        POST: (postId) => `${API_BASE}/moderation/post/${postId}`
+    },
+    WATCH_PARTY: {
+        CREATE: `${API_BASE}/watch-party`,
+        ACTIVE: `${API_BASE}/watch-party/active`,
+        POPULAR: `${API_BASE}/watch-party/popular`,
+        ME: `${API_BASE}/watch-party/me`,
+        JOIN: (id) => `${API_BASE}/watch-party/${id}/join`,
+        LEAVE: (id) => `${API_BASE}/watch-party/${id}/leave`,
+        END: (id) => `${API_BASE}/watch-party/${id}/end`
+    },
+    LOCATION: {
+        NEARBY: `${API_BASE}/location/nearby`
+    },
+    GAMIFICATION: {
+        STATS: `${API_BASE}/gamification/stats`,
+        USER_STATS: (userId) => `${API_BASE}/gamification/stats/${userId}`,
+        ACTION: `${API_BASE}/gamification/action`
+    },
+    TRANSLATION: {
+        TRANSLATE: `${API_BASE}/translate`,
+        DETECT: `${API_BASE}/translate/detect`
+    },
+    SETTINGS: {
+        BASE: `${API_BASE}/settings`,
+        ME: `${API_BASE}/settings/me`
+    },
+    SPACES: {
+        BASE: `${API_BASE}/spaces`,
+        CREATE: `${API_BASE}/spaces/create`,
+        ACTIVE: `${API_BASE}/spaces/active`,
+        JOIN: (spaceId) => `${API_BASE}/spaces/${spaceId}/join`,
+        LEAVE: (spaceId) => `${API_BASE}/spaces/${spaceId}/leave`,
+        END: (spaceId) => `${API_BASE}/spaces/${spaceId}/end`
     }
 };
 

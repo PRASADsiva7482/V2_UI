@@ -1,14 +1,27 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { likeComment, unlikeComment, deleteComment } from '../../services/api/comments';
 import { formatRelativeTime, formatNumber } from '../../services/utils/formatters';
+import { parseContentSegments } from '../../services/utils/mentionUtils';
 import Avatar from '../common/Avatar';
+import { useToast } from '../common/Toast';
 import './CommentItem.css';
 
 function CommentItem({ comment, onUpdate, onDelete }) {
+    const { showToast } = useToast();
     const [isLiked, setIsLiked] = useState(comment.isLiked || false);
     const [likesCount, setLikesCount] = useState(comment.likesCount || 0);
     const [isLiking, setIsLiking] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const navigate = useNavigate();
+
+    const handleHashtagClick = useCallback((tagName) => {
+        navigate(`/hashtag/${tagName}`);
+    }, [navigate]);
+
+    const handleMentionClick = useCallback((username) => {
+        navigate(`/profile/u/${username}`);
+    }, [navigate]);
 
     const handleLike = async (e) => {
         e.stopPropagation();
@@ -46,7 +59,7 @@ function CommentItem({ comment, onUpdate, onDelete }) {
             }
         } catch (error) {
             console.error('Error deleting comment:', error);
-            alert('Failed to delete comment. Please try again.');
+            showToast('Failed to delete comment. Please try again.', 'error');
         } finally {
             setIsDeleting(false);
         }
@@ -101,7 +114,26 @@ function CommentItem({ comment, onUpdate, onDelete }) {
                         )}
                     </div>
                 </div>
-                <p className="comment-text">{comment.content}</p>
+                <p className="comment-text">
+                    {parseContentSegments(comment.content, handleMentionClick, handleHashtagClick).map((segment, index) => {
+                        const key = `comment-${comment.id}-seg-${index}`;
+                        if (segment.type === 'mention') {
+                            return (
+                                <span key={key} className="mention-link" onClick={(e) => { e.stopPropagation(); segment.onClick(segment.username); }}>
+                                    {segment.content}
+                                </span>
+                            );
+                        }
+                        if (segment.type === 'hashtag') {
+                            return (
+                                <span key={key} className="hashtag-link" onClick={(e) => { e.stopPropagation(); segment.onClick(segment.tagName); }}>
+                                    {segment.content}
+                                </span>
+                            );
+                        }
+                        return <span key={key}>{segment.content}</span>;
+                    })}
+                </p>
             </div>
         </div>
     );

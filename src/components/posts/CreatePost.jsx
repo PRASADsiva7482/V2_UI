@@ -4,6 +4,8 @@ import { uploadMedia } from '../../services/api/media';
 import Button from '../common/Button';
 import Avatar from '../common/Avatar';
 import MediaUploader from '../media/MediaUploader';
+import MentionInput from '../common/MentionInput';
+import PollCreator from './PollCreator';
 import './CreatePost.css';
 
 function CreatePost({ onPostCreated }) {
@@ -13,6 +15,19 @@ function CreatePost({ onPostCreated }) {
     const [uploadingMedia, setUploadingMedia] = useState(false);
     const [error, setError] = useState(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [mentionedUserIds, setMentionedUserIds] = useState([]);
+    const [showPollCreator, setShowPollCreator] = useState(false);
+    const [pollData, setPollData] = useState({
+        question: '',
+        options: ['', ''],
+        durationHours: 24
+    });
+
+    // Schedule/Draft state
+    const [isDraft, setIsDraft] = useState(false);
+    const [scheduledFor, setScheduledFor] = useState('');
+    const [showScheduleOptions, setShowScheduleOptions] = useState(false);
+
     const fileInputRef = useRef(null);
     const emojiPickerRef = useRef(null);
 
@@ -69,12 +84,19 @@ function CreatePost({ onPostCreated }) {
         };
     }, [showEmojiPicker]);
 
+    const isPollValid = () => {
+        if (!showPollCreator) return false;
+        if (!pollData.question.trim()) return false;
+        const validOptions = pollData.options.filter(opt => opt.trim());
+        return validOptions.length >= 2;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validate that we have either content or media
-        if (!content.trim() && selectedFiles.length === 0) {
-            setError('Please add some content or media to your post');
+        // Validate that we have either content, media, or valid poll
+        if (!content.trim() && selectedFiles.length === 0 && !isPollValid()) {
+            setError('Please add some content, media, or a poll to your post');
             return;
         }
 
@@ -98,13 +120,34 @@ function CreatePost({ onPostCreated }) {
                 setUploadingMedia(false);
             }
 
-            // Create post with content and media IDs
-            console.log('Creating post with content:', content, 'and media:', mediaIds);
-            const newPost = await createPost(content, mediaIds);
+            // Prepare poll data if valid
+            const finalPollData = (showPollCreator && isPollValid()) ? {
+                question: pollData.question.trim(),
+                options: pollData.options.filter(opt => opt.trim()),
+                durationHours: pollData.durationHours
+            } : null;
+
+            // Create post with content, media IDs, mentions, and poll
+            console.log('Creating post with content:', content, 'media:', mediaIds, 'mentions:', mentionedUserIds, 'poll:', finalPollData);
+            const newPost = await createPost(
+                content,
+                mediaIds,
+                mentionedUserIds,
+                finalPollData,
+                null, // location
+                null, // musicShare
+                isDraft ? true : undefined,
+                scheduledFor ? scheduledFor : undefined
+            );
 
             console.log('Post created successfully:', newPost);
             setContent('');
             setSelectedFiles([]);
+            setShowPollCreator(false);
+            setPollData({ question: '', options: ['', ''], durationHours: 24 });
+            setIsDraft(false);
+            setScheduledFor('');
+            setShowScheduleOptions(false);
 
             if (onPostCreated) {
                 onPostCreated(newPost);
@@ -122,7 +165,13 @@ function CreatePost({ onPostCreated }) {
     const maxChars = 280;
     const isOverLimit = charCount > maxChars;
     const isNearLimit = charCount > 260;
-    const canSubmit = (content.trim() || selectedFiles.length > 0) && !isOverLimit;
+    const canSubmit = (content.trim() || selectedFiles.length > 0 || isPollValid()) && !isOverLimit && !uploadingMedia;
+
+    const togglePollCreator = () => {
+        setShowPollCreator(!showPollCreator);
+        // Clear selected files when enabling poll as they might be mutually exclusive depending on design
+        // Here we'll allow both but disable the other button
+    };
 
     return (
         <div className="create-post">
@@ -143,19 +192,32 @@ function CreatePost({ onPostCreated }) {
                 {/* Main content area - side by side layout */}
                 <div className="create-post-main">
                     <div className="create-post-textarea-wrapper">
-                        <textarea
+                        <MentionInput
                             className="create-post-textarea"
                             placeholder="What's happening?"
                             value={content}
-                            onChange={(e) => setContent(e.target.value)}
+                            onChange={setContent}
                             maxLength={maxChars}
                             rows={2}
                             disabled={loading}
+                            onMentionedUsersChange={setMentionedUserIds}
                         />
                     </div>
 
+                    {/* Poll Creator */}
+                    {showPollCreator && (
+                        <div className="create-post-poll-container">
+                            <PollCreator
+                                pollData={pollData}
+                                onChange={setPollData}
+                                onRemove={() => setShowPollCreator(false)}
+                                disabled={loading}
+                            />
+                        </div>
+                    )}
+
                     {/* Media preview on the right side */}
-                    {selectedFiles.length > 0 && (
+                    {selectedFiles.length > 0 && !showPollCreator && (
                         <div className="create-post-media-preview">
                             <MediaUploader
                                 selectedFiles={selectedFiles}
@@ -177,9 +239,9 @@ function CreatePost({ onPostCreated }) {
                     <div className="create-post-actions">
                         <button
                             type="button"
-                            className="action-icon-btn"
+                            className={`action-icon-btn ${selectedFiles.length > 0 ? 'active' : ''}`}
                             onClick={triggerFileInput}
-                            disabled={loading || selectedFiles.length >= 1}
+                            disabled={loading || selectedFiles.length >= 1 || showPollCreator}
                             title="Add photo/video"
                         >
                             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
@@ -197,6 +259,74 @@ function CreatePost({ onPostCreated }) {
                                 <path d="M12 22.75C6.072 22.75 1.25 17.928 1.25 12S6.072 1.25 12 1.25 22.75 6.072 22.75 12 17.928 22.75 12 22.75zm0-20C6.9 2.75 2.75 6.9 2.75 12S6.9 21.25 12 21.25s9.25-4.15 9.25-9.25S17.1 2.75 12 2.75zm0 13c-1.93 0-3.682-.95-4.732-2.54-.344-.52-.032-1.22.562-1.22h8.34c.594 0 .906.7.562 1.22-1.05 1.59-2.802 2.54-4.732 2.54zM8.5 11c.828 0 1.5-.672 1.5-1.5S9.328 8 8.5 8 7 8.672 7 9.5 7.672 11 8.5 11zm7 0c.828 0 1.5-.672 1.5-1.5S16.328 8 15.5 8 14 8.672 14 9.5s.672 1.5 1.5 1.5z" />
                             </svg>
                         </button>
+
+                        <button
+                            type="button"
+                            className={`action-icon-btn ${showPollCreator ? 'active' : ''}`}
+                            onClick={togglePollCreator}
+                            title="Create poll"
+                            disabled={loading || selectedFiles.length > 0}
+                        >
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                                <path d="M19 4H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H5V6h14v12zm-3-10h-2v8h2V8zm-4 4h-2v4h2v-4zm-4-2H6v6h2v-6z" />
+                            </svg>
+                        </button>
+
+                        {/* Schedule/Draft button */}
+                        <button
+                            type="button"
+                            className={`action-icon-btn ${showScheduleOptions ? 'active' : ''}`}
+                            onClick={() => setShowScheduleOptions(!showScheduleOptions)}
+                            title="Schedule or save as draft"
+                            disabled={loading}
+                        >
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 002 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5v-5z" />
+                            </svg>
+                        </button>
+
+                        {/* Schedule Options Popup */}
+                        {showScheduleOptions && (
+                            <div className="schedule-options-popup">
+                                <div className="schedule-option">
+                                    <label>Schedule for later</label>
+                                    <input
+                                        type="datetime-local"
+                                        value={scheduledFor}
+                                        onChange={(e) => {
+                                            setScheduledFor(e.target.value);
+                                            setIsDraft(false);
+                                        }}
+                                        min={new Date().toISOString().slice(0, 16)}
+                                        className="schedule-datetime-input"
+                                    />
+                                </div>
+                                <div className="schedule-divider">or</div>
+                                <button
+                                    type="button"
+                                    className={`schedule-draft-btn ${isDraft ? 'active' : ''}`}
+                                    onClick={() => {
+                                        setIsDraft(!isDraft);
+                                        if (!isDraft) setScheduledFor('');
+                                    }}
+                                >
+                                    📝 {isDraft ? 'Saved as draft ✓' : 'Save as draft'}
+                                </button>
+                                {(scheduledFor || isDraft) && (
+                                    <button
+                                        type="button"
+                                        className="schedule-clear-btn"
+                                        onClick={() => {
+                                            setScheduledFor('');
+                                            setIsDraft(false);
+                                            setShowScheduleOptions(false);
+                                        }}
+                                    >
+                                        Clear & post normally
+                                    </button>
+                                )}
+                            </div>
+                        )}
 
                         {/* Emoji Picker Popup */}
                         {showEmojiPicker && (
@@ -232,7 +362,7 @@ function CreatePost({ onPostCreated }) {
                             disabled={!canSubmit}
                             loading={loading}
                         >
-                            {uploadingMedia ? 'Uploading...' : 'Post'}
+                            {uploadingMedia ? 'Uploading...' : isDraft ? 'Save Draft' : scheduledFor ? 'Schedule' : 'Post'}
                         </Button>
                     </div>
                 </div>

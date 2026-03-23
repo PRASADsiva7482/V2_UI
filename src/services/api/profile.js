@@ -30,9 +30,26 @@ export const updateMyProfile = async (profileData) => {
 };
 
 /**
- * Update profile picture
+ * Upload profile picture (multipart file upload)
+ * Server handles: saving file, deleting old pic, updating DB
  */
-export const updateProfilePicture = async (pictureUrl) => {
+export const uploadProfilePicture = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return apiCaller.upload(URLS.PROFILE.PICTURE_UPLOAD, formData);
+};
+
+/**
+ * Delete profile picture
+ */
+export const deleteProfilePicture = async () => {
+    return apiCaller.delete(URLS.PROFILE.PICTURE_DELETE);
+};
+
+/**
+ * Update profile picture (URL-based — legacy)
+ */
+export const updateProfilePictureUrl = async (pictureUrl) => {
     return apiCaller.put(URLS.PROFILE.PICTURE, null, {
         params: { pictureUrl }
     });
@@ -56,13 +73,30 @@ export const searchUsers = async (keyword, { page = 0, size = 20 } = {}) => {
     });
 };
 
+/**
+ * Pin a post to the user's profile
+ */
+export const pinPost = async (postId) => {
+    return apiCaller.put(`${URLS.PROFILE.ME}/pin/${postId}`);
+};
+
+/**
+ * Unpin the currently pinned post
+ */
+export const unpinPost = async () => {
+    return apiCaller.delete(`${URLS.PROFILE.ME}/pin`);
+};
+
 export default {
     getMyProfile,
     getUserProfile,
     getUserProfileByUsername,
     updateMyProfile,
-    updateProfilePicture,
+    uploadProfilePicture,
+    deleteProfilePicture,
+    updateProfilePictureUrl,
     updateCoverPhoto,
-    searchUsers
+    searchUsers,
+    pinPost,
+    unpinPost
 };
-

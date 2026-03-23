@@ -5,9 +5,11 @@ import Avatar from '../common/Avatar';
 import Button from '../common/Button';
 import CommentItem from './CommentItem';
 import CommentSkeleton from './CommentSkeleton';
+import { useToast } from '../common/Toast';
 import './CommentModal.css';
 
 function CommentModal({ post, onClose, onCommentAdded }) {
+    const { showToast } = useToast();
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
     const [loading, setLoading] = useState(false);
@@ -46,7 +48,7 @@ function CommentModal({ post, onClose, onCommentAdded }) {
             }
         } catch (error) {
             console.error('Error posting comment:', error);
-            alert('Failed to post comment. Please try again.');
+            showToast('Failed to post comment. Please try again.', 'error');
         } finally {
             setPosting(false);
         }

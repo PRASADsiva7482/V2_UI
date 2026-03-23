@@ -4,7 +4,7 @@ import './Toast.css';
 const ToastContext = createContext(null);
 
 /**
- * useToast hook — replaces all alert() calls (U-9).
+ * useToast hook — replaces all alert() calls.
  * Usage: const { showToast } = useToast();
  *        showToast('Profile saved!', 'success');
  */
@@ -20,7 +20,7 @@ export const ToastProvider = ({ children }) => {
     const [toasts, setToasts] = useState([]);
     const idCounter = useRef(0);
 
-    const showToast = useCallback((message, type = 'info', duration = 3000) => {
+    const showToast = useCallback((message, type = 'info', duration = 5000) => {
         const id = ++idCounter.current;
         const toast = { id, message, type, exiting: false };
 
@@ -29,7 +29,7 @@ export const ToastProvider = ({ children }) => {
         // Start exit animation before removal
         setTimeout(() => {
             setToasts(prev => prev.map(t => t.id === id ? { ...t, exiting: true } : t));
-        }, duration - 300);
+        }, duration - 400);
 
         // Remove toast after animation completes
         setTimeout(() => {
@@ -43,7 +43,7 @@ export const ToastProvider = ({ children }) => {
         setToasts(prev => prev.map(t => t.id === id ? { ...t, exiting: true } : t));
         setTimeout(() => {
             setToasts(prev => prev.filter(t => t.id !== id));
-        }, 300);
+        }, 400);
     }, []);
 
     const ICONS = {
@@ -81,6 +81,10 @@ export const ToastProvider = ({ children }) => {
                     >
                         <span className="toast-icon">{ICONS[toast.type]}</span>
                         <span className="toast-message">{toast.message}</span>
+                        {/* Progress bar */}
+                        <div className="toast-progress">
+                            <div className="toast-progress-bar" style={{ animationDuration: '5s' }} />
+                        </div>
                         <button
                             className="toast-dismiss"
                             onClick={() => dismissToast(toast.id)}

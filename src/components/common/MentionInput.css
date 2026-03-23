@@ -1,0 +1,243 @@
+/* ========== Mention Input Wrapper ========== */
+.mention-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.mention-textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 18px;
+    font-family: inherit;
+    resize: none;
+    outline: none;
+    min-height: 100px;
+    padding: 0;
+    line-height: 1.5;
+}
+
+.mention-textarea::placeholder {
+    color: var(--text-secondary);
+}
+
+.mention-textarea:disabled {
+    opacity: 0.5;
+}
+
+/* ========== Mention Suggestions Dropdown ========== */
+.mention-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 280px;
+    overflow-y: auto;
+    background: var(--background, #15202b);
+    border: 1px solid var(--border, #38444d);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45),
+                0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    animation: mentionDropdownIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes mentionDropdownIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ========== Suggestion Item ========== */
+.mention-suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.mention-suggestion-item:first-child {
+    border-radius: 16px 16px 0 0;
+}
+
+.mention-suggestion-item:last-child {
+    border-radius: 0 0 16px 16px;
+}
+
+.mention-suggestion-item:only-child {
+    border-radius: 16px;
+}
+
+.mention-suggestion-item:hover,
+.mention-suggestion-item.selected {
+    background: var(--hover, rgba(255, 255, 255, 0.06));
+}
+
+.mention-suggestion-item.selected {
+    background: rgba(29, 155, 240, 0.12);
+}
+
+/* ========== Avatar ========== */
+.mention-suggestion-avatar {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.mention-suggestion-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mention-avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1d9bf0 0%, #794BC4 100%);
+    color: #fff;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+/* ========== User Info ========== */
+.mention-suggestion-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.mention-suggestion-name {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-primary, #e7e9ea);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mention-suggestion-username {
+    font-size: 13px;
+    color: var(--text-secondary, #8b98a5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ========== Loading State ========== */
+.mention-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px;
+    color: var(--text-secondary, #8b98a5);
+    font-size: 14px;
+}
+
+.mention-loading-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border, #38444d);
+    border-top-color: var(--twitter-blue, #1d9bf0);
+    border-radius: 50%;
+    animation: mentionSpin 0.6s linear infinite;
+}
+
+@keyframes mentionSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ========== Scrollbar styling ========== */
+.mention-suggestions::-webkit-scrollbar {
+    width: 6px;
+}
+
+.mention-suggestions::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.mention-suggestions::-webkit-scrollbar-thumb {
+    background: var(--border, #38444d);
+    border-radius: 3px;
+}
+
+.mention-suggestions::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary, #8b98a5);
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 768px) {
+    .mention-textarea {
+        font-size: 16px;
+        min-height: 80px;
+    }
+
+    .mention-suggestions {
+        max-height: 220px;
+    }
+
+    .mention-suggestion-avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+    .mention-suggestion-name {
+        font-size: 13px;
+    }
+
+    .mention-suggestion-username {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mention-textarea {
+        font-size: 15px;
+        min-height: 70px;
+    }
+
+    .mention-suggestions {
+        max-height: 180px;
+        border-radius: 12px;
+    }
+
+    .mention-suggestion-item {
+        padding: 8px 12px;
+        gap: 10px;
+    }
+
+    .mention-suggestion-item:first-child {
+        border-radius: 12px 12px 0 0;
+    }
+
+    .mention-suggestion-item:last-child {
+        border-radius: 0 0 12px 12px;
+    }
+
+    .mention-suggestion-item:only-child {
+        border-radius: 12px;
+    }
+
+    .mention-suggestion-avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    .mention-avatar-placeholder {
+        font-size: 14px;
+    }
+}

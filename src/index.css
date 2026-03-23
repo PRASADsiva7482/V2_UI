@@ -43,7 +43,33 @@ body {
   background: var(--background);
   color: var(--text-primary);
   font-size: 15px;
+  /* Default */
   line-height: 1.5;
+}
+
+/* Font Size Accessibility Details */
+:root[data-font-size="SMALL"] body {
+  font-size: 13px;
+}
+
+:root[data-font-size="DEFAULT"] body {
+  font-size: 15px;
+}
+
+:root[data-font-size="LARGE"] body {
+  font-size: 17px;
+}
+
+:root[data-font-size="EXTRA_LARGE"] body {
+  font-size: 19px;
+}
+
+/* Reduce Motion Accessibility Details */
+:root.reduce-motion * {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
 }
 
 #root {
