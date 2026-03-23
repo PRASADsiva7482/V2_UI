@@ -790,3 +790,55 @@
         flex-direction: column;
     }
 }
+
+/* ========== Translation Display ========== */
+.post-translation-loading {
+    padding: 8px 12px;
+    margin: 4px 0 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.post-translation {
+    margin: 4px 0 10px;
+    padding: 10px 12px;
+    background: rgba(29, 155, 240, 0.06);
+    border-left: 3px solid var(--twitter-blue, #1d9bf0);
+    border-radius: 0 8px 8px 0;
+    animation: editFadeIn 0.2s ease-out;
+}
+
+.post-translation-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--twitter-blue, #1d9bf0);
+    margin-bottom: 6px;
+}
+
+.post-translation-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.post-translation-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.post-translation-text {
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--text-primary);
+    margin: 0;
+    white-space: pre-wrap;
+}

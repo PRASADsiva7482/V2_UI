@@ -465,8 +465,19 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [filePreviews, setFilePreviews] = useState([]);
-    const [lightboxMedia, setLightboxMedia] = useState(null); // { type: 'image'|'video', url, name, size }
+    const [lightboxMedia, setLightboxMedia] = useState(null);
     const [mentionedUserIds, setMentionedUserIds] = useState([]);
+
+    // Voice Recorder state
+    const [isRecording, setIsRecording] = useState(false);
+    const [recordingTime, setRecordingTime] = useState(0);
+    const mediaRecorderRef = useRef(null);
+    const audioChunksRef = useRef([]);
+    const recordingTimerRef = useRef(null);
+
+    // Vanish Mode state
+    const [vanishMode, setVanishMode] = useState(false);
+    const [vanishTimer, setVanishTimer] = useState(30); // seconds
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
     const typingTimeoutRef = useRef(null);
@@ -743,6 +754,18 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
                         {remoteTyping ? 'typing...' : isOnline ? 'Online' : 'Offline'}
                     </span>
                 </div>
+                {/* Vanish Mode Toggle */}
+                <button
+                    className={`vanish-mode-btn ${vanishMode ? 'active' : ''}`}
+                    onClick={() => setVanishMode(prev => !prev)}
+                    title={vanishMode ? `Vanish Mode ON (${vanishTimer}s)` : 'Enable Vanish Mode'}
+                    type="button"
+                >
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                    </svg>
+                    {vanishMode && <span className="vanish-mode-dot" />}
+                </button>
             </div>
 
             {/* Messages */}
@@ -899,6 +922,64 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
                         multiple
                         style={{ display: 'none' }}
                     />
+
+                    {/* Voice Recorder Button */}
+                    <button
+                        className={`chat-action-btn voice-btn ${isRecording ? 'recording' : ''}`}
+                        onClick={() => {
+                            if (isRecording) {
+                                // Stop recording
+                                if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+                                    mediaRecorderRef.current.stop();
+                                }
+                                clearInterval(recordingTimerRef.current);
+                                setIsRecording(false);
+                                setRecordingTime(0);
+                            } else {
+                                // Start recording
+                                navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                                    const recorder = new MediaRecorder(stream);
+                                    audioChunksRef.current = [];
+                                    mediaRecorderRef.current = recorder;
+
+                                    recorder.ondataavailable = (e) => {
+                                        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+                                    };
+
+                                    recorder.onstop = () => {
+                                        stream.getTracks().forEach(t => t.stop());
+                                        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                                        const file = new File([blob], `voice_${Date.now()}.webm`, { type: 'audio/webm' });
+                                        onSendMediaMessage('🎤 Voice message', [file], []);
+                                    };
+
+                                    recorder.start();
+                                    setIsRecording(true);
+                                    setRecordingTime(0);
+                                    recordingTimerRef.current = setInterval(() => {
+                                        setRecordingTime(prev => prev + 1);
+                                    }, 1000);
+                                }).catch(err => {
+                                    console.error('Microphone access denied:', err);
+                                });
+                            }
+                        }}
+                        title={isRecording ? 'Stop recording' : 'Record voice message'}
+                        type="button"
+                    >
+                        {isRecording ? (
+                            <>
+                                <span className="voice-recording-dot" />
+                                <span className="voice-recording-time">
+                                    {Math.floor(recordingTime / 60)}:{String(recordingTime % 60).padStart(2, '0')}
+                                </span>
+                            </>
+                        ) : (
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1.02 1.15.49 3.52 3.27 6.27 6.93 6.7V21h2v-3.15c3.66-.43 6.44-3.18 6.93-6.7.07-.61-.41-1.15-1.02-1.15z" />
+                            </svg>
+                        )}
+                    </button>
 
                     {/* Text Input */}
                     <MentionInput

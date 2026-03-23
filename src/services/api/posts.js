@@ -44,7 +44,7 @@ export const getPostById = async (postId) => {
  * @param {Object} location - Location data {lat, lng, name} (optional)
  * @param {Object} musicShare - Music share data (optional)
  */
-export const createPost = async (content, mediaIds = null, mentionedUserIds = null, poll = null, location = null, musicShare = null, isDraft = false) => {
+export const createPost = async (content, mediaIds = null, mentionedUserIds = null, poll = null, location = null, musicShare = null, isDraft = false, scheduledFor = null) => {
     const requestBody = {};
 
     if (content && content.trim()) {
@@ -75,6 +75,10 @@ export const createPost = async (content, mediaIds = null, mentionedUserIds = nu
 
     if (isDraft) {
         requestBody.isDraft = true;
+    }
+
+    if (scheduledFor) {
+        requestBody.scheduledFor = scheduledFor;
     }
 
     return apiCaller.post(URLS.POSTS.BASE, requestBody);

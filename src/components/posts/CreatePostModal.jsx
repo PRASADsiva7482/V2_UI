@@ -137,7 +137,7 @@ function CreatePostModal({ onClose, onPostCreated }) {
             } : null;
 
             console.log('Creating post with content:', content, 'media:', mediaIds, 'mentions:', mentionedUserIds, 'poll:', finalPollData, 'draft:', isDraft);
-            const newPost = await createPost(content, mediaIds, mentionedUserIds, finalPollData, isDraft);
+            const newPost = await createPost(content, mediaIds, mentionedUserIds, finalPollData, null, null, isDraft);
 
             console.log('Post created successfully:', newPost);
             setContent('');

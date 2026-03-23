@@ -73,6 +73,20 @@ export const searchUsers = async (keyword, { page = 0, size = 20 } = {}) => {
     });
 };
 
+/**
+ * Pin a post to the user's profile
+ */
+export const pinPost = async (postId) => {
+    return apiCaller.put(`${URLS.PROFILE.ME}/pin/${postId}`);
+};
+
+/**
+ * Unpin the currently pinned post
+ */
+export const unpinPost = async () => {
+    return apiCaller.delete(`${URLS.PROFILE.ME}/pin`);
+};
+
 export default {
     getMyProfile,
     getUserProfile,
@@ -82,6 +96,7 @@ export default {
     deleteProfilePicture,
     updateProfilePictureUrl,
     updateCoverPhoto,
-    searchUsers
+    searchUsers,
+    pinPost,
+    unpinPost
 };
-

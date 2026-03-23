@@ -157,6 +157,27 @@ export const URLS = {
     },
     LOCATION: {
         NEARBY: `${API_BASE}/location/nearby`
+    },
+    GAMIFICATION: {
+        STATS: `${API_BASE}/gamification/stats`,
+        USER_STATS: (userId) => `${API_BASE}/gamification/stats/${userId}`,
+        ACTION: `${API_BASE}/gamification/action`
+    },
+    TRANSLATION: {
+        TRANSLATE: `${API_BASE}/translate`,
+        DETECT: `${API_BASE}/translate/detect`
+    },
+    SETTINGS: {
+        BASE: `${API_BASE}/settings`,
+        ME: `${API_BASE}/settings/me`
+    },
+    SPACES: {
+        BASE: `${API_BASE}/spaces`,
+        CREATE: `${API_BASE}/spaces/create`,
+        ACTIVE: `${API_BASE}/spaces/active`,
+        JOIN: (spaceId) => `${API_BASE}/spaces/${spaceId}/join`,
+        LEAVE: (spaceId) => `${API_BASE}/spaces/${spaceId}/leave`,
+        END: (spaceId) => `${API_BASE}/spaces/${spaceId}/end`
     }
 };
 

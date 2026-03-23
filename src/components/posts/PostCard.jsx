@@ -5,6 +5,7 @@ import { likePost, unlikePost, incrementViewCount, updatePost, deletePost } from
 import { bookmarkPost, unbookmarkPost } from '../../services/api/bookmarks';
 import { uploadMedia } from '../../services/api/media';
 import { addCommunityNote } from '../../services/api/communityNotes';
+import { translateText } from '../../services/api/translation';
 import { formatRelativeTime, formatNumber } from '../../services/utils/formatters';
 import { parseContentSegments } from '../../services/utils/mentionUtils';
 import Avatar from '../common/Avatar';
@@ -17,7 +18,7 @@ import { useToast } from '../common/Toast';
 import './PostCard.css';
 
 // U-17: Wrapped in React.memo to prevent unnecessary re-renders in feed lists
-const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
+const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted, showPinAction, isPinned, onPinPost, onUnpinPost }) {
     const navigate = useNavigate();
     const { t } = useTranslation();
 
@@ -40,12 +41,18 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [editError, setEditError] = useState(null);
     const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked || false);
-    
+
     // Toast and Modal hooks
     const { showToast } = useToast();
     const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
     const [noteText, setNoteText] = useState('');
     const [isBookmarking, setIsBookmarking] = useState(false);
+
+    // Translation state
+    const [translatedText, setTranslatedText] = useState(null);
+    const [isTranslating, setIsTranslating] = useState(false);
+    const [showTranslation, setShowTranslation] = useState(false);
+
     const optionsMenuRef = useRef(null);
     const editFileInputRef = useRef(null);
 
@@ -402,17 +409,55 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                                             </svg>
                                             <span>{t('post.delete', 'Delete')}</span>
                                         </button>
-                                        <button className="post-option-item" onClick={async (e) => { e.stopPropagation(); try { const { updateProfile } = await import('../../services/api/profile'); await updateProfile({ pinnedPostId: post.id }); setShowOptionsMenu(false); showToast('Post pinned to your profile!', 'success'); } catch(err) { console.error(err); } }}>
-                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                                                <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/>
-                                            </svg>
-                                            <span>{t('post.pin', 'Pin to Profile')}</span>
-                                        </button>
                                     </>
+                                )}
+                                {/* Pin/Unpin action — only shown from Profile page */}
+                                {showPinAction && (
+                                    <button className="post-option-item" onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowOptionsMenu(false);
+                                        if (isPinned) {
+                                            onUnpinPost && onUnpinPost();
+                                        } else {
+                                            onPinPost && onPinPost();
+                                        }
+                                    }}>
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                            <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
+                                        </svg>
+                                        <span>{isPinned ? t('post.unpinPost', 'Unpin from profile') : t('post.pinPost', 'Pin to profile')}</span>
+                                    </button>
+                                )}
+                                {/* Translate action */}
+                                {post.content && (
+                                    <button className="post-option-item" onClick={async (e) => {
+                                        e.stopPropagation();
+                                        setShowOptionsMenu(false);
+                                        if (showTranslation) {
+                                            setShowTranslation(false);
+                                            return;
+                                        }
+                                        try {
+                                            setIsTranslating(true);
+                                            const result = await translateText(post.content);
+                                            setTranslatedText(result?.translatedText || result?.text || 'Translation unavailable');
+                                            setShowTranslation(true);
+                                        } catch (err) {
+                                            console.error('Translation failed:', err);
+                                            showToast('Translation service unavailable', 'warning');
+                                        } finally {
+                                            setIsTranslating(false);
+                                        }
+                                    }}>
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                            <path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" />
+                                        </svg>
+                                        <span>{showTranslation ? t('post.showOriginal', 'Show original') : t('post.translate', 'Translate')}</span>
+                                    </button>
                                 )}
                                 <button className="post-option-item" onClick={(e) => { e.stopPropagation(); setShowOptionsMenu(false); setIsNoteModalOpen(true); }}>
                                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
                                     </svg>
                                     <span>{t('post.addNote', 'Add Community Note')}</span>
                                 </button>
@@ -428,7 +473,7 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                                     }
                                 }}>
                                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                                        <path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6h-5.6z"/>
+                                        <path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6h-5.6z" />
                                     </svg>
                                     <span>{t('post.report', 'Report Post')}</span>
                                 </button>
@@ -624,6 +669,23 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                             </div>
                         )}
 
+                        {/* Translation display */}
+                        {isTranslating && (
+                            <div className="post-translation-loading">
+                                <span>Translating...</span>
+                            </div>
+                        )}
+                        {showTranslation && translatedText && (
+                            <div className="post-translation">
+                                <div className="post-translation-header">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" /></svg>
+                                    <span>Translated</span>
+                                    <button className="post-translation-close" onClick={(e) => { e.stopPropagation(); setShowTranslation(false); }}>✕</button>
+                                </div>
+                                <p className="post-translation-text">{translatedText}</p>
+                            </div>
+                        )}
+
                         {post.media && post.media.length > 0 && (
                             <div
                                 className={`post-media media-grid-${Math.min(post.media.length, 4)}`}
@@ -720,7 +782,7 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                     onCommentAdded={handleCommentAdded}
                 />
             )}
-            
+
             <InputModal
                 isOpen={isNoteModalOpen}
                 title="Add Community Note"
@@ -739,7 +801,7 @@ const PostCard = memo(function PostCard({ post, onPostUpdate, onPostDeleted }) {
                         try {
                             await addCommunityNote(post.id, noteText);
                             showToast('Community note submitted! It will be reviewed by the community.', 'success');
-                        } catch(err) {
+                        } catch (err) {
                             console.error(err);
                             showToast('Failed to submit note', 'error');
                         }

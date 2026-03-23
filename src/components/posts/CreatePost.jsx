@@ -22,6 +22,12 @@ function CreatePost({ onPostCreated }) {
         options: ['', ''],
         durationHours: 24
     });
+
+    // Schedule/Draft state
+    const [isDraft, setIsDraft] = useState(false);
+    const [scheduledFor, setScheduledFor] = useState('');
+    const [showScheduleOptions, setShowScheduleOptions] = useState(false);
+
     const fileInputRef = useRef(null);
     const emojiPickerRef = useRef(null);
 
@@ -123,13 +129,25 @@ function CreatePost({ onPostCreated }) {
 
             // Create post with content, media IDs, mentions, and poll
             console.log('Creating post with content:', content, 'media:', mediaIds, 'mentions:', mentionedUserIds, 'poll:', finalPollData);
-            const newPost = await createPost(content, mediaIds, mentionedUserIds, finalPollData);
+            const newPost = await createPost(
+                content,
+                mediaIds,
+                mentionedUserIds,
+                finalPollData,
+                null, // location
+                null, // musicShare
+                isDraft ? true : undefined,
+                scheduledFor ? scheduledFor : undefined
+            );
 
             console.log('Post created successfully:', newPost);
             setContent('');
             setSelectedFiles([]);
             setShowPollCreator(false);
             setPollData({ question: '', options: ['', ''], durationHours: 24 });
+            setIsDraft(false);
+            setScheduledFor('');
+            setShowScheduleOptions(false);
 
             if (onPostCreated) {
                 onPostCreated(newPost);
@@ -254,6 +272,62 @@ function CreatePost({ onPostCreated }) {
                             </svg>
                         </button>
 
+                        {/* Schedule/Draft button */}
+                        <button
+                            type="button"
+                            className={`action-icon-btn ${showScheduleOptions ? 'active' : ''}`}
+                            onClick={() => setShowScheduleOptions(!showScheduleOptions)}
+                            title="Schedule or save as draft"
+                            disabled={loading}
+                        >
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 002 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5v-5z" />
+                            </svg>
+                        </button>
+
+                        {/* Schedule Options Popup */}
+                        {showScheduleOptions && (
+                            <div className="schedule-options-popup">
+                                <div className="schedule-option">
+                                    <label>Schedule for later</label>
+                                    <input
+                                        type="datetime-local"
+                                        value={scheduledFor}
+                                        onChange={(e) => {
+                                            setScheduledFor(e.target.value);
+                                            setIsDraft(false);
+                                        }}
+                                        min={new Date().toISOString().slice(0, 16)}
+                                        className="schedule-datetime-input"
+                                    />
+                                </div>
+                                <div className="schedule-divider">or</div>
+                                <button
+                                    type="button"
+                                    className={`schedule-draft-btn ${isDraft ? 'active' : ''}`}
+                                    onClick={() => {
+                                        setIsDraft(!isDraft);
+                                        if (!isDraft) setScheduledFor('');
+                                    }}
+                                >
+                                    📝 {isDraft ? 'Saved as draft ✓' : 'Save as draft'}
+                                </button>
+                                {(scheduledFor || isDraft) && (
+                                    <button
+                                        type="button"
+                                        className="schedule-clear-btn"
+                                        onClick={() => {
+                                            setScheduledFor('');
+                                            setIsDraft(false);
+                                            setShowScheduleOptions(false);
+                                        }}
+                                    >
+                                        Clear & post normally
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
                         {/* Emoji Picker Popup */}
                         {showEmojiPicker && (
                             <div className="emoji-picker-popup" ref={emojiPickerRef}>
@@ -288,7 +362,7 @@ function CreatePost({ onPostCreated }) {
                             disabled={!canSubmit}
                             loading={loading}
                         >
-                            {uploadingMedia ? 'Uploading...' : 'Post'}
+                            {uploadingMedia ? 'Uploading...' : isDraft ? 'Save Draft' : scheduledFor ? 'Schedule' : 'Post'}
                         </Button>
                     </div>
                 </div>

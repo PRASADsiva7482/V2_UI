@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getUserProfile, getUserProfileByUsername, updateMyProfile, uploadProfilePicture, deleteProfilePicture } from '../services/api/profile';
+import { getUserProfile, getUserProfileByUsername, updateMyProfile, uploadProfilePicture, deleteProfilePicture, pinPost, unpinPost } from '../services/api/profile';
 import { getUserPosts } from '../services/api/posts';
 import { followUser, unfollowUser, getFollowStatus } from '../services/api/follows';
+import { getUserGamificationStats } from '../services/api/gamification';
 import { formatNumber } from '../services/utils/formatters';
 import { useToast } from '../components/common/Toast';
 import Avatar from '../components/common/Avatar';
@@ -37,6 +38,10 @@ function Profile() {
     const [removePic, setRemovePic] = useState(false);
     const fileInputRef = useRef(null);
     const [showAvatarViewer, setShowAvatarViewer] = useState(false);
+
+    // Gamification & Pinned Post state
+    const [gamificationStats, setGamificationStats] = useState(null);
+    const [pinnedPost, setPinnedPost] = useState(null);
 
     // Edit form state
     const [editForm, setEditForm] = useState({
@@ -78,6 +83,7 @@ function Profile() {
         setHasMore(true);
         loadProfile();
         loadFollowStatus();
+        loadGamificationStats();
     }, [userId]);
 
     // U-3: Separate effect to load posts whenever page OR userId changes
@@ -150,6 +156,48 @@ function Profile() {
             console.error('Error loading posts:', error);
         } finally {
             setLoadingPosts(false);
+        }
+    };
+
+    const loadGamificationStats = async () => {
+        try {
+            const data = await getUserGamificationStats(userId);
+            setGamificationStats(data);
+        } catch (error) {
+            console.error('Error loading gamification stats:', error);
+        }
+    };
+
+    // Find and set the pinned post whenever posts or profile changes
+    useEffect(() => {
+        if (profile?.pinnedPostId && posts.length > 0) {
+            const found = posts.find(p => p.id === profile.pinnedPostId);
+            setPinnedPost(found || null);
+        } else {
+            setPinnedPost(null);
+        }
+    }, [profile?.pinnedPostId, posts]);
+
+    const handlePinPost = async (postId) => {
+        try {
+            await pinPost(postId);
+            setProfile(prev => ({ ...prev, pinnedPostId: postId }));
+            showToast('Post pinned to your profile!', 'success');
+        } catch (err) {
+            console.error('Failed to pin post:', err);
+            showToast('Failed to pin post', 'error');
+        }
+    };
+
+    const handleUnpinPost = async () => {
+        try {
+            await unpinPost();
+            setProfile(prev => ({ ...prev, pinnedPostId: null }));
+            setPinnedPost(null);
+            showToast('Post unpinned', 'success');
+        } catch (err) {
+            console.error('Failed to unpin post:', err);
+            showToast('Failed to unpin post', 'error');
         }
     };
 
@@ -542,11 +590,74 @@ function Profile() {
             </div>
 
             <div className="profile-content">
+                {/* Gamification Widget */}
+                {gamificationStats && (
+                    <div className="profile-gamification-widget">
+                        <div className="gamification-streak">
+                            <span className="streak-fire">{gamificationStats.currentStreak > 0 ? '🔥' : '💤'}</span>
+                            <span className="streak-count">{gamificationStats.currentStreak}-day streak</span>
+                        </div>
+                        <div className="gamification-stats-row">
+                            <div className="gamification-stat">
+                                <span className="gamification-value">Lv.{gamificationStats.level}</span>
+                                <span className="gamification-label">Level</span>
+                            </div>
+                            <div className="gamification-stat">
+                                <span className="gamification-value">{formatNumber(gamificationStats.xpPoints)}</span>
+                                <span className="gamification-label">XP</span>
+                            </div>
+                            <div className="gamification-stat">
+                                <span className="gamification-value">{gamificationStats.longestStreak}</span>
+                                <span className="gamification-label">Best Streak</span>
+                            </div>
+                            <div className="gamification-stat">
+                                <span className="gamification-value">{gamificationStats.totalActiveDays}</span>
+                                <span className="gamification-label">Active Days</span>
+                            </div>
+                        </div>
+                        {gamificationStats.badges && gamificationStats.badges.filter(b => b.earned).length > 0 && (
+                            <div className="gamification-badges">
+                                {gamificationStats.badges.filter(b => b.earned).map((badge, i) => (
+                                    <span key={i} className="gamification-badge" title={`${badge.name}: ${badge.description}`}>
+                                        {badge.icon}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                        {gamificationStats.levelProgress !== undefined && (
+                            <div className="gamification-progress">
+                                <div className="gamification-progress-bar">
+                                    <div className="gamification-progress-fill" style={{ width: `${gamificationStats.levelProgress}%` }} />
+                                </div>
+                                <span className="gamification-progress-label">{gamificationStats.levelProgress}% to next level</span>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 <div className="profile-tabs">
                     <button className="tab active">Posts</button>
                 </div>
 
                 <div className="profile-posts">
+                    {/* Pinned Post */}
+                    {pinnedPost && (
+                        <div className="pinned-post-section">
+                            <div className="pinned-post-label">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" /></svg>
+                                Pinned
+                                {profile.isOwnProfile && (
+                                    <button className="unpin-btn" onClick={handleUnpinPost}>Unpin</button>
+                                )}
+                            </div>
+                            <PostCard
+                                post={pinnedPost}
+                                onPostUpdate={handlePostUpdate}
+                                onPostDeleted={handlePostDeleted}
+                            />
+                        </div>
+                    )}
+
                     {loadingPosts && page === 0 ? (
                         <div className="loading-posts">Loading posts...</div>
                     ) : posts.length === 0 ? (
@@ -561,13 +672,16 @@ function Profile() {
                                     post={post}
                                     onPostUpdate={handlePostUpdate}
                                     onPostDeleted={handlePostDeleted}
+                                    showPinAction={profile.isOwnProfile}
+                                    isPinned={post.id === profile?.pinnedPostId}
+                                    onPinPost={() => handlePinPost(post.id)}
+                                    onUnpinPost={handleUnpinPost}
                                 />
                             ))}
                             {hasMore && (
                                 <button
                                     className="load-more-btn"
                                     onClick={() => {
-                                        // U-3: Just increment page — the useEffect[page] handles loading
                                         setPage(prev => prev + 1);
                                     }}
                                     disabled={loadingPosts}

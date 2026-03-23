@@ -1577,3 +1577,97 @@
 [data-theme="light"] .chat-action-btn:hover {
     background: rgba(99, 102, 241, 0.08);
 }
+
+/* ════════════════════════════════════════════════════════
+   VOICE RECORDER
+   ════════════════════════════════════════════════════════ */
+
+.voice-btn.recording {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #ef4444 !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px !important;
+    border-radius: 16px;
+}
+
+.voice-recording-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    animation: pulse-record 1s ease-in-out infinite;
+}
+
+@keyframes pulse-record {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.4;
+        transform: scale(0.7);
+    }
+}
+
+.voice-recording-time {
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ════════════════════════════════════════════════════════
+   VANISH MODE
+   ════════════════════════════════════════════════════════ */
+
+.vanish-mode-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-tertiary, #6b7280);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+}
+
+.vanish-mode-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary, #9ca3af);
+}
+
+.vanish-mode-btn.active {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.vanish-mode-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #f59e0b;
+    animation: pulse-vanish 2s ease-in-out infinite;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+}
+
+@keyframes pulse-vanish {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+}
