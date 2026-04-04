@@ -9,6 +9,9 @@ import { SettingsProvider } from './context/SettingsContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import PrivateRoute from './auth/PrivateRoute';
 import MainLayout from './components/layout/MainLayout';
+import { CallProvider } from './context/CallContext';
+import CallOverlay from './components/common/CallOverlay';
+import { useAuth } from './auth/AuthProvider';
 import './index.css';
 
 // Lazy-loaded page components (U-10)
@@ -44,51 +47,63 @@ function App() {
                     <SettingsProvider>
                         <ToastProvider>
                             <ChatProvider>
-                                <DataCacheProvider>
-                                    <Router>
-                                        <Routes>
-                                            <Route
-                                                path="/*"
-                                                element={
-                                                    <PrivateRoute>
-                                                        <MainLayout>
-                                                            <Suspense fallback={<PageLoader />}>
-                                                                <ErrorBoundary>
-                                                                    <Routes>
-                                                                        <Route path="/" element={<Home />} />
-                                                                        <Route path="/home" element={<Home />} />
-                                                                        <Route path="/explore" element={<Explore />} />
-                                                                        <Route path="/notifications" element={<Notifications />} />
-                                                                        <Route path="/profile/u/:username" element={<Profile />} />
-                                                                        <Route path="/profile/:userId" element={<Profile />} />
-                                                                        <Route path="/hashtag/:tagName" element={<HashtagPage />} />
-                                                                        <Route path="/connections" element={<Connections />} />
-                                                                        <Route path="/settings/*" element={<Settings />} />
-                                                                        <Route path="/post/:postId" element={<PostPage />} />
-                                                                        <Route path="/bookmarks" element={<Bookmarks />} />
-                                                                        <Route path="/chat" element={<Chat />} />
-                                                                        <Route path="/spaces" element={<Spaces />} />
-                                                                        <Route path="/lists" element={<Lists />} />
-                                                                        <Route path="/analytics" element={<Analytics />} />
-                                                                        <Route path="/watch-parties" element={<WatchParties />} />
-                                                                        <Route path="/music" element={<MusicFeed />} />
-                                                                        <Route path="/location" element={<LocationFeed />} />
-                                                                    </Routes>
-                                                                </ErrorBoundary>
-                                                            </Suspense>
-                                                        </MainLayout>
-                                                    </PrivateRoute>
-                                                }
-                                            />
-                                        </Routes>
-                                    </Router>
-                                </DataCacheProvider>
+                                <CallWrapper>
+                                    <DataCacheProvider>
+                                        <Router>
+                                            <Routes>
+                                                <Route
+                                                    path="/*"
+                                                    element={
+                                                        <PrivateRoute>
+                                                            <MainLayout>
+                                                                <Suspense fallback={<PageLoader />}>
+                                                                    <ErrorBoundary>
+                                                                        <Routes>
+                                                                            <Route path="/" element={<Home />} />
+                                                                            <Route path="/home" element={<Home />} />
+                                                                            <Route path="/explore" element={<Explore />} />
+                                                                            <Route path="/notifications" element={<Notifications />} />
+                                                                            <Route path="/profile/u/:username" element={<Profile />} />
+                                                                            <Route path="/profile/:userId" element={<Profile />} />
+                                                                            <Route path="/hashtag/:tagName" element={<HashtagPage />} />
+                                                                            <Route path="/connections" element={<Connections />} />
+                                                                            <Route path="/settings/*" element={<Settings />} />
+                                                                            <Route path="/post/:postId" element={<PostPage />} />
+                                                                            <Route path="/bookmarks" element={<Bookmarks />} />
+                                                                            <Route path="/chat" element={<Chat />} />
+                                                                            <Route path="/spaces" element={<Spaces />} />
+                                                                            <Route path="/lists" element={<Lists />} />
+                                                                            <Route path="/analytics" element={<Analytics />} />
+                                                                            <Route path="/watch-parties" element={<WatchParties />} />
+                                                                            <Route path="/music" element={<MusicFeed />} />
+                                                                            <Route path="/location" element={<LocationFeed />} />
+                                                                        </Routes>
+                                                                    </ErrorBoundary>
+                                                                </Suspense>
+                                                            </MainLayout>
+                                                        </PrivateRoute>
+                                                    }
+                                                />
+                                            </Routes>
+                                        </Router>
+                                    </DataCacheProvider>
+                                    <CallOverlay />
+                                </CallWrapper>
                             </ChatProvider>
                         </ToastProvider>
                     </SettingsProvider>
                 </AuthProvider>
             </ThemeProvider>
         </ErrorBoundary>
+    );
+}
+
+function CallWrapper({ children }) {
+    const { user } = useAuth();
+    return (
+        <CallProvider currentUserId={user?.username || user?.preferred_username}>
+            {children}
+        </CallProvider>
     );
 }
 

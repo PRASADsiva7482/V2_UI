@@ -407,7 +407,51 @@
 
 .chat-room-status {
     font-size: 0.78rem;
+    color: var(--text-tertiary, #9ca3af);
+    transition: color 0.3s ease;
+}
+
+.chat-room-status.online {
     color: #22c55e;
+}
+
+.chat-room-status.typing {
+    color: #818cf8;
+    font-weight: 500;
+}
+
+.chat-header-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-action-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary, #9ca3af);
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-action-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #818cf8;
+    transform: translateY(-1px);
+}
+
+.chat-action-btn:active {
+    transform: translateY(0) scale(0.95);
+}
+
+.chat-action-btn svg {
+    display: block;
 }
 
 .chat-room-status:not(:empty) {

@@ -11,9 +11,11 @@ class WebRTCService {
         this.localStream = null;
         this.peerConnections = new Map(); // userId -> RTCPeerConnection
         this.onRemoteStream = null;
+        this.onLocalStream = null;
         this.onPeerDisconnected = null;
         this.onIceCandidate = null;
         this.isMuted = false;
+        this.isVideoOff = false;
 
         // ICE servers (use public STUN + optional TURN)
         this.iceServers = [
@@ -24,21 +26,34 @@ class WebRTCService {
     }
 
     /**
-     * Initialize local audio stream
+     * Initialize local audio/video stream
      */
-    async initLocalStream() {
+    async initLocalStream(video = false) {
         try {
+            if (this.localStream) {
+                this.localStream.getTracks().forEach(track => track.stop());
+            }
+
             this.localStream = await navigator.mediaDevices.getUserMedia({
                 audio: {
                     echoCancellation: true,
                     noiseSuppression: true,
                     autoGainControl: true
                 },
-                video: false
+                video: video ? {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user'
+                } : false
             });
+
+            if (this.onLocalStream) {
+                this.onLocalStream(this.localStream);
+            }
+
             return this.localStream;
         } catch (error) {
-            console.error('Failed to get local audio stream:', error);
+            console.error('Failed to get local stream:', error);
             throw error;
         }
     }
@@ -143,6 +158,19 @@ class WebRTCService {
             this.isMuted = !this.isMuted;
         }
         return this.isMuted;
+    }
+
+    /**
+     * Toggle video on/off
+     */
+    toggleVideo() {
+        if (this.localStream) {
+            this.localStream.getVideoTracks().forEach(track => {
+                track.enabled = !track.enabled;
+            });
+            this.isVideoOff = !this.isVideoOff;
+        }
+        return this.isVideoOff;
     }
 
     /**

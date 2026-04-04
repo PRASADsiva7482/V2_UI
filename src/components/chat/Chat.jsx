@@ -8,6 +8,7 @@ import EmojiPicker from './EmojiPicker';
 import MentionInput from '../common/MentionInput';
 import { parseContentSegments } from '../../services/utils/mentionUtils';
 import { useToast } from '../common/Toast';
+import { useCall } from '../../context/CallContext';
 import './Chat.css';
 
 /**
@@ -467,6 +468,7 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
     const [filePreviews, setFilePreviews] = useState([]);
     const [lightboxMedia, setLightboxMedia] = useState(null);
     const [mentionedUserIds, setMentionedUserIds] = useState([]);
+    const { startCall } = useCall();
 
     // Voice Recorder state
     const [isRecording, setIsRecording] = useState(false);
@@ -750,22 +752,48 @@ function ChatRoom({ conversation, messages, currentUserId, onSendMessage, onSend
                 </div>
                 <div className="chat-room-info">
                     <span className="chat-room-name">{displayName}</span>
-                    <span className="chat-room-status">
-                        {remoteTyping ? 'typing...' : isOnline ? 'Online' : 'Offline'}
+                    <span className={`chat-room-status ${remoteTyping ? 'typing' : (isOnline ? 'online' : 'offline')}`}>
+                        {remoteTyping ? 'Typing...' : (isOnline ? 'Online' : 'Offline')}
                     </span>
                 </div>
-                {/* Vanish Mode Toggle */}
-                <button
-                    className={`vanish-mode-btn ${vanishMode ? 'active' : ''}`}
-                    onClick={() => setVanishMode(prev => !prev)}
-                    title={vanishMode ? `Vanish Mode ON (${vanishTimer}s)` : 'Enable Vanish Mode'}
-                    type="button"
-                >
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
-                    </svg>
-                    {vanishMode && <span className="vanish-mode-dot" />}
-                </button>
+
+                <div className="chat-header-actions">
+                    {conversation.type === 'DIRECT' && (
+                        <>
+                            <button
+                                className="chat-action-btn"
+                                onClick={() => startCall(conversation.otherUserName, false)}
+                                title="Audio Call"
+                            >
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                                    <path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57a1.02 1.02 0 00-1.01.24l-2.2 2.2a15.045 15.045 0 01-6.59-6.59l2.2-2.21a.96.96 0 00.25-1A11.36 11.36 0 018.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1z" />
+                                </svg>
+                            </button>
+                            <button
+                                className="chat-action-btn"
+                                onClick={() => startCall(conversation.otherUserName, true)}
+                                title="Video Call"
+                            >
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                                    <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+                                </svg>
+                            </button>
+                        </>
+                    )}
+
+                    {/* Vanish Mode Toggle */}
+                    <button
+                        className={`vanish-mode-btn ${vanishMode ? 'active' : ''}`}
+                        onClick={() => setVanishMode(prev => !prev)}
+                        title={vanishMode ? `Vanish Mode ON (${vanishTimer}s)` : 'Enable Vanish Mode'}
+                        type="button"
+                    >
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                        </svg>
+                        {vanishMode && <span className="vanish-mode-dot" />}
+                    </button>
+                </div>
             </div>
 
             {/* Messages */}

@@ -25,6 +25,7 @@ class ChatWebSocketService {
             presence: [],
             readReceipt: [],
             typing: {},
+            call: [],
             connectionChange: [],
         };
         this.userId = null;
@@ -151,6 +152,22 @@ class ChatWebSocketService {
         });
     }
 
+    /**
+     * Send WebRTC signaling event via WebSocket.
+     */
+    sendCallSignal(event) {
+        if (!this.connected || !this.client) {
+            console.error('[WS] Cannot send call signal: not connected');
+            return false;
+        }
+
+        this.client.publish({
+            destination: '/app/call.signal',
+            body: JSON.stringify(event),
+        });
+        return true;
+    }
+
     // ─── Event Listeners ───
 
     onMessage(callback) {
@@ -164,6 +181,13 @@ class ChatWebSocketService {
         this.listeners.presence.push(callback);
         return () => {
             this.listeners.presence = this.listeners.presence.filter(cb => cb !== callback);
+        };
+    }
+
+    onCallSignal(callback) {
+        this.listeners.call.push(callback);
+        return () => {
+            this.listeners.call = this.listeners.call.filter(cb => cb !== callback);
         };
     }
 
@@ -243,6 +267,15 @@ class ChatWebSocketService {
             (frame) => {
                 const event = JSON.parse(frame.body);
                 this.listeners.readReceipt.forEach(cb => cb(event));
+            }
+        );
+
+        // Subscribe to personal call signals
+        this.subscriptions.calls = this.client.subscribe(
+            `/topic/calls/${this.userId}`,
+            (frame) => {
+                const event = JSON.parse(frame.body);
+                this.listeners.call.forEach(cb => cb(event));
             }
         );
     }
