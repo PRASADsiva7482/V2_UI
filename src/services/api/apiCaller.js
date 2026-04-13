@@ -97,16 +97,16 @@ const handleResponse = (response) => {
  * Common error handler
  */
 const handleError = (error) => {
-    // Log error for debugging (Interceptors already do some of this)
-    console.error('API Caller Error:', {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-        url: error.config?.url
-    });
+    // Only log in development — error objects may contain sensitive response data
+    if (import.meta.env.DEV) {
+        console.error('API Caller Error:', {
+            message: error.message,
+            status: error.response?.status,
+            url: error.config?.url
+        });
+    }
 
     // We re-throw the error so call sites can handle specific cases if needed
-    // or we could return a normalized error object
     throw error;
 };
 

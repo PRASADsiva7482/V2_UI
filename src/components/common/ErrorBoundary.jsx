@@ -16,7 +16,10 @@ class ErrorBoundary extends Component {
 
     componentDidCatch(error, errorInfo) {
         this.setState({ errorInfo });
-        console.error('ErrorBoundary caught:', error, errorInfo);
+        // Only log in development — don't expose internals in production console
+        if (import.meta.env.DEV) {
+            console.error('ErrorBoundary caught:', error, errorInfo);
+        }
     }
 
     handleReset = () => {
@@ -37,14 +40,6 @@ class ErrorBoundary extends Component {
                         </svg>
                         <h2>Something went wrong</h2>
                         <p>An unexpected error occurred. Please try again.</p>
-                        {this.state.error && (
-                            <details style={{ marginTop: '12px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                                <summary>Error details</summary>
-                                <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', marginTop: '8px' }}>
-                                    {this.state.error.toString()}
-                                </pre>
-                            </details>
-                        )}
                         <button
                             onClick={this.handleReset}
                             style={{

@@ -6,7 +6,9 @@ const api = axios.create({
     baseURL: window.config?.api?.baseUrl || 'http://localhost:2000/v-app',
     headers: {
         'Content-Type': 'application/json'
-    }
+    },
+    // Security: Never send credentials to unexpected domains
+    withCredentials: true
 });
 
 // Request interceptor to add Authorization header
@@ -14,14 +16,12 @@ api.interceptors.request.use(
     (config) => {
         if (keycloak.token) {
             config.headers.Authorization = `Bearer ${keycloak.token}`;
-            console.log('API Request:', config.method.toUpperCase(), config.url);
         } else {
             console.warn('No Keycloak token available');
         }
         return config;
     },
     (error) => {
-        console.error('Request error:', error);
         return Promise.reject(error);
     }
 );
@@ -29,22 +29,17 @@ api.interceptors.request.use(
 // Response interceptor to handle token refresh on 401
 api.interceptors.response.use(
     (response) => {
-        console.log('API Response:', response.config.url, response.status);
         return response;
     },
     async (error) => {
         const originalRequest = error.config;
 
-        // Log error details for debugging
-        if (error.response) {
+        // Security: Don't log sensitive error details in production
+        if (import.meta.env.DEV && error.response) {
             console.error('API Error:', {
                 url: error.config?.url,
-                method: error.config?.method,
-                status: error.response.status,
-                data: error.response.data
+                status: error.response.status
             });
-        } else {
-            console.error('Network Error:', error.message);
         }
 
         if (error.response?.status === 401 && !originalRequest._retry) {
