@@ -71,12 +71,12 @@ function App() {
                                                                             <Route path="/post/:postId" element={<PostPage />} />
                                                                             <Route path="/bookmarks" element={<Bookmarks />} />
                                                                             <Route path="/chat" element={<Chat />} />
-                                                                            <Route path="/spaces" element={<Spaces />} />
-                                                                            <Route path="/lists" element={<Lists />} />
+                                                                            {/* <Route path="/spaces" element={<Spaces />} />
+                                                                            <Route path="/lists" element={<Lists />} /> */}
                                                                             <Route path="/analytics" element={<Analytics />} />
-                                                                            <Route path="/watch-parties" element={<WatchParties />} />
+                                                                            {/* <Route path="/watch-parties" element={<WatchParties />} />
                                                                             <Route path="/music" element={<MusicFeed />} />
-                                                                            <Route path="/location" element={<LocationFeed />} />
+                                                                            <Route path="/location" element={<LocationFeed />} /> */}
                                                                         </Routes>
                                                                     </ErrorBoundary>
                                                                 </Suspense>
