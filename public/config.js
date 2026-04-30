@@ -16,7 +16,8 @@ const protocol = window.location.protocol;
 window.config = {
     keycloak: {
         // Use current host for Keycloak URL (works for localhost, LAN, and VPN)
-        url: `http://100.122.105.63:8080`,
+        // url: `http://100.122.105.63:8080`,
+        url: `https://copious-opposite-mangle.ngrok-free.dev`,
         realm: 'myrealm',
         clientId: 'myclient'
     },

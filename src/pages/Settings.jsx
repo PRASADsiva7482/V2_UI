@@ -5,7 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../auth/AuthProvider';
 import { useToast } from '../components/common/Toast';
 import { getUserSettings, updateUserSettings, deleteUserAccount } from '../services/api/settings';
-import { getMyProfile } from '../services/api/profile';
+import { getMyProfile, updateMyProfile } from '../services/api/profile';
 import { useSettings } from '../context/SettingsContext';
 import ToggleSwitch from '../components/common/ToggleSwitch';
 import { TermsOfService, PrivacyPolicy, CookiePolicy, AboutUs, ReleaseNotes } from './LegalPages';
@@ -232,11 +232,40 @@ function SecuritySettings({ settings, handleSettingChange, saveSuccess }) {
     );
 }
 
-function PrivacySettings({ settings, handleSettingChange, saveSuccess }) {
+function PrivacySettings({ settings, handleSettingChange, saveSuccess, profile, handleTogglePrivacy, privacySaving }) {
     return (
         <div className="settings-pane">
             <h2 className="settings-pane-title">Privacy and safety</h2>
             <p className="settings-pane-desc">Manage what information you see and share on the platform.</p>
+
+            <div className="settings-section-title">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style={{verticalAlign:'middle', marginRight:'6px'}}>
+                    <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                </svg>
+                Account Privacy
+            </div>
+            <div className="settings-control-group">
+                <div className="settings-control">
+                    <div className="settings-control-text">
+                        <h3>Private account</h3>
+                        <p>When your account is private, only people you approve can see your photos and videos. Your existing followers won't be affected.</p>
+                        {profile?.isPrivate && (
+                            <p style={{color: 'var(--primary-color)', fontSize: '12px', marginTop: '6px'}}>
+                                🔒 Your account is currently private. People must request to follow you.
+                            </p>
+                        )}
+                    </div>
+                    <div className="settings-control-actions">
+                        <ToggleSwitch
+                            checked={profile?.isPrivate || false}
+                            onChange={handleTogglePrivacy}
+                            label="Private account"
+                            disabled={privacySaving}
+                        />
+                        {privacySaving && <span className="settings-saved-indicator" style={{color:'var(--text-secondary)'}}>Saving...</span>}
+                    </div>
+                </div>
+            </div>
 
             <div className="settings-section-title">Audience, media and tagging</div>
             <div className="settings-control-group">
@@ -588,6 +617,7 @@ function Settings() {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteConfirmText, setDeleteConfirmText] = useState('');
     const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [privacySaving, setPrivacySaving] = useState(false);
 
     useEffect(() => {
         loadSettings();
@@ -671,6 +701,27 @@ function Settings() {
             }
         }
         setShowPasswordModal(true);
+    };
+
+    /**
+     * Toggle account privacy (public ↔ private).
+     * Calls the profile update API to set the isPrivate flag on UserProfile.
+     */
+    const handleTogglePrivacy = async (newValue) => {
+        try {
+            setPrivacySaving(true);
+            await updateMyProfile({ isPrivate: newValue });
+            setProfile(prev => ({ ...prev, isPrivate: newValue }));
+            showToast(
+                newValue ? 'Your account is now private 🔒' : 'Your account is now public 🌐',
+                'success'
+            );
+        } catch (error) {
+            console.error('Failed to toggle account privacy', error);
+            showToast('Failed to update account privacy', 'error');
+        } finally {
+            setPrivacySaving(false);
+        }
     };
 
     const handleDeleteAccount = async () => {
@@ -780,7 +831,9 @@ function Settings() {
                         />
                     } />
                     <Route path="/security" element={<SecuritySettings {...sharedProps} />} />
-                    <Route path="/privacy" element={<PrivacySettings {...sharedProps} />} />
+                    <Route path="/privacy" element={
+                        <PrivacySettings {...sharedProps} profile={profile} handleTogglePrivacy={handleTogglePrivacy} privacySaving={privacySaving} />
+                    } />
                     <Route path="/notifications" element={<NotificationSettings {...sharedProps} />} />
                     <Route path="/accessibility" element={
                         <AccessibilitySettings {...sharedProps} handleThemeChange={handleThemeChange} handleLanguageChange={handleLanguageChange} i18n={i18n} />

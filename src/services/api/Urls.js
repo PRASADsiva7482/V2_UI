@@ -24,6 +24,10 @@ export const URLS = {
     USERS: {
         BASE: `${API_BASE}/users`,
         FOLLOW: (userId) => `${API_BASE}/users/${userId}/follow`,
+        FOLLOW_ACCEPT: (userId) => `${API_BASE}/users/${userId}/follow/accept`,
+        FOLLOW_DECLINE: (userId) => `${API_BASE}/users/${userId}/follow/decline`,
+        FOLLOW_REQUESTS: `${API_BASE}/users/follow-requests`,
+        FOLLOW_REQUESTS_COUNT: `${API_BASE}/users/follow-requests/count`,
         FOLLOWERS: (userId) => `${API_BASE}/users/${userId}/followers`,
         FOLLOWING: (userId) => `${API_BASE}/users/${userId}/following`,
         FOLLOW_STATUS: (userId) => `${API_BASE}/users/${userId}/follow-status`,

@@ -206,19 +206,31 @@ function Profile() {
 
         try {
             setFollowing(true);
-            if (followStatus?.isFollowing) {
+            if (followStatus?.isFollowing || followStatus?.isFollowRequestPending) {
+                // Unfollow or cancel pending request
                 await unfollowUser(userId);
-                setFollowStatus(prev => ({ ...prev, isFollowing: false }));
-                setProfile(prev => ({ ...prev, followersCount: prev.followersCount - 1 }));
+                if (followStatus?.isFollowing) {
+                    setFollowStatus(prev => ({ ...prev, isFollowing: false, isFollowRequestPending: false }));
+                    setProfile(prev => ({ ...prev, followersCount: prev.followersCount - 1 }));
+                } else {
+                    setFollowStatus(prev => ({ ...prev, isFollowRequestPending: false }));
+                }
             } else {
-                await followUser(userId);
-                setFollowStatus(prev => ({ ...prev, isFollowing: true }));
-                setProfile(prev => ({ ...prev, followersCount: prev.followersCount + 1 }));
+                const result = await followUser(userId);
+                if (result?.status === 'PENDING') {
+                    // Follow request sent (private account)
+                    setFollowStatus(prev => ({ ...prev, isFollowRequestPending: true }));
+                    showToast('Follow request sent', 'success');
+                } else {
+                    // Instant follow (public account)
+                    setFollowStatus(prev => ({ ...prev, isFollowing: true }));
+                    setProfile(prev => ({ ...prev, followersCount: prev.followersCount + 1 }));
+                }
             }
         } catch (error) {
             console.error('Error toggling follow:', error);
-            // U-9: Use toast instead of alert()
-            showToast('Failed to update follow status', 'error');
+            const errMsg = error?.response?.data?.message || 'Failed to update follow status';
+            showToast(errMsg, 'error');
         } finally {
             setFollowing(false);
         }
@@ -485,9 +497,16 @@ function Profile() {
                             <Button
                                 onClick={handleFollow}
                                 disabled={following}
-                                variant={followStatus.isFollowing ? 'secondary' : 'primary'}
+                                variant={followStatus.isFollowing ? 'secondary' : followStatus.isFollowRequestPending ? 'secondary' : 'primary'}
+                                className={followStatus.isFollowRequestPending ? 'follow-requested-btn' : ''}
                             >
-                                {followStatus.isFollowing ? 'Following' : 'Follow'}
+                                {followStatus.isFollowing
+                                    ? 'Following'
+                                    : followStatus.isFollowRequestPending
+                                        ? 'Requested'
+                                        : profile.isPrivate
+                                            ? 'Request'
+                                            : 'Follow'}
                             </Button>
                         )}
                     </div>
@@ -541,6 +560,13 @@ function Profile() {
                                 <h1 className="profile-name">
                                     {profile.displayName}
                                     <VerificationBadge tier={profile.verificationTier} size={22} />
+                                    {profile.isPrivate && (
+                                        <span className="profile-private-badge" title="Private Account">
+                                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                                            </svg>
+                                        </span>
+                                    )}
                                 </h1>
                                 <p className="profile-username">@{profile.username}</p>
 
@@ -548,26 +574,41 @@ function Profile() {
                                     <p className="profile-bio">{profile.bio}</p>
                                 )}
 
-                                <div className="profile-meta-info">
-                                    {profile.phoneNumber && (
-                                        <span className="profile-meta-item">
-                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" /></svg>
-                                            {profile.phoneNumber}
-                                        </span>
-                                    )}
-                                    {profile.website && (
-                                        <a href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`} target="_blank" rel="noopener noreferrer" className="profile-meta-item profile-meta-link">
-                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" /></svg>
-                                            {profile.website.replace(/^https?:\/\//, '')}
-                                        </a>
-                                    )}
-                                    {profile.createdAt && (
-                                        <span className="profile-meta-item">
-                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z" /></svg>
-                                            Joined {new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                                        </span>
-                                    )}
-                                </div>
+                                {/* Follow Requests Badge (own private profile) */}
+                                {profile.isOwnProfile && profile.isPrivate && profile.pendingFollowRequestsCount > 0 && (
+                                    <button
+                                        className="profile-follow-requests-badge"
+                                        onClick={() => navigate('/notifications?tab=requests')}
+                                    >
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                            <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                                        </svg>
+                                        {profile.pendingFollowRequestsCount} follow request{profile.pendingFollowRequestsCount > 1 ? 's' : ''}
+                                    </button>
+                                )}
+
+                                {!profile.isProfileRestricted && (
+                                    <div className="profile-meta-info">
+                                        {profile.phoneNumber && (
+                                            <span className="profile-meta-item">
+                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" /></svg>
+                                                {profile.phoneNumber}
+                                            </span>
+                                        )}
+                                        {profile.website && (
+                                            <a href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`} target="_blank" rel="noopener noreferrer" className="profile-meta-item profile-meta-link">
+                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" /></svg>
+                                                {profile.website.replace(/^https?:\/\//, '')}
+                                            </a>
+                                        )}
+                                        {profile.createdAt && (
+                                            <span className="profile-meta-item">
+                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z" /></svg>
+                                                Joined {new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
                             </>
                         )}
 
@@ -590,108 +631,126 @@ function Profile() {
             </div>
 
             <div className="profile-content">
-                {/* Gamification Widget */}
-                {gamificationStats && (
-                    <div className="profile-gamification-widget">
-                        <div className="gamification-streak">
-                            <span className="streak-fire">{gamificationStats.currentStreak > 0 ? '🔥' : '💤'}</span>
-                            <span className="streak-count">{gamificationStats.currentStreak}-day streak</span>
+                {/* Private profile restriction message */}
+                {profile.isProfileRestricted && (
+                    <div className="profile-restricted-banner">
+                        <div className="restricted-icon">
+                            <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor">
+                                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
                         </div>
-                        <div className="gamification-stats-row">
-                            <div className="gamification-stat">
-                                <span className="gamification-value">Lv.{gamificationStats.level}</span>
-                                <span className="gamification-label">Level</span>
-                            </div>
-                            <div className="gamification-stat">
-                                <span className="gamification-value">{formatNumber(gamificationStats.xpPoints)}</span>
-                                <span className="gamification-label">XP</span>
-                            </div>
-                            <div className="gamification-stat">
-                                <span className="gamification-value">{gamificationStats.longestStreak}</span>
-                                <span className="gamification-label">Best Streak</span>
-                            </div>
-                            <div className="gamification-stat">
-                                <span className="gamification-value">{gamificationStats.totalActiveDays}</span>
-                                <span className="gamification-label">Active Days</span>
-                            </div>
-                        </div>
-                        {gamificationStats.badges && gamificationStats.badges.filter(b => b.earned).length > 0 && (
-                            <div className="gamification-badges">
-                                {gamificationStats.badges.filter(b => b.earned).map((badge, i) => (
-                                    <span key={i} className="gamification-badge" title={`${badge.name}: ${badge.description}`}>
-                                        {badge.icon}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-                        {gamificationStats.levelProgress !== undefined && (
-                            <div className="gamification-progress">
-                                <div className="gamification-progress-bar">
-                                    <div className="gamification-progress-fill" style={{ width: `${gamificationStats.levelProgress}%` }} />
-                                </div>
-                                <span className="gamification-progress-label">{gamificationStats.levelProgress}% to next level</span>
-                            </div>
-                        )}
+                        <h3>This Account is Private</h3>
+                        <p>Follow this account to see their photos and videos.</p>
                     </div>
                 )}
 
-                <div className="profile-tabs">
-                    <button className="tab active">Posts</button>
-                </div>
-
-                <div className="profile-posts">
-                    {/* Pinned Post */}
-                    {pinnedPost && (
-                        <div className="pinned-post-section">
-                            <div className="pinned-post-label">
-                                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" /></svg>
-                                Pinned
-                                {profile.isOwnProfile && (
-                                    <button className="unpin-btn" onClick={handleUnpinPost}>Unpin</button>
+                {/* Show content only if not restricted */}
+                {!profile.isProfileRestricted && (
+                    <>
+                        {/* Gamification Widget */}
+                        {gamificationStats && (
+                            <div className="profile-gamification-widget">
+                                <div className="gamification-streak">
+                                    <span className="streak-fire">{gamificationStats.currentStreak > 0 ? '🔥' : '💤'}</span>
+                                    <span className="streak-count">{gamificationStats.currentStreak}-day streak</span>
+                                </div>
+                                <div className="gamification-stats-row">
+                                    <div className="gamification-stat">
+                                        <span className="gamification-value">Lv.{gamificationStats.level}</span>
+                                        <span className="gamification-label">Level</span>
+                                    </div>
+                                    <div className="gamification-stat">
+                                        <span className="gamification-value">{formatNumber(gamificationStats.xpPoints)}</span>
+                                        <span className="gamification-label">XP</span>
+                                    </div>
+                                    <div className="gamification-stat">
+                                        <span className="gamification-value">{gamificationStats.longestStreak}</span>
+                                        <span className="gamification-label">Best Streak</span>
+                                    </div>
+                                    <div className="gamification-stat">
+                                        <span className="gamification-value">{gamificationStats.totalActiveDays}</span>
+                                        <span className="gamification-label">Active Days</span>
+                                    </div>
+                                </div>
+                                {gamificationStats.badges && gamificationStats.badges.filter(b => b.earned).length > 0 && (
+                                    <div className="gamification-badges">
+                                        {gamificationStats.badges.filter(b => b.earned).map((badge, i) => (
+                                            <span key={i} className="gamification-badge" title={`${badge.name}: ${badge.description}`}>
+                                                {badge.icon}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                                {gamificationStats.levelProgress !== undefined && (
+                                    <div className="gamification-progress">
+                                        <div className="gamification-progress-bar">
+                                            <div className="gamification-progress-fill" style={{ width: `${gamificationStats.levelProgress}%` }} />
+                                        </div>
+                                        <span className="gamification-progress-label">{gamificationStats.levelProgress}% to next level</span>
+                                    </div>
                                 )}
                             </div>
-                            <PostCard
-                                post={pinnedPost}
-                                onPostUpdate={handlePostUpdate}
-                                onPostDeleted={handlePostDeleted}
-                            />
-                        </div>
-                    )}
+                        )}
 
-                    {loadingPosts && page === 0 ? (
-                        <div className="loading-posts">Loading posts...</div>
-                    ) : posts.length === 0 ? (
-                        <div className="no-posts">
-                            <p>No posts yet</p>
+                        <div className="profile-tabs">
+                            <button className="tab active">Posts</button>
                         </div>
-                    ) : (
-                        <>
-                            {posts.map(post => (
-                                <PostCard
-                                    key={post.id}
-                                    post={post}
-                                    onPostUpdate={handlePostUpdate}
-                                    onPostDeleted={handlePostDeleted}
-                                    showPinAction={profile.isOwnProfile}
-                                    isPinned={post.id === profile?.pinnedPostId}
-                                    onPinPost={() => handlePinPost(post.id)}
-                                    onUnpinPost={handleUnpinPost}
-                                />
-                            ))}
-                            {hasMore && (
-                                <button
-                                    className="load-more-btn"
-                                    onClick={() => {
-                                        setPage(prev => prev + 1);
-                                    }}
-                                    disabled={loadingPosts}
-                                >
-                                    {loadingPosts ? 'Loading...' : 'Load more'}
-                                </button>
+
+                        <div className="profile-posts">
+                            {/* Pinned Post */}
+                            {pinnedPost && (
+                                <div className="pinned-post-section">
+                                    <div className="pinned-post-label">
+                                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" /></svg>
+                                        Pinned
+                                        {profile.isOwnProfile && (
+                                            <button className="unpin-btn" onClick={handleUnpinPost}>Unpin</button>
+                                        )}
+                                    </div>
+                                    <PostCard
+                                        post={pinnedPost}
+                                        onPostUpdate={handlePostUpdate}
+                                        onPostDeleted={handlePostDeleted}
+                                    />
+                                </div>
                             )}
-                        </>
-                    )}
-                </div>
+
+                            {loadingPosts && page === 0 ? (
+                                <div className="loading-posts">Loading posts...</div>
+                            ) : posts.length === 0 ? (
+                                <div className="no-posts">
+                                    <p>No posts yet</p>
+                                </div>
+                            ) : (
+                                <>
+                                    {posts.map(post => (
+                                        <PostCard
+                                            key={post.id}
+                                            post={post}
+                                            onPostUpdate={handlePostUpdate}
+                                            onPostDeleted={handlePostDeleted}
+                                            showPinAction={profile.isOwnProfile}
+                                            isPinned={post.id === profile?.pinnedPostId}
+                                            onPinPost={() => handlePinPost(post.id)}
+                                            onUnpinPost={handleUnpinPost}
+                                        />
+                                    ))}
+                                    {hasMore && (
+                                        <button
+                                            className="load-more-btn"
+                                            onClick={() => {
+                                                setPage(prev => prev + 1);
+                                            }}
+                                            disabled={loadingPosts}
+                                        >
+                                            {loadingPosts ? 'Loading...' : 'Load more'}
+                                        </button>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Avatar Viewer Lightbox */}

@@ -724,3 +724,84 @@
 .unpin-btn:hover {
     background: rgba(29, 155, 240, 0.1);
 }
+
+/* ════════════════════════════════════════════════════════
+   PRIVATE PROFILE STYLES
+   ════════════════════════════════════════════════════════ */
+
+/* Lock icon next to display name */
+.profile-private-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 6px;
+    color: var(--text-secondary);
+    vertical-align: middle;
+    opacity: 0.75;
+}
+
+/* "This account is private" banner */
+.profile-restricted-banner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    border-top: 1px solid var(--border-color);
+    min-height: 300px;
+}
+
+.profile-restricted-banner .restricted-icon {
+    color: var(--text-secondary);
+    opacity: 0.5;
+    margin-bottom: 20px;
+    border: 3px solid var(--border-color);
+    border-radius: 50%;
+    width: 96px;
+    height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-restricted-banner h3 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+}
+
+.profile-restricted-banner p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+    max-width: 300px;
+}
+
+/* Follow Requests badge on own profile */
+.profile-follow-requests-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    margin: 10px 0;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08));
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 20px;
+    color: var(--primary-color);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.profile-follow-requests-badge:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+    transform: translateY(-1px);
+}
+
+/* "Requested" follow button style */
+.follow-requested-btn {
+    border-style: dashed !important;
+    opacity: 0.8;
+}
