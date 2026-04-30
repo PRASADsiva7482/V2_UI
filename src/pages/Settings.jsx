@@ -371,7 +371,12 @@ function PrivacySettings({ settings, handleSettingChange, saveSuccess, profile, 
                         <div className="settings-control-text"><h3>Translation language</h3><p>Posts will be translated into this language.</p></div>
                         <div className="settings-control-actions">
                             <select value={settings?.translateLanguage || 'en'} onChange={(e) => handleSettingChange('translateLanguage', e.target.value)} style={{background:'var(--card-bg,#16181c)',color:'inherit',border:'1px solid var(--border-color,#2f3336)',borderRadius:'8px',padding:'6px 12px',fontSize:'14px'}}>
-                                <option value="en">English</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="ja">Japanese</option><option value="ko">Korean</option><option value="zh">Chinese</option><option value="hi">Hindi</option><option value="ar">Arabic</option><option value="pt">Portuguese</option><option value="ta">Tamil</option>
+                                <option value="en">English</option>
+                                <option value="tel">Telugu</option>
+                                <option value="ml">Malayalam</option>
+                                <option value="kn">Kannada</option>
+                                <option value="ta">Tamil</option>
+                                <option value="hi">Hindi</option>
                             </select>
                             <SavedIndicator field="translateLanguage" saveSuccess={saveSuccess} />
                         </div>
@@ -538,15 +543,10 @@ function AccessibilitySettings({ settings, handleSettingChange, handleThemeChang
                     <select value={settings?.displayLanguage || i18n.language} onChange={(e) => handleLanguageChange(e.target.value)}>
                         <option value="en">English</option>
                         <option value="tel">తెలుగు (Telugu)</option>
+                        <option value="ml">മലയാളം (Malayalam)</option>
+                        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                        <option value="ta">தமிழ் (Tamil)</option>
                         <option value="hi">हिन्दी (Hindi)</option>
-                        <option value="es">Español (Spanish)</option>
-                        <option value="fr">Français (French)</option>
-                        <option value="de">Deutsch (German)</option>
-                        <option value="ja">日本語 (Japanese)</option>
-                        <option value="ko">한국어 (Korean)</option>
-                        <option value="zh">中文 (Chinese)</option>
-                        <option value="ar">العربية (Arabic)</option>
-                        <option value="pt">Português (Portuguese)</option>
                     </select>
                     <SavedIndicator field="displayLanguage" saveSuccess={saveSuccess} />
                 </div>

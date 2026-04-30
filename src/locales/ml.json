@@ -4,22 +4,22 @@
     "tagline": "Connect with the world"
   },
   "navbar": {
-    "home": "Home",
-    "explore": "Explore",
-    "notifications": "Notifications",
-    "connect": "Connect",
-    "profile": "Profile",
-    "logout": "Logout",
-    "language": "Language",
-    "messages": "Messages",
-    "bookmarks": "Bookmarks",
-    "lists": "Lists",
-    "spaces": "Spaces",
-    "settings": "Settings",
-    "analytics": "Analytics",
-    "watchParties": "Watch Parties",
-    "music": "Music",
-    "nearby": "Nearby"
+    "home": "ഹോം",
+    "explore": "പര്യവേക്ഷണം ചെയ്യുക",
+    "notifications": "അറിയിപ്പുകൾ",
+    "connect": "കണക്റ്റ്",
+    "profile": "പ്രൊഫൈൽ",
+    "logout": "ലോഗ്ഔട്ട്",
+    "language": "ഭാഷ",
+    "messages": "സന്ദേശങ്ങൾ",
+    "bookmarks": "ബുക്ക്‌മാർക്കുകൾ",
+    "lists": "ലിസ്റ്റുകൾ",
+    "spaces": "സ്പെയ്സുകൾ",
+    "settings": "ക്രമീകരണങ്ങൾ",
+    "analytics": "അനലിറ്റിക്സ്",
+    "watchParties": "വാച്ച് പാർട്ടികൾ",
+    "music": "സംഗീതം",
+    "nearby": "അടുത്തുളളവ"
   },
   "connections": {
     "title": "Connect",
@@ -206,7 +206,7 @@
     "createGroup": "Create Group"
   },
   "lists": {
-    "title": "Your Lists",
+    "title": "ലിസ്റ്റുകൾ",
     "createList": "New List",
     "createFirst": "Create your first list",
     "noLists": "No lists yet",
@@ -225,7 +225,7 @@
     "private": "Private"
   },
   "spaces": {
-    "title": "Spaces",
+    "title": "സ്പെയ്സുകൾ",
     "subtitle": "Live audio conversations with your community",
     "discover": "Discover",
     "upcoming": "Upcoming",
@@ -298,7 +298,7 @@
     "done": "Done"
   },
   "bookmarks": {
-    "title": "Bookmarks",
+    "title": "ബുക്ക്‌മാർക്കുകൾ",
     "subtitle": "Posts you've saved for later",
     "emptyTitle": "No bookmarks yet",
     "emptyMessage": "Save posts to read them later. Bookmark a post by tapping the bookmark icon."
@@ -333,7 +333,7 @@
     }
   },
   "analytics": {
-    "title": "Analytics",
+    "title": "അനലിറ്റിക്സ്",
     "overview": "Overview",
     "engagement": "Engagement",
     "audience": "Audience",
@@ -342,7 +342,7 @@
     "topPosts": "Top Posts"
   },
   "watchParty": {
-    "title": "Watch Parties",
+    "title": "വാച്ച് പാർട്ടികൾ",
     "create": "Create Watch Party",
     "active": "Active Parties",
     "popular": "Popular",

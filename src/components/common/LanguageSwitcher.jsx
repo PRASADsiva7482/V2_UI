@@ -6,12 +6,11 @@ function LanguageSwitcher() {
 
     const languages = [
         { code: 'en', name: 'English', flag: '🇺🇸' },
-        { code: 'tel', name: 'తెలుగు', flag: '🇮🇳' }
-        // Add more languages here
-        // { code: 'es', name: 'Español', flag: '🇪🇸' },
-        // { code: 'fr', name: 'Français', flag: '🇫🇷' },
-        // { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-        // { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
+        { code: 'tel', name: 'తెలుగు', flag: '🇮🇳' },
+        { code: 'ml', name: 'മലയാളം', flag: '🇮🇳' },
+        { code: 'kn', name: 'ಕನ್ನಡ', flag: '🇮🇳' },
+        { code: 'ta', name: 'தமிழ்', flag: '🇮🇳' },
+        { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' }
     ];
 
     const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];

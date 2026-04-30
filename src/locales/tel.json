@@ -1,140 +1,356 @@
 {
-    "app": {
-        "name": "డాష్‌బోర్డ్ యాప్",
-        "tagline": "ప్రపంచంతో కనెక్ట్ అవ్వండి"
+  "app": {
+    "name": "డాష్‌బోర్డ్ యాప్",
+    "tagline": "ప్రపంచంతో కనెక్ట్ అవ్వండి"
+  },
+  "navbar": {
+    "home": "హోమ్",
+    "explore": "అన్వేషించండి",
+    "notifications": "నోటిఫికేషన్లు",
+    "connect": "కనెక్ట్",
+    "profile": "ప్రొఫైల్",
+    "logout": "లాగ్అవుట్",
+    "language": "భాష",
+    "messages": "సందేశాలు",
+    "bookmarks": "బుక్‌మార్క్‌లు",
+    "lists": "జాబితాలు",
+    "spaces": "స్పేసెస్",
+    "settings": "సెట్టింగులు",
+    "analytics": "విశ్లేషణలు",
+    "watchParties": "వాచ్ పార్టీలు",
+    "music": "సంగీతం",
+    "nearby": "సమీపంలో"
+  },
+  "connections": {
+    "title": "కనెక్ట్",
+    "subtitle": "అద్భుతమైన వ్యక్తులను కనుగొనండి మరియు కనెక్ట్ అవ్వండి",
+    "tabs": {
+      "followers": "అనుచరులు",
+      "following": "అనుసరిస్తున్నారు",
+      "suggestions": "సూచనలు"
     },
-    "navbar": {
-        "home": "హోమ్",
-        "explore": "అన్వేషించండి",
-        "notifications": "నోటిఫికేషన్లు",
-        "connect": "కనెక్ట్",
-        "messages": "సందేశాలు",
-        "profile": "ప్రొఫైల్",
-        "logout": "లాగ్అవుట్",
-        "language": "భాష"
+    "buttons": {
+      "follow": "అనుసరించండి",
+      "following": "అనుసరిస్తున్నారు",
+      "unfollow": "అనుసరించడం మానేయండి",
+      "loadMore": "మరిన్ని లోడ్ చేయండి"
     },
-    "connections": {
-        "title": "కనెక్ట్",
-        "subtitle": "అద్భుతమైన వ్యక్తులను కనుగొనండి మరియు కనెక్ట్ అవ్వండి",
-        "tabs": {
-            "followers": "అనుచరులు",
-            "following": "అనుసరిస్తున్నారు",
-            "suggestions": "సూచనలు"
-        },
-        "buttons": {
-            "follow": "అనుసరించండి",
-            "following": "అనుసరిస్తున్నారు",
-            "unfollow": "అనుసరించడం మానేయండి",
-            "loadMore": "మరిన్ని లోడ్ చేయండి"
-        },
-        "empty": {
-            "followers": {
-                "title": "ఇంకా అనుచరులు లేరు",
-                "message": "ప్రజలు మిమ్మల్ని అనుసరించినప్పుడు, వారు ఇక్కడ కనిపిస్తారు"
-            },
-            "following": {
-                "title": "ఇంకా అనుసరించడం లేదు",
-                "message": "వారిని ఇక్కడ చూడటానికి వ్యక్తులను అనుసరించండి"
-            },
-            "suggestions": {
-                "title": "ఇంకా సూచనలు లేవు",
-                "message": "ప్రస్తుతం సూచనలు అందుబాటులో లేవు"
-            }
-        },
-        "loading": "లోడ్ అవుతోంది..."
+    "empty": {
+      "followers": {
+        "title": "ఇంకా అనుచరులు లేరు",
+        "message": "ప్రజలు మిమ్మల్ని అనుసరించినప్పుడు, వారు ఇక్కడ కనిపిస్తారు"
+      },
+      "following": {
+        "title": "ఇంకా అనుసరించడం లేదు",
+        "message": "వారిని ఇక్కడ చూడటానికి వ్యక్తులను అనుసరించండి"
+      },
+      "suggestions": {
+        "title": "ఇంకా సూచనలు లేవు",
+        "message": "ప్రస్తుతం సూచనలు అందుబాటులో లేవు"
+      }
     },
-    "home": {
-        "title": "హోమ్",
-        "tabs": {
-            "forYou": "మీ కోసం",
-            "following": "అనుసరిస్తున్నారు"
-        },
-        "emptyFeed": "ఇంకా పోస్ట్‌లు లేవు. కొంతమంది వినియోగదారులను అనుసరించండి వారి పోస్ట్‌లను చూడటానికి!",
-        "emptyForYou": "ప్రస్తుతం ట్రెండింగ్ పోస్ట్‌లు అందుబాటులో లేవు.",
-        "loadMore": "మరిన్ని లోడ్ చేయండి",
-        "loading": "లోడ్ అవుతోంది..."
+    "loading": "లోడ్ అవుతోంది..."
+  },
+  "home": {
+    "title": "హోమ్",
+    "tabs": {
+      "forYou": "మీ కోసం",
+      "following": "అనుసరిస్తున్నారు"
     },
-    "search": {
-        "placeholder": "వినియోగదారులు, పోస్ట్‌లు శోధించండి...",
-        "searching": "శోధిస్తోంది...",
-        "noResults": "\"{{query}}\" కోసం ఫలితాలు కనుగొనబడలేదు",
-        "filters": {
-            "all": "అన్నీ",
-            "users": "వినియోగదారులు",
-            "posts": "పోస్ట్‌లు"
-        },
-        "results": {
-            "users": "వినియోగదారులు ({{count}})",
-            "posts": "పోస్ట్‌లు ({{count}})"
-        }
+    "emptyFeed": "ఇంకా పోస్ట్‌లు లేవు. కొంతమంది వినియోగదారులను అనుసరించండి వారి పోస్ట్‌లను చూడటానికి!",
+    "emptyForYou": "ప్రస్తుతం ట్రెండింగ్ పోస్ట్‌లు అందుబాటులో లేవు.",
+    "loadMore": "మరిన్ని లోడ్ చేయండి",
+    "loading": "లోడ్ అవుతోంది..."
+  },
+  "search": {
+    "placeholder": "వినియోగదారులు, పోస్ట్‌లు శోధించండి...",
+    "searching": "శోధిస్తోంది...",
+    "noResults": "\"{{query}}\" కోసం ఫలితాలు కనుగొనబడలేదు",
+    "filters": {
+      "all": "అన్నీ",
+      "users": "వినియోగదారులు",
+      "posts": "పోస్ట్‌లు"
     },
-    "post": {
-        "create": "ఏమి జరుగుతోంది?",
-        "post": "పోస్ట్ చేయండి",
-        "posting": "పోస్ట్ చేస్తోంది...",
-        "views": "{{count}} వీక్షణలు",
-        "likes": "{{count}} ఇష్టాలు",
-        "comments": "{{count}} వ్యాఖ్యలు",
-        "like": "ఇష్టం",
-        "unlike": "ఇష్టం తొలగించు",
-        "comment": "వ్యాఖ్య",
-        "share": "షేర్ చేయండి",
-        "delete": "తొలగించు",
-        "edit": "సవరించు",
-        "save": "సేవ్ చేయండి",
-        "saving": "సేవ్ చేస్తోంది...",
-        "cancel": "రద్దు చేయండి",
-        "deleting": "తొలగిస్తోంది...",
-        "deleteConfirm": "మీరు ఈ పోస్ట్‌ని తొలగించాలనుకుంటున్నారా? ఇది పోస్ట్ మరియు దాని వ్యాఖ్యలు, ఇష్టాలు మరియు మీడియా అన్నింటినీ శాశ్వతంగా తొలగిస్తుంది.",
-        "deleteErrorFailed": "పోస్ట్ తొలగించడం విఫలమైంది. దయచేసి మళ్ళీ ప్రయత్నించండి.",
-        "editErrorEmpty": "పోస్ట్‌కు కంటెంట్ లేదా మీడియా ఉండాలి.",
-        "editErrorFailed": "పోస్ట్ అప్‌డేట్ చేయడం విఫలమైంది. దయచేసి మళ్ళీ ప్రయత్నించండి.",
-        "editWindowExpired": "సవరణ సమయం ముగిసింది. పోస్ట్‌లను సృష్టించిన కొన్ని నిమిషాలలోపు మాత్రమే మార్చవచ్చు.",
-        "addMedia": "మీడియా జోడించండి",
-        "removeMedia": "మీడియా తొలగించండి",
-        "undoRemove": "తొలగింపు రద్దు చేయండి"
-    },
-    "profile": {
-        "followers": "అనుచరులు",
-        "following": "అనుసరిస్తున్నారు",
-        "posts": "పోస్ట్‌లు",
-        "follow": "అనుసరించండి",
-        "unfollow": "అనుసరించడం మానేయండి",
-        "editProfile": "ప్రొఫైల్ సవరించండి",
-        "bio": "బయో",
-        "location": "స్థానం",
-        "website": "వెబ్‌సైట్",
-        "joined": "చేరారు {{date}}"
-    },
-    "sidebar": {
-        "hotNews": "🔥 హాట్ న్యూస్",
-        "whoToFollow": "👥 ఎవరిని అనుసరించాలి",
-        "platformStats": "📊 ప్లాట్‌ఫారమ్ గణాంకాలు",
-        "totalUsers": "మొత్తం వినియోగదారులు",
-        "totalPosts": "మొత్తం పోస్ట్‌లు",
-        "totalLikes": "మొత్తం ఇష్టాలు",
-        "totalViews": "మొత్తం వీక్షణలు",
-        "totalComments": "మొత్తం వ్యాఖ్యలు",
-        "loadingStats": "గణాంకాలు లోడ్ అవుతున్నాయి..."
-    },
-    "comments": {
-        "title": "వ్యాఖ్యలు",
-        "writeComment": "వ్యాఖ్య రాయండి...",
-        "reply": "సమాధానం",
-        "noComments": "ఇంకా వ్యాఖ్యలు లేవు. మొదటి వ్యాఖ్య చేయండి!",
-        "close": "మూసివేయి"
-    },
-    "common": {
-        "submit": "సమర్పించు",
-        "cancel": "రద్దు చేయండి",
-        "delete": "తొలగించు",
-        "edit": "సవరించు",
-        "save": "సేవ్ చేయండి",
-        "loading": "లోడ్ అవుతోంది...",
-        "error": "దోషం",
-        "success": "విజయం",
-        "confirm": "నిర్ధారించు",
-        "yes": "అవును",
-        "no": "కాదు"
+    "results": {
+      "users": "వినియోగదారులు ({{count}})",
+      "posts": "పోస్ట్‌లు ({{count}})"
     }
+  },
+  "post": {
+    "create": "ఏమి జరుగుతోంది?",
+    "post": "పోస్ట్ చేయండి",
+    "posting": "పోస్ట్ చేస్తోంది...",
+    "views": "{{count}} వీక్షణలు",
+    "likes": "{{count}} ఇష్టాలు",
+    "comments": "{{count}} వ్యాఖ్యలు",
+    "reposts": "{{count}} Reposts",
+    "like": "ఇష్టం",
+    "unlike": "ఇష్టం తొలగించు",
+    "comment": "వ్యాఖ్య",
+    "share": "షేర్ చేయండి",
+    "repost": "Repost",
+    "bookmark": "Bookmark",
+    "removeBookmark": "Remove Bookmark",
+    "delete": "తొలగించు",
+    "edit": "సవరించు",
+    "save": "సేవ్ చేయండి",
+    "saving": "సేవ్ చేస్తోంది...",
+    "cancel": "రద్దు చేయండి",
+    "deleting": "తొలగిస్తోంది...",
+    "deleteConfirm": "మీరు ఈ పోస్ట్‌ని తొలగించాలనుకుంటున్నారా? ఇది పోస్ట్ మరియు దాని వ్యాఖ్యలు, ఇష్టాలు మరియు మీడియా అన్నింటినీ శాశ్వతంగా తొలగిస్తుంది.",
+    "deleteErrorFailed": "పోస్ట్ తొలగించడం విఫలమైంది. దయచేసి మళ్ళీ ప్రయత్నించండి.",
+    "editErrorEmpty": "పోస్ట్‌కు కంటెంట్ లేదా మీడియా ఉండాలి.",
+    "editErrorFailed": "పోస్ట్ అప్‌డేట్ చేయడం విఫలమైంది. దయచేసి మళ్ళీ ప్రయత్నించండి.",
+    "editWindowExpired": "సవరణ సమయం ముగిసింది. పోస్ట్‌లను సృష్టించిన కొన్ని నిమిషాలలోపు మాత్రమే మార్చవచ్చు.",
+    "addMedia": "మీడియా జోడించండి",
+    "removeMedia": "మీడియా తొలగించండి",
+    "undoRemove": "తొలగింపు రద్దు చేయండి",
+    "pinPost": "Pin to profile",
+    "unpinPost": "Unpin from profile",
+    "pinnedPost": "Pinned Post",
+    "draft": "Draft",
+    "scheduled": "Scheduled for {{date}}",
+    "translate": "Translate",
+    "showOriginal": "Show original",
+    "reportPost": "Report post",
+    "copyLink": "Copy link"
+  },
+  "profile": {
+    "title": "Profile",
+    "myProfile": "My Profile",
+    "followers": "అనుచరులు",
+    "following": "అనుసరిస్తున్నారు",
+    "posts": "పోస్ట్‌లు",
+    "follow": "అనుసరించండి",
+    "unfollow": "అనుసరించడం మానేయండి",
+    "editProfile": "ప్రొఫైల్ సవరించండి",
+    "saveProfile": "Save Profile",
+    "cancelEdit": "Cancel",
+    "displayName": "Display Name",
+    "username": "Username",
+    "nickname": "Nickname",
+    "bio": "బయో",
+    "about": "About",
+    "location": "స్థానం",
+    "website": "వెబ్‌సైట్",
+    "phoneNumber": "Phone Number",
+    "dateOfBirth": "Date of Birth",
+    "profilePicture": "Change Photo",
+    "removeProfilePicture": "Remove Photo",
+    "uploadingPicture": "Uploading photo...",
+    "pictureUploadSuccess": "Profile picture updated!",
+    "pictureUploadError": "Failed to upload profile picture",
+    "coverPhoto": "Cover Photo",
+    "privacy": "Privacy",
+    "makePrivate": "Make Profile Private",
+    "makePublic": "Make Profile Public",
+    "verified": "Verified",
+    "joined": "చేరారు {{date}}",
+    "updateSuccess": "Profile updated successfully!",
+    "updateError": "Failed to update profile",
+    "pinnedPost": "📌 Pinned",
+    "verificationBadge": "Verification Badge"
+  },
+  "settings": {
+    "title": "Settings",
+    "account": "Account",
+    "security": "Security & Access",
+    "privacy": "Privacy & Safety",
+    "notifications": "Notifications",
+    "accessibility": "Accessibility & Display",
+    "about": "About",
+    "changePassword": "Change Password",
+    "deleteAccount": "Delete Account",
+    "deleteConfirm": "Are you sure? This action cannot be undone.",
+    "twoFactor": "Two-Factor Authentication",
+    "protectPosts": "Protect Your Posts",
+    "photoTagging": "Photo Tagging",
+    "directMessages": "Direct Messages",
+    "readReceipts": "Read Receipts",
+    "ghostMode": "Ghost Mode",
+    "ghostModeDesc": "Browse without appearing in viewers lists",
+    "chatEncryption": "Chat Encryption",
+    "chatEncryptionDesc": "End-to-end encryption for direct messages",
+    "pushNotifications": "Push Notifications",
+    "emailNotifications": "Email Notifications",
+    "smsNotifications": "SMS Notifications",
+    "theme": "Theme",
+    "fontSize": "Font Size",
+    "reduceMotion": "Reduce Motion",
+    "dataSaver": "Data Saver",
+    "autoTranslate": "Auto-Translate",
+    "language": "Language",
+    "version": "Version"
+  },
+  "chat": {
+    "title": "Messages",
+    "newMessage": "New Message",
+    "newGroup": "New Group",
+    "searchUsers": "Search users...",
+    "typeMessage": "Type a message...",
+    "send": "Send",
+    "online": "Online",
+    "offline": "Offline",
+    "typing": "typing...",
+    "reconnecting": "Reconnecting...",
+    "noConversations": "No conversations yet",
+    "startChat": "Start a conversation",
+    "vanishMode": "Vanish Mode",
+    "vanishModeDesc": "Messages will self-destruct after viewing",
+    "voiceMessage": "Voice message",
+    "recording": "Recording...",
+    "attachMedia": "Attach media",
+    "emoji": "Emoji",
+    "groupName": "Group Name",
+    "addMembers": "Add Members",
+    "createGroup": "Create Group"
+  },
+  "lists": {
+    "title": "జాబితాలు",
+    "createList": "New List",
+    "createFirst": "Create your first list",
+    "noLists": "No lists yet",
+    "noListsDesc": "Create lists to curate your feed. Add users to organize them by interest, topic, or community.",
+    "listName": "Name",
+    "listDesc": "Description",
+    "makePrivate": "Make private",
+    "creating": "Creating...",
+    "create": "Create",
+    "delete": "Delete list",
+    "deleteConfirm": "Delete this list?",
+    "members": "{{count}} members",
+    "addMember": "Add member",
+    "removeMember": "Remove member",
+    "searchMembers": "Search users to add...",
+    "private": "Private"
+  },
+  "spaces": {
+    "title": "స్పేసెస్",
+    "subtitle": "Live audio conversations with your community",
+    "discover": "Discover",
+    "upcoming": "Upcoming",
+    "mySpaces": "My Spaces",
+    "startSpace": "Start a Space",
+    "startNow": "Start Now",
+    "startDesc": "Host a live audio room and connect with your followers in real-time.",
+    "happeningNow": "Happening Now",
+    "noActiveSpaces": "No active Spaces right now",
+    "noActiveSpacesDesc": "When people you follow host or join a Space, it will appear here.",
+    "scheduledSpaces": "Scheduled Spaces",
+    "noUpcoming": "No upcoming Spaces",
+    "noUpcomingDesc": "Schedule a Space to let your followers know when you'll be live.",
+    "yourSpaces": "Your Spaces",
+    "noHosted": "You haven't hosted any Spaces yet",
+    "noHostedDesc": "Start your first audio conversation and build your community.",
+    "listening": "{{count}} listening",
+    "live": "LIVE",
+    "joinSpace": "Join",
+    "leaveSpace": "Leave",
+    "endSpace": "End Space",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "participants": "Participants"
+  },
+  "gamification": {
+    "streak": "{{count}}-Day Streak",
+    "level": "Level {{level}}",
+    "xp": "{{count}} XP",
+    "badges": "Badges",
+    "earnedBadge": "You earned a badge!",
+    "dailyStats": "Today's Activity",
+    "longestStreak": "Longest Streak"
+  },
+  "sidebar": {
+    "hotNews": "🔥 హాట్ న్యూస్",
+    "whoToFollow": "👥 ఎవరిని అనుసరించాలి",
+    "platformStats": "📊 ప్లాట్‌ఫారమ్ గణాంకాలు",
+    "totalUsers": "మొత్తం వినియోగదారులు",
+    "totalPosts": "మొత్తం పోస్ట్‌లు",
+    "totalLikes": "మొత్తం ఇష్టాలు",
+    "totalViews": "మొత్తం వీక్షణలు",
+    "totalComments": "మొత్తం వ్యాఖ్యలు",
+    "loadingStats": "గణాంకాలు లోడ్ అవుతున్నాయి..."
+  },
+  "comments": {
+    "title": "వ్యాఖ్యలు",
+    "writeComment": "వ్యాఖ్య రాయండి...",
+    "reply": "సమాధానం",
+    "noComments": "ఇంకా వ్యాఖ్యలు లేవు. మొదటి వ్యాఖ్య చేయండి!",
+    "close": "మూసివేయి"
+  },
+  "common": {
+    "submit": "సమర్పించు",
+    "cancel": "రద్దు చేయండి",
+    "delete": "తొలగించు",
+    "edit": "సవరించు",
+    "save": "సేవ్ చేయండి",
+    "loading": "లోడ్ అవుతోంది...",
+    "error": "దోషం",
+    "success": "విజయం",
+    "confirm": "నిర్ధారించు",
+    "yes": "అవును",
+    "no": "కాదు",
+    "loadMore": "Load More",
+    "retry": "Retry",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done"
+  },
+  "bookmarks": {
+    "title": "బుక్‌మార్క్‌లు",
+    "subtitle": "Posts you've saved for later",
+    "emptyTitle": "No bookmarks yet",
+    "emptyMessage": "Save posts to read them later. Bookmark a post by tapping the bookmark icon."
+  },
+  "poll": {
+    "votes": "{{count}} votes",
+    "ended": "Poll ended",
+    "daysLeft": "{{count}} days left",
+    "hoursLeft": "{{count}}h {{minutes}}m left",
+    "minutesLeft": "{{count}}m left",
+    "question": "Poll question",
+    "addOption": "Add option",
+    "removeOption": "Remove",
+    "duration": "Duration",
+    "hours": "hours"
+  },
+  "moderation": {
+    "report": "Report",
+    "reportContent": "Report Content",
+    "reason": "Reason",
+    "submit": "Submit Report",
+    "flagged": "This content has been flagged",
+    "categories": {
+      "HATE_SPEECH": "Hate Speech",
+      "HARASSMENT": "Harassment",
+      "VIOLENCE": "Violence",
+      "SELF_HARM": "Self Harm",
+      "SEXUAL_CONTENT": "Sexual Content",
+      "SPAM": "Spam",
+      "MISINFORMATION": "Misinformation",
+      "SCAM": "Scam"
+    }
+  },
+  "analytics": {
+    "title": "విశ్లేషణలు",
+    "overview": "Overview",
+    "engagement": "Engagement",
+    "audience": "Audience",
+    "impressions": "Impressions",
+    "profileVisits": "Profile Visits",
+    "topPosts": "Top Posts"
+  },
+  "watchParty": {
+    "title": "వాచ్ పార్టీలు",
+    "create": "Create Watch Party",
+    "active": "Active Parties",
+    "popular": "Popular",
+    "myParties": "My Parties",
+    "join": "Join",
+    "leave": "Leave",
+    "end": "End Party",
+    "noActive": "No active watch parties",
+    "listeners": "{{count}} watching"
+  }
 }

@@ -4,22 +4,22 @@
     "tagline": "Connect with the world"
   },
   "navbar": {
-    "home": "Home",
-    "explore": "Explore",
-    "notifications": "Notifications",
-    "connect": "Connect",
-    "profile": "Profile",
-    "logout": "Logout",
-    "language": "Language",
-    "messages": "Messages",
-    "bookmarks": "Bookmarks",
-    "lists": "Lists",
-    "spaces": "Spaces",
-    "settings": "Settings",
-    "analytics": "Analytics",
-    "watchParties": "Watch Parties",
-    "music": "Music",
-    "nearby": "Nearby"
+    "home": "ಮುಖಪುಟ",
+    "explore": "ಅನ್ವೇಷಿಸಿ",
+    "notifications": "ಸೂಚನೆಗಳು",
+    "connect": "ಸಂಪರ್ಕ",
+    "profile": "ಪ್ರೊಫೈಲ್",
+    "logout": "ಲಾಗ್ಔಟ್",
+    "language": "ಭಾಷೆ",
+    "messages": "ಸಂದೇಶಗಳು",
+    "bookmarks": "ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು",
+    "lists": "ಪಟ್ಟಿಗಳು",
+    "spaces": "ಸ್ಪೇಸಸ್",
+    "settings": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+    "analytics": "ಅನಾಲಿಟಿಕ್ಸ್",
+    "watchParties": "ವಾಚ್ ಪಾರ್ಟಿಗಳು",
+    "music": "ಸಂಗೀತ",
+    "nearby": "ಹತ್ತಿರದ"
   },
   "connections": {
     "title": "Connect",
@@ -206,7 +206,7 @@
     "createGroup": "Create Group"
   },
   "lists": {
-    "title": "Your Lists",
+    "title": "ಪಟ್ಟಿಗಳು",
     "createList": "New List",
     "createFirst": "Create your first list",
     "noLists": "No lists yet",
@@ -225,7 +225,7 @@
     "private": "Private"
   },
   "spaces": {
-    "title": "Spaces",
+    "title": "ಸ್ಪೇಸಸ್",
     "subtitle": "Live audio conversations with your community",
     "discover": "Discover",
     "upcoming": "Upcoming",
@@ -298,7 +298,7 @@
     "done": "Done"
   },
   "bookmarks": {
-    "title": "Bookmarks",
+    "title": "ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು",
     "subtitle": "Posts you've saved for later",
     "emptyTitle": "No bookmarks yet",
     "emptyMessage": "Save posts to read them later. Bookmark a post by tapping the bookmark icon."
@@ -333,7 +333,7 @@
     }
   },
   "analytics": {
-    "title": "Analytics",
+    "title": "ಅನಾಲಿಟಿಕ್ಸ್",
     "overview": "Overview",
     "engagement": "Engagement",
     "audience": "Audience",
@@ -342,7 +342,7 @@
     "topPosts": "Top Posts"
   },
   "watchParty": {
-    "title": "Watch Parties",
+    "title": "ವಾಚ್ ಪಾರ್ಟಿಗಳು",
     "create": "Create Watch Party",
     "active": "Active Parties",
     "popular": "Popular",

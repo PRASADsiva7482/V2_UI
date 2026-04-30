@@ -4,6 +4,10 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 
 import en from './locales/en.json';
 import tel from './locales/tel.json';
+import ml from './locales/ml.json';
+import kn from './locales/kn.json';
+import hi from './locales/hi.json';
+import ta from './locales/ta.json';
 
 // Language resources
 const resources = {
@@ -12,6 +16,18 @@ const resources = {
     },
     tel: {
         translation: tel
+    },
+    ml: {
+        translation: ml
+    },
+    kn: {
+        translation: kn
+    },
+    hi: {
+        translation: hi
+    },
+    ta: {
+        translation: ta
     }
     // Add more languages here in the future
     // es: { translation: es },
