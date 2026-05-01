@@ -179,27 +179,55 @@
     margin-left: auto;
 }
 
-/* Responsive */
+/* ============================================================
+   Responsive — Mobile
+   ============================================================ */
 @media (max-width: 768px) {
+    .custom-video-player {
+        border-radius: 12px;
+    }
+
     .play-button {
-        width: 60px;
-        height: 60px;
+        width: 56px;
+        height: 56px;
     }
 
     .play-button svg {
-        width: 48px;
-        height: 48px;
+        width: 40px;
+        height: 40px;
     }
 
-    .volume-control {
+    /* Hide the volume SLIDER on mobile but keep the speaker icon button */
+    .volume-slider {
+        display: none;
+    }
+
+    /* Speaker icon stays — tap to mute/unmute */
+    .volume-control .control-btn {
+        display: flex !important;
+    }
+
+    /* On mobile, fullscreen btn swaps with speaker for compact layout */
+    .fullscreen-btn {
         display: none;
     }
 
     .time-display {
-        font-size: 12px;
+        font-size: 11px;
+        margin-left: auto;
     }
 
     .video-element {
-        max-height: 400px;
+        max-height: 380px;
+    }
+
+    .controls-bottom {
+        gap: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .video-element {
+        max-height: 300px;
     }
 }

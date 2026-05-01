@@ -17,7 +17,7 @@
     background: var(--surface);
     height: calc(100vh - 48px);
     position: sticky;
-    top: 48px;
+    top: 0;
 }
 
 .settings-sidebar-header {
@@ -218,12 +218,12 @@
     border-color: var(--brand-clr);
 }
 
-/* Toggle */
+/* Toggle switch — visible in both themes */
 .settings-toggle {
     position: relative;
     display: inline-block;
-    width: 44px;
-    height: 24px;
+    width: 46px;
+    height: 26px;
     flex-shrink: 0;
 }
 
@@ -231,18 +231,23 @@
     opacity: 0;
     width: 0;
     height: 0;
+    position: absolute;
 }
 
 .settings-toggle-slider {
     position: absolute;
     cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 0; left: 0; right: 0; bottom: 0;
     background-color: var(--border);
-    transition: .3s;
-    border-radius: 24px;
+    border: 2px solid var(--border-light);
+    transition: .25s;
+    border-radius: 26px;
+}
+
+/* Light mode: use a darker unchecked bg so it is clearly visible */
+:root[data-theme="light"] .settings-toggle-slider {
+    background-color: #CBD5E0;
+    border-color: #B0BEC5;
 }
 
 .settings-toggle-slider:before {
@@ -250,19 +255,20 @@
     content: "";
     height: 20px;
     width: 20px;
-    left: 2px;
-    bottom: 2px;
-    background-color: white;
-    transition: .3s;
+    left: 1px;
+    bottom: 1px;
+    background-color: #fff;
+    transition: .25s;
     border-radius: 50%;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 
-.settings-toggle input:checked+.settings-toggle-slider {
+.settings-toggle input:checked + .settings-toggle-slider {
     background-color: var(--brand-clr);
+    border-color: var(--brand-clr);
 }
 
-.settings-toggle input:checked+.settings-toggle-slider:before {
+.settings-toggle input:checked + .settings-toggle-slider:before {
     transform: translateX(20px);
 }
 
@@ -521,35 +527,42 @@
     color: #f4212e !important;
 }
 
-/* Theme selector */
+/* Theme selector — pill toggle */
 .settings-theme-selector {
-    display: flex;
-    gap: 8px;
+    display: inline-flex;
+    background: var(--hover);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+    gap: 4px;
 }
 
 .settings-theme-btn {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 16px;
-    border: 2px solid var(--border);
+    padding: 8px 18px;
+    border: none;
     background: transparent;
-    color: var(--text-primary);
+    color: var(--text-secondary);
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 14px;
-    border-radius: 12px;
+    border-radius: 9px;
     transition: all 0.2s;
+    white-space: nowrap;
 }
 
 .settings-theme-btn:hover {
-    border-color: var(--text-secondary);
+    background: var(--hover-strong);
+    color: var(--text-primary);
 }
 
 .settings-theme-btn.active {
     background: var(--brand-clr);
-    color: white;
-    border-color: var(--brand-clr);
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(29,155,240,0.35);
 }
 
 /* ---- Empty State ---- */

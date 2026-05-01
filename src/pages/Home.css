@@ -6,7 +6,7 @@
 /* Twitter/X Style Tabs */
 .home-tabs {
     position: sticky;
-    top: 48px;
+    top: 0;
     display: flex;
     background: rgba(var(--background-rgb), 0.85);
     backdrop-filter: blur(12px);

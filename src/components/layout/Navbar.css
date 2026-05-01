@@ -1,6 +1,11 @@
+/* ============================================================
+   Navbar — Desktop sidebar + Mobile bottom tab + More popup
+   ============================================================ */
+
+/* ---- Desktop/Tablet sidebar base ---- */
 .navbar {
     position: sticky;
-    top: 48px;
+    top: 0;
     height: calc(100vh - 48px);
     width: 240px;
     flex-shrink: 0;
@@ -8,6 +13,7 @@
     padding: 0 12px;
     display: flex;
     flex-direction: column;
+    background: var(--nav-bg);
 }
 
 .navbar-content {
@@ -17,7 +23,8 @@
     padding: 4px 0;
 }
 
-.navbar-menu {
+/* Desktop menu always visible; mobile menu always hidden (until mobile bp) */
+.desktop-menu {
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -25,11 +32,16 @@
     padding-top: 2px;
 }
 
+.mobile-menu {
+    display: none;
+}
+
+/* ---- Nav buttons ---- */
 .nav-btn {
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 8px 14px;
+    padding: 10px 14px;
     background: transparent;
     border: none;
     border-radius: 9999px;
@@ -37,25 +49,31 @@
     font-size: 15px;
     font-weight: 400;
     cursor: pointer;
-    transition: background 0.2s, transform 0.2s ease, box-shadow 0.2s ease;
+    transition: background 0.2s, color 0.2s, transform 0.15s ease, box-shadow 0.15s ease;
     text-align: left;
+    width: 100%;
 }
 
 .nav-btn:hover {
     background: var(--hover);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow: var(--shadow-3d);
 }
 
 .nav-btn.active {
     font-weight: 700;
+    color: var(--twitter-blue);
+}
+
+.nav-btn.active svg {
+    color: var(--twitter-blue);
 }
 
 .nav-btn svg {
     flex-shrink: 0;
 }
 
-/* Notification badge */
+/* ---- Notification badge ---- */
 .notif-badge {
     position: absolute;
     top: -6px;
@@ -75,58 +93,38 @@
 }
 
 @keyframes notifBadgeIn {
-    from {
-        transform: scale(0);
-    }
-
-    to {
-        transform: scale(1);
-    }
+    from { transform: scale(0); }
+    to   { transform: scale(1); }
 }
 
-/* ========== Large Desktop (>1400px) ========== */
+/* ============================================================
+   Large Desktop (>1400px)
+   ============================================================ */
 @media (min-width: 1400px) {
-    .navbar {
-        width: 275px;
-    }
-
-    .nav-btn {
-        gap: 18px;
-        padding: 10px 16px;
-        font-size: 17px;
-    }
+    .navbar { width: 275px; }
+    .nav-btn { gap: 18px; padding: 11px 16px; font-size: 17px; }
 }
 
-/* ========== Compact Desktop (≤1100px) — Icon-only nav ========== */
+/* ============================================================
+   Compact Desktop (≤1100px) — icon-only sidebar
+   ============================================================ */
 @media (max-width: 1100px) {
-    .navbar {
-        width: 72px;
-        padding: 0 8px;
-    }
-
-    .nav-btn span {
-        display: none;
-    }
-
-    .nav-btn {
-        justify-content: center;
-        padding: 12px;
-    }
+    .navbar { width: 72px; padding: 0 8px; }
+    .nav-btn span { display: none; }
+    .nav-btn { justify-content: center; padding: 13px; }
 }
 
-/* ========== Tablet (≤900px) — Narrower icon nav ========== */
+/* ============================================================
+   Tablet (≤900px) — narrower icon sidebar
+   ============================================================ */
 @media (max-width: 900px) {
-    .navbar {
-        width: 64px;
-        padding: 0 6px;
-    }
-
-    .nav-btn {
-        padding: 10px;
-    }
+    .navbar { width: 64px; padding: 0 6px; }
+    .nav-btn { padding: 11px; }
 }
 
-/* ========== Mobile (≤768px) — Bottom tab bar ========== */
+/* ============================================================
+   Mobile (≤768px) — fixed bottom tab bar
+   ============================================================ */
 @media (max-width: 768px) {
     .navbar {
         position: fixed;
@@ -138,10 +136,13 @@
         width: 100%;
         border-right: none;
         border-top: 1px solid var(--border);
-        background: var(--background);
+        background: var(--nav-bg);
         padding: 0;
-        z-index: 100;
+        z-index: 200;
         flex-direction: row;
+        /* Frosted glass effect */
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
     }
 
     .navbar-content {
@@ -151,30 +152,46 @@
         width: 100%;
     }
 
-    .navbar-menu {
+    /* Swap menus on mobile */
+    .desktop-menu { display: none; }
+
+    .mobile-menu {
+        display: flex;
         flex-direction: row;
         gap: 0;
         flex: 1;
         justify-content: space-around;
         align-items: center;
-        padding: 6px 0 env(safe-area-inset-bottom, 4px);
+        padding: 6px 4px env(safe-area-inset-bottom, 6px);
     }
 
     .nav-btn {
         flex-direction: column;
-        gap: 2px;
-        padding: 8px 6px;
+        gap: 3px;
+        padding: 8px 4px 6px;
         font-size: 11px;
-        border-radius: 12px;
+        border-radius: 14px;
         flex: 1;
         justify-content: center;
         align-items: center;
         min-width: 0;
+        max-width: 72px;
+    }
+
+    .nav-btn:hover {
+        transform: none;
+        box-shadow: none;
+        background: var(--hover);
+    }
+
+    .nav-btn.active {
+        color: var(--twitter-blue);
     }
 
     .nav-btn span {
         display: block;
         font-size: 10px;
+        font-weight: 500;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -186,40 +203,115 @@
         height: 22px;
     }
 
-    .nav-btn:hover {
-        transform: none;
-        box-shadow: none;
-    }
-
     .notif-badge {
         top: 0px;
         right: 50%;
-        transform: translateX(12px);
+        transform: translateX(14px);
         min-width: 16px;
         height: 16px;
         font-size: 9px;
         line-height: 16px;
         padding: 0 4px;
     }
+
+    /* ---- More wrapper & popup ---- */
+    .more-wrapper {
+        position: relative;
+        flex: 1;
+        max-width: 72px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .more-popup {
+        position: absolute;
+        bottom: calc(100% + 12px);
+        right: -8px;
+        width: 240px;
+        background: var(--popup-bg);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
+        overflow: hidden;
+        animation: popupIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        z-index: 300;
+    }
+
+    @keyframes popupIn {
+        from { opacity: 0; transform: scale(0.85) translateY(12px); }
+        to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .more-popup-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px 10px;
+        border-bottom: 1px solid var(--border);
+        font-weight: 700;
+        font-size: 15px;
+        color: var(--text-primary);
+    }
+
+    .more-popup-close {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 16px;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 50%;
+        transition: background 0.15s, color 0.15s;
+        line-height: 1;
+    }
+
+    .more-popup-close:hover {
+        background: var(--hover);
+        color: var(--text-primary);
+    }
+
+    .more-popup-items {
+        padding: 8px 0;
+    }
+
+    .more-popup-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 13px 20px;
+        width: 100%;
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        font-size: 15px;
+        font-weight: 400;
+        cursor: pointer;
+        transition: background 0.15s;
+        text-align: left;
+    }
+
+    .more-popup-item:hover {
+        background: var(--hover);
+    }
+
+    .more-popup-item.active {
+        font-weight: 700;
+        color: var(--twitter-blue);
+    }
+
+    .more-popup-item.active svg {
+        color: var(--twitter-blue);
+    }
 }
 
-/* ========== Small Mobile (≤480px) ========== */
+/* ============================================================
+   Small Mobile (≤480px)
+   ============================================================ */
 @media (max-width: 480px) {
-    .navbar-menu {
-        padding: 4px 0 env(safe-area-inset-bottom, 2px);
-    }
+    .mobile-menu { padding: 4px 2px env(safe-area-inset-bottom, 4px); }
+    .nav-btn { padding: 7px 3px 5px; max-width: 60px; }
+    .nav-btn span { font-size: 9px; max-width: 52px; }
+    .nav-btn svg { width: 20px; height: 20px; }
 
-    .nav-btn {
-        padding: 6px 4px;
-    }
-
-    .nav-btn span {
-        font-size: 9px;
-        max-width: 52px;
-    }
-
-    .nav-btn svg {
-        width: 20px;
-        height: 20px;
-    }
+    .more-popup { width: 220px; right: -4px; }
 }

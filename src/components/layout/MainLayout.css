@@ -3,6 +3,7 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    overflow-x: hidden; /* prevent any child from causing horizontal scroll */
 }
 
 /* ========== App Container: 3-column grid below TopBar ========== */
@@ -20,6 +21,8 @@
 .main-content {
     min-height: calc(100vh - 48px);
     width: 100%;
+    min-width: 0;       /* crucial: prevents grid blowout */
+    overflow-x: hidden;
 }
 
 /* When settings page is active, use full width (no right sidebar) */

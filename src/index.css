@@ -1,53 +1,124 @@
+/* ============================================================
+   Global CSS Variables — Rich Dark & Clean Light themes
+   ============================================================ */
+
 :root,
 :root[data-theme="dark"] {
-  /* Twitter-inspired color scheme */
-  --twitter-blue: #1DA1F2;
-  --background: #15202B;
-  --background-rgb: 21, 32, 43;
-  --surface: #192734;
-  --hover: #1C2938;
-  --border: #38444D;
-  --text-primary: #FFFFFF;
-  --text-secondary: #8B98A5;
+  /* Brand */
+  --twitter-blue: #1D9BF0;
+  --twitter-blue-hover: #1A8CD8;
+  --brand-clr: #1D9BF0;
+  --brand-rgb: 29, 155, 240;
+
+  /* Backgrounds — deep, rich navy-black */
+  --background: #0A0F1E;
+  --background-rgb: 10, 15, 30;
+  --bg-rgb: 10, 15, 30;
+  --surface: #111827;
+  --nav-bg: rgba(10, 15, 30, 0.88);
+  --popup-bg: #151D2E;
+  --card-bg: #111827;
+  --card-background: #111827;
+
+  /* Interactions */
+  --hover: rgba(255, 255, 255, 0.06);
+  --hover-strong: rgba(255, 255, 255, 0.10);
+
+  /* Borders */
+  --border: #1F2937;
+  --border-light: #263040;
+
+  /* Text */
+  --text-primary: #F0F4F8;
+  --text-secondary: #8899AA;
+  --text-muted: #4A5568;
+
+  /* Status */
   --success: #00BA7C;
   --danger: #F4212E;
-  --card-background: #16181c;
-  --shadow-3d: 0 8px 20px rgba(0, 0, 0, 0.5);
+  --warning: #FFB347;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.55);
+  --shadow-3d: 0 8px 28px rgba(0, 0, 0, 0.65);
+  --shadow-glow: 0 0 20px rgba(29, 155, 240, 0.2);
 }
 
 :root[data-theme="light"] {
-  --twitter-blue: #1DA1F2;
-  --background: #FFFFFF;
-  --background-rgb: 255, 255, 255;
-  --surface: #F7F9F9;
-  --hover: #E8F5FD;
-  --border: #E1E8ED;
-  --text-primary: #0F1419;
-  --text-secondary: #536471;
+  /* Brand */
+  --twitter-blue: #1D9BF0;
+  --twitter-blue-hover: #1A8CD8;
+  --brand-clr: #1D9BF0;
+  --brand-rgb: 29, 155, 240;
+
+  /* Backgrounds — clean, soft grey, not blinding white */
+  --background: #F0F2F5;
+  --background-rgb: 240, 242, 245;
+  --bg-rgb: 255, 255, 255;
+  --surface: #FFFFFF;
+  --nav-bg: rgba(255, 255, 255, 0.92);
+  --popup-bg: #FFFFFF;
+  --card-bg: #FFFFFF;
+  --card-background: #FFFFFF;
+
+  /* Interactions */
+  --hover: rgba(0, 0, 0, 0.05);
+  --hover-strong: rgba(0, 0, 0, 0.09);
+
+  /* Borders */
+  --border: #DDE3EA;
+  --border-light: #E8EDF2;
+
+  /* Text */
+  --text-primary: #0D1117;
+  --text-secondary: #5A6473;
+  --text-muted: #9BAAB8;
+
+  /* Status */
   --success: #00BA7C;
   --danger: #F4212E;
-  --card-background: #FFFFFF;
-  --shadow-3d: 0 8px 16px rgba(15, 20, 25, 0.1);
+  --warning: #E08A00;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.10);
+  --shadow-3d: 0 6px 20px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 16px rgba(29, 155, 240, 0.15);
 }
 
+/* ============================================================
+   Reset & Box Model
+   ============================================================ */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  /* Smooth transitions for theme changes */
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+/* ---- Prevent horizontal scroll globally ---- */
+html {
+  overflow-x: hidden;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+  max-width: 100vw;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background: var(--background);
   color: var(--text-primary);
   font-size: 15px;
-  /* Default */
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Font Size Accessibility Details */
+/* Inter from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ============================================================
+   Font Size Accessibility
+   ============================================================ */
 :root[data-font-size="SMALL"] body {
   font-size: 13px;
 }
@@ -64,7 +135,9 @@ body {
   font-size: 19px;
 }
 
-/* Reduce Motion Accessibility Details */
+/* ============================================================
+   Reduce Motion
+   ============================================================ */
 :root.reduce-motion * {
   animation-duration: 0.001ms !important;
   animation-iteration-count: 1 !important;
@@ -72,29 +145,36 @@ body {
   scroll-behavior: auto !important;
 }
 
+/* ============================================================
+   Root
+   ============================================================ */
 #root {
   min-height: 100vh;
 }
 
-/* Scrollbar styling */
+/* ============================================================
+   Scrollbar — thin and subtle
+   ============================================================ */
 ::-webkit-scrollbar {
-  width: 12px;
+  width: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 6px;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
+  background: var(--text-muted);
 }
 
-/* Typography */
+/* ============================================================
+   Typography
+   ============================================================ */
 h1,
 h2,
 h3,
@@ -103,11 +183,13 @@ h5,
 h6 {
   font-weight: 700;
   line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 a {
   color: var(--twitter-blue);
   text-decoration: none;
+  transition: color 0.15s;
 }
 
 a:hover {
@@ -118,13 +200,19 @@ button {
   font-family: inherit;
 }
 
-/* Utility classes */
+/* ============================================================
+   Utility
+   ============================================================ */
 .text-primary {
   color: var(--text-primary);
 }
 
 .text-secondary {
   color: var(--text-secondary);
+}
+
+.text-muted {
+  color: var(--text-muted);
 }
 
 .text-blue {
@@ -139,13 +227,20 @@ button {
   color: var(--danger);
 }
 
-/* 3D Hover Utility */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* 3D hover effect */
 .hover-3d {
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
 }
 
 .hover-3d:hover {
-  transform: translateY(-4px) scale(1.02);
+  transform: translateY(-3px) scale(1.01);
   box-shadow: var(--shadow-3d);
 }
 
@@ -153,7 +248,9 @@ button {
   transform: translateY(-1px) scale(1.0);
 }
 
-/* Page loader for React.lazy Suspense */
+/* ============================================================
+   Page Loader (React.lazy Suspense)
+   ============================================================ */
 .page-loader {
   display: flex;
   justify-content: center;
