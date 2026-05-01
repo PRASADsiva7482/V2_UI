@@ -2,28 +2,34 @@
 .app-wrapper {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-    overflow-x: hidden; /* prevent any child from causing horizontal scroll */
+    height: 100vh;
+    overflow: hidden;
 }
 
 /* ========== App Container: 3-column grid below TopBar ========== */
 .app-container {
     display: grid;
     grid-template-columns: 240px 1fr 320px;
-    min-height: calc(100vh - 48px);
+    height: calc(100vh - 48px);   /* fixed — not min-height */
+    overflow: hidden;              /* columns scroll independently */
     background: var(--background);
     max-width: 1920px;
     margin: 48px auto 0;
-    /* offset for fixed topbar height */
     width: 100%;
 }
 
+/* Centre column scrolls independently */
 .main-content {
-    min-height: calc(100vh - 48px);
+    height: 100%;
     width: 100%;
     min-width: 0;       /* crucial: prevents grid blowout */
+    overflow-y: auto;
     overflow-x: hidden;
+    /* hide scrollbar visually but keep it functional */
+    scrollbar-width: none;        /* Firefox */
+    -ms-overflow-style: none;     /* IE/Edge */
 }
+.main-content::-webkit-scrollbar { display: none; } /* Chrome/Safari */
 
 /* When settings page is active, use full width (no right sidebar) */
 .app-container.full-width-content {
@@ -40,6 +46,16 @@
         grid-template-columns: 275px 1fr;
     }
 }
+
+/* Right sidebar: also scrolls independently, no scrollbar */
+.right-sidebar {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.right-sidebar::-webkit-scrollbar { display: none; }
 
 /* ========== Compact Desktop (≤1100px) — Narrower nav ========== */
 @media (max-width: 1100px) {
@@ -68,8 +84,7 @@
     .app-container {
         grid-template-columns: 1fr;
         margin-top: 44px;
-        /* smaller topbar on mobile */
-        min-height: calc(100vh - 44px);
+        height: calc(100vh - 44px);
     }
 
     .app-container.full-width-content {
@@ -81,9 +96,8 @@
         border-right: none;
         margin: 0;
         max-width: 100%;
-        min-height: calc(100vh - 44px - 56px);
-        padding-bottom: 56px;
-        /* bottom nav bar */
+        height: 100%;
+        padding-bottom: 56px; /* room for bottom tab bar */
     }
 }
 
@@ -91,11 +105,10 @@
 @media (max-width: 480px) {
     .app-container {
         margin-top: 42px;
-        min-height: calc(100vh - 42px);
+        height: calc(100vh - 42px);
     }
 
     .main-content {
-        min-height: calc(100vh - 42px - 52px);
         padding-bottom: 52px;
     }
 }

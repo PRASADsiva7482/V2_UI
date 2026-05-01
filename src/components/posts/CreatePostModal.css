@@ -1,63 +1,62 @@
-/* ========== Create Post Modal Overlay ========== */
+/* ============================================================
+   Create Post Modal
+   - Centered dialog (not bottom sheet)
+   - Clean single-row footer with proper alignment
+   - Clear Save as Draft toggle
+   ============================================================ */
+
+/* ── Overlay ── */
 .create-post-modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    padding-top: 80px;
+    padding: 72px 16px 20px;
     z-index: 2000;
-    animation: overlayFadeIn 0.2s ease-out;
+    animation: overlayFadeIn 0.18s ease-out;
+    overflow-y: auto;
 }
 
 @keyframes overlayFadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
-/* ========== Modal Container ========== */
+/* ── Modal card ── */
 .create-post-modal {
-    background: var(--background);
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 20px;
     width: 100%;
     max-width: 560px;
-    max-height: calc(100vh - 120px);
-    overflow-y: auto;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
-    animation: modalSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.04);
+    animation: modalSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    flex-shrink: 0;
+}
+
+/* Light mode */
+:root[data-theme="light"] .create-post-modal {
+    background: #ffffff;
+    box-shadow: 0 16px 50px rgba(29, 155, 240, 0.10), 0 4px 20px rgba(0,0,0,0.10);
 }
 
 @keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px) scale(0.96);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+    from { opacity: 0; transform: translateY(-14px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* ========== Modal Header ========== */
+/* ── Header ── */
 .create-post-modal-header {
     display: flex;
     align-items: center;
     padding: 12px 16px;
     border-bottom: 1px solid var(--border);
-    gap: 12px;
+    gap: 10px;
 }
 
 .modal-close-btn {
@@ -66,104 +65,164 @@
     justify-content: center;
     width: 34px;
     height: 34px;
+    flex-shrink: 0;
     border-radius: 50%;
     background: transparent;
     border: none;
     color: var(--text-primary);
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.15s;
 }
-
-.modal-close-btn:hover {
-    background: var(--hover);
-}
+.modal-close-btn:hover { background: var(--hover); }
 
 .modal-title {
     flex: 1;
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 700;
     color: var(--text-primary);
     margin: 0;
 }
 
-.modal-header-spacer {
-    width: 34px;
-}
+.modal-header-spacer { width: 34px; }
 
-/* ========== Modal Body ========== */
+/* ── Body ── */
 .create-post-modal-body {
     display: flex;
     flex-direction: column;
-    padding: 0;
 }
 
-/* Compose Area */
+/* ── Compose: avatar + textarea ── */
 .modal-compose-area {
     display: flex;
+    align-items: flex-start;
     gap: 12px;
-    padding: 16px;
+    padding: 16px 16px 8px;
 }
-
-.modal-compose-avatar {
-    flex-shrink: 0;
-}
-
-.modal-compose-content {
-    flex: 1;
-    min-width: 0;
-}
+.modal-compose-avatar { flex-shrink: 0; margin-top: 2px; }
+.modal-compose-content { flex: 1; min-width: 0; }
 
 .modal-compose-textarea {
     width: 100%;
     background: transparent;
     border: none;
     color: var(--text-primary);
-    font-size: 18px;
+    font-size: 17px;
     font-family: inherit;
     resize: none;
     outline: none;
-    min-height: 100px;
+    min-height: 96px;
     padding: 0;
-    line-height: 1.5;
+    line-height: 1.55;
+}
+.modal-compose-textarea::placeholder { color: var(--text-secondary); }
+.modal-compose-textarea:disabled { opacity: 0.5; }
+
+/* ── Poll container ── */
+.modal-poll-container { padding: 0 16px 12px; }
+
+/* ── Media preview ── */
+.modal-media-preview { padding: 0 16px 12px; }
+
+/* ── Error ── */
+.modal-error {
+    margin: 0 16px 10px;
+    padding: 9px 13px;
+    background: rgba(244, 33, 46, 0.10);
+    border: 1px solid var(--danger);
+    border-radius: 10px;
+    color: var(--danger);
+    font-size: 13px;
+    font-weight: 500;
 }
 
-.modal-compose-textarea::placeholder {
+/* ── Save as Draft row — sits above footer actions ── */
+.modal-draft-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-top: 1px solid var(--border);
+}
+
+.modal-draft-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 14px;
+    font-weight: 500;
     color: var(--text-secondary);
 }
 
-.modal-compose-textarea:disabled {
-    opacity: 0.5;
+.modal-draft-checkbox {
+    /* Hidden native checkbox */
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
-/* Media Preview */
-.modal-media-preview {
-    padding: 0 16px 12px;
+/* Custom toggle pill for draft */
+.modal-draft-pill {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+}
+.modal-draft-pill-track {
+    position: absolute;
+    inset: 0;
+    background: var(--border);
+    border-radius: 11px;
+    transition: background 0.2s;
+}
+.modal-draft-checkbox:checked ~ .modal-draft-pill .modal-draft-pill-track {
+    background: var(--twitter-blue);
+}
+.modal-draft-pill-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.modal-draft-checkbox:checked ~ .modal-draft-pill .modal-draft-pill-knob {
+    transform: translateX(18px);
+}
+.modal-draft-label-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: color 0.15s;
+}
+.modal-draft-label:has(.modal-draft-checkbox:checked) .modal-draft-label-text {
+    color: var(--twitter-blue);
+    font-weight: 600;
+}
+.modal-draft-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-left: auto;
 }
 
-/* Error */
-.modal-error {
-    margin: 0 16px 8px;
-    padding: 8px 12px;
-    background: rgba(244, 33, 46, 0.1);
-    border: 1px solid var(--danger);
-    border-radius: 8px;
-    color: var(--danger);
-    font-size: 13px;
-}
-
-/* ========== Footer ========== */
+/* ── Footer: icon actions + char count + Post btn ── */
 .modal-compose-footer {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 8px 16px 12px;
-    border-top: 1px solid var(--border);
+    padding: 8px 12px 14px;
+    gap: 6px;
 }
 
 .modal-compose-actions {
     display: flex;
     align-items: center;
     gap: 2px;
+    flex: 1;
     position: relative;
 }
 
@@ -178,126 +237,182 @@
     border-radius: 50%;
     color: var(--twitter-blue);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.15s;
     padding: 0;
+    flex-shrink: 0;
+}
+.modal-action-icon-btn:hover:not(:disabled) { background: rgba(29,155,240,0.10); }
+.modal-action-icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.modal-action-icon-btn.active { background: rgba(29,155,240,0.10); }
+.modal-action-icon-btn svg { display: block; }
+
+/* GIF button */
+.modal-gif-btn {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    border: 1.5px solid var(--twitter-blue) !important;
+    border-radius: 5px !important;
+    width: auto;
+    padding: 0 6px;
+    height: 22px;
+    flex-shrink: 0;
 }
 
-.modal-action-icon-btn:hover:not(:disabled) {
-    background: rgba(29, 155, 240, 0.1);
-}
-
-.modal-action-icon-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.modal-action-icon-btn svg {
-    display: block;
-}
-
-/* Emoji Picker */
+/* Emoji picker popup */
 .modal-emoji-picker {
     position: absolute;
     bottom: 44px;
     left: 0;
-    background: var(--background);
+    background: var(--popup-bg, var(--surface));
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 12px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-    z-index: 10;
-    max-width: 320px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    z-index: 20;
+    max-width: 300px;
 }
-
 .modal-emoji-grid {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     gap: 4px;
-    max-height: 200px;
+    max-height: 180px;
     overflow-y: auto;
 }
-
-.modal-emoji-grid .emoji-btn {
+.emoji-btn {
     background: transparent;
     border: none;
-    font-size: 24px;
+    font-size: 22px;
     padding: 4px;
     cursor: pointer;
-    border-radius: 4px;
-    transition: background 0.2s;
+    border-radius: 6px;
+    transition: background 0.12s;
+    line-height: 1;
+}
+.emoji-btn:hover { background: rgba(29,155,240,0.10); }
+
+/* GIF picker popup */
+.modal-gif-picker {
+    position: absolute;
+    bottom: 44px;
+    left: 0;
+    background: var(--popup-bg, var(--surface));
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px;
+    width: 250px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    z-index: 20;
+}
+.modal-gif-search {
+    width: 100%;
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--hover);
+    color: var(--text-primary);
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+}
+.modal-gif-hint {
+    color: var(--text-muted);
+    font-size: 11px;
+    margin-top: 8px;
+    text-align: center;
 }
 
-.modal-emoji-grid .emoji-btn:hover {
-    background: rgba(29, 155, 240, 0.1);
-}
-
-/* Footer Right */
+/* Footer right: char ring + Post btn */
 .modal-compose-footer-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    flex-shrink: 0;
 }
 
+/* Circular char count */
 .modal-char-count {
-    font-size: 13px;
-    color: var(--text-secondary);
-    transition: color 0.2s;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
-
-.modal-char-count.warning {
-    color: #FFD400;
-}
-
-.modal-char-count.error {
-    color: var(--danger);
+.modal-char-text {
+    position: absolute;
+    font-size: 10px;
     font-weight: 700;
+    color: var(--text-secondary);
 }
+.modal-char-count.warning .modal-char-text { color: #FFD400; }
+.modal-char-count.error .modal-char-text { color: var(--danger); }
 
-/* ========== Responsive ========== */
+/* Post button */
+.modal-post-btn {
+    padding: 8px 24px;
+    background: var(--twitter-blue);
+    color: #fff;
+    border: none;
+    border-radius: 9999px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, opacity 0.15s;
+    box-shadow: 0 2px 10px rgba(29,155,240,0.3);
+}
+.modal-post-btn:hover:not(:disabled) { background: var(--twitter-blue-hover, #1A8CD8); }
+.modal-post-btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+
+/* ============================================================
+   Mobile (≤480px) — stays centered/top, just tweaks sizing
+   ============================================================ */
 @media (max-width: 768px) {
     .create-post-modal-overlay {
-        padding-top: 60px;
+        padding: 56px 10px 20px;
         align-items: flex-start;
     }
-
     .create-post-modal {
-        max-width: calc(100% - 20px);
-        border-radius: 16px;
+        max-width: 100%;
+        border-radius: 18px;
     }
-
     .modal-compose-textarea {
         font-size: 16px;
         min-height: 80px;
     }
+    .modal-draft-desc { display: none; }
 }
 
 @media (max-width: 480px) {
     .create-post-modal-overlay {
-        padding-top: 50px;
-        padding-left: 8px;
-        padding-right: 8px;
+        padding: 48px 8px 16px;
     }
-
-    .create-post-modal {
-        max-width: 100%;
-        border-radius: 14px;
-    }
-
-    .modal-compose-textarea {
-        font-size: 15px;
-        min-height: 70px;
-    }
-
-    .modal-compose-area {
-        padding: 12px;
-        gap: 8px;
-    }
-
+    .create-post-modal { border-radius: 16px; }
+    .modal-compose-area { padding: 12px 12px 8px; gap: 10px; }
+    .modal-compose-textarea { font-size: 15px; min-height: 72px; }
+    .modal-compose-footer { padding: 6px 10px 12px; }
+    .modal-action-icon-btn { width: 34px; height: 34px; }
+    .modal-action-icon-btn svg { width: 18px; height: 18px; }
+    .modal-post-btn { padding: 7px 18px; font-size: 14px; }
     .modal-emoji-picker {
-        max-width: 260px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-width: 100%;
+        border-radius: 16px 16px 0 0;
+        z-index: 2100;
     }
-
-    .modal-emoji-grid {
-        grid-template-columns: repeat(7, 1fr);
+    .modal-emoji-grid { grid-template-columns: repeat(7, 1fr); }
+    .modal-gif-picker {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        border-radius: 16px 16px 0 0;
+        z-index: 2100;
     }
+    .modal-draft-row { padding: 8px 12px; }
+    .modal-draft-label-text { font-size: 13px; }
 }
