@@ -148,6 +148,8 @@
         /* Frosted glass effect */
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
+        /* Allow popup to break out */
+        overflow: visible;
     }
 
     .navbar-content {

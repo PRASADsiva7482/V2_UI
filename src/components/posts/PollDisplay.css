@@ -4,7 +4,7 @@
     border: 1px solid var(--border);
     border-radius: 16px;
     padding: 12px;
-    background: var(--bg-primary, #15202b);
+    background: var(--background, #15202b);
 }
 
 .poll-question {
@@ -67,7 +67,7 @@
     border-radius: 8px;
     overflow: hidden;
     min-height: 36px;
-    background: var(--surface, #1e2732);
+    background: var(--card-bg, #1e2732);
 }
 
 .poll-option-bar {

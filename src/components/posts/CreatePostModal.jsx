@@ -73,8 +73,8 @@ function CreatePostModal({ onClose, onPostCreated }) {
         return pollData.options.filter(o => o.trim()).length >= 2;
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (e, asDraft = false) => {
+        if (e) e.preventDefault();
         if (!content.trim() && selectedFiles.length === 0 && !isPollValid()) {
             setError('Please add some content, media, or a poll to your post');
             return;
@@ -96,7 +96,7 @@ function CreatePostModal({ onClose, onPostCreated }) {
                 durationHours: pollData.durationHours
             } : null;
 
-            const newPost = await createPost(content, mediaIds, mentionedUserIds, finalPollData, null, null, isDraft);
+            const newPost = await createPost(content, mediaIds, mentionedUserIds, finalPollData, null, null, asDraft);
             setContent('');
             setSelectedFiles([]);
             setShowPollCreator(false);
@@ -122,7 +122,7 @@ function CreatePostModal({ onClose, onPostCreated }) {
 
                 {/* ── Header ── */}
                 <div className="create-post-modal-header">
-                    <button className="modal-close-btn" onClick={onClose} title="Close" aria-label="Close">
+                    <button type="button" className="modal-close-btn" onClick={onClose} title="Close" aria-label="Close">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
                             <path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z" />
                         </svg>
@@ -132,7 +132,7 @@ function CreatePostModal({ onClose, onPostCreated }) {
                 </div>
 
                 {/* ── Body ── */}
-                <form className="create-post-modal-body" onSubmit={handleSubmit}>
+                <div className="create-post-modal-body">
                     <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleFileChange} style={{ display: 'none' }} />
 
                     {/* Compose area */}
@@ -170,27 +170,6 @@ function CreatePostModal({ onClose, onPostCreated }) {
                     )}
 
                     {error && <div className="modal-error">{error}</div>}
-
-                    {/* ── Save as Draft row ── */}
-                    <div className="modal-draft-row">
-                        <label className="modal-draft-label">
-                            <input
-                                type="checkbox"
-                                className="modal-draft-checkbox"
-                                checked={isDraft}
-                                onChange={(e) => setIsDraft(e.target.checked)}
-                                id="draft-checkbox"
-                            />
-                            <span className="modal-draft-pill">
-                                <span className="modal-draft-pill-track" />
-                                <span className="modal-draft-pill-knob" />
-                            </span>
-                            <span className="modal-draft-label-text">
-                                {isDraft ? '📝 Save as Draft' : 'Save as Draft'}
-                            </span>
-                        </label>
-                        <span className="modal-draft-desc">Won't appear in feed until published</span>
-                    </div>
 
                     {/* ── Footer ── */}
                     <div className="modal-compose-footer">
@@ -270,7 +249,7 @@ function CreatePostModal({ onClose, onPostCreated }) {
                             )}
                         </div>
 
-                        {/* Right: char count ring + Post button */}
+                        {/* Right: char count + Submit Buttons */}
                         <div className="modal-compose-footer-right">
                             {charCount > 0 && (
                                 <div className={`modal-char-count ${isNearLimit ? 'warning' : ''} ${isOverLimit ? 'error' : ''}`}>
@@ -290,12 +269,27 @@ function CreatePostModal({ onClose, onPostCreated }) {
                                 </div>
                             )}
 
-                            <button type="submit" className="modal-post-btn" disabled={!canSubmit || loading}>
-                                {loading ? (uploadingMedia ? 'Uploading…' : 'Posting…') : 'Post'}
-                            </button>
+                            <div className="modal-submit-group">
+                                <button
+                                    type="button"
+                                    className="modal-draft-btn"
+                                    disabled={!canSubmit || loading}
+                                    onClick={(e) => handleSubmit(e, true)}
+                                >
+                                    Draft
+                                </button>
+                                <button
+                                    type="button"
+                                    className="modal-post-btn"
+                                    disabled={!canSubmit || loading}
+                                    onClick={(e) => handleSubmit(e, false)}
+                                >
+                                    {loading ? (uploadingMedia ? 'Uploading…' : 'Posting…') : 'Post'}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     );
